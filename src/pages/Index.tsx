@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import CitySearch from '@/components/CitySearch';
 import CityMap from '@/components/CityMap';
 import { Button } from '@/components/ui/button';
-import { Plus, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Route, sampleRoutes } from '@/data/routes';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { CreateRouteDialog } from '@/components/CreateRouteDialog';
 
 const Index = () => {
   const [selectedCity, setSelectedCity] = useState<{
@@ -19,11 +20,6 @@ const Index = () => {
   const cityRoutes = selectedCity 
     ? sampleRoutes.filter(route => route.cityName === selectedCity.name)
     : [];
-
-  const handleCreateRoute = () => {
-    console.log('Create new route');
-    // TODO: Implementare la creazione del percorso
-  };
 
   const handleBackClick = () => {
     setSelectedCity(null);
@@ -44,7 +40,7 @@ const Index = () => {
               Indietro
             </Button>
             <h1 className="text-3xl font-bold">{selectedCity.name}</h1>
-            <div className="w-[100px]" /> {/* Spacer for centering */}
+            <div className="w-[100px]" />
           </div>
         ) : (
           <>
@@ -94,12 +90,7 @@ const Index = () => {
         </>
       )}
 
-      <Button
-        className="fixed bottom-6 right-6 rounded-full w-12 h-12 p-0"
-        onClick={handleCreateRoute}
-      >
-        <Plus className="w-6 h-6" />
-      </Button>
+      <CreateRouteDialog />
     </div>
   );
 };
