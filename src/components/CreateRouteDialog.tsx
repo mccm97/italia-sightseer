@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
@@ -7,13 +7,9 @@ import { useForm } from 'react-hook-form';
 import { Plus } from 'lucide-react';
 import CitySearch from './CitySearch';
 import { AttractionInput } from './AttractionInput';
-import { getMonumentSuggestions, getAddressSuggestions } from '../services/attractions';
 import { CreateRouteFormData } from '@/types/route';
 
 export function CreateRouteDialog() {
-  const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState<number | null>(null);
-
   const form = useForm<CreateRouteFormData>({
     defaultValues: {
       name: '',
@@ -36,15 +32,6 @@ export function CreateRouteDialog() {
       form.setValue('attractions', currentAttractions.slice(0, attractionsCount));
     }
   }, [attractionsCount, form]);
-
-  const handleInputChange = (index: number, value: string) => {
-    const attraction = form.getValues(`attractions.${index}`);
-    const newSuggestions = attraction.inputType === 'name' 
-      ? getMonumentSuggestions(value)
-      : getAddressSuggestions(value);
-    setSuggestions(newSuggestions);
-    setShowSuggestions(index);
-  };
 
   const onSubmit = (data: CreateRouteFormData) => {
     console.log('Form submitted:', data);
@@ -113,10 +100,6 @@ export function CreateRouteDialog() {
                 key={index}
                 index={index}
                 form={form}
-                suggestions={suggestions}
-                showSuggestions={showSuggestions}
-                onInputChange={handleInputChange}
-                setShowSuggestions={setShowSuggestions}
               />
             ))}
 
