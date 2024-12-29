@@ -2,25 +2,13 @@ import React from 'react';
 import { Button } from './ui/button';
 import CityMap from './CityMap';
 import { CreateRouteFormData } from '@/types/route';
-import { useToast } from './ui/use-toast';
 
 interface RoutePreviewProps {
   formData: CreateRouteFormData;
-  onConfirm: () => void;
   onBack: () => void;
 }
 
-export function RoutePreview({ formData, onConfirm, onBack }: RoutePreviewProps) {
-  const { toast } = useToast();
-  
-  const handleConfirm = () => {
-    toast({
-      title: "Percorso creato con successo!",
-      description: `Il percorso "${formData.name}" è stato creato.`,
-    });
-    onConfirm();
-  };
-
+export function RoutePreview({ formData, onBack }: RoutePreviewProps) {
   // Per ora usiamo coordinate di esempio per le attrazioni
   const attractions = formData.attractions.map((attraction, index) => ({
     name: attraction.name || attraction.address,
@@ -40,12 +28,9 @@ export function RoutePreview({ formData, onConfirm, onBack }: RoutePreviewProps)
           attractions={attractions}
         />
       </div>
-      <div className="flex justify-between">
+      <div className="flex justify-start">
         <Button variant="outline" onClick={onBack}>
           Torna indietro
-        </Button>
-        <Button onClick={handleConfirm}>
-          Conferma Percorso
         </Button>
       </div>
     </div>

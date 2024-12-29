@@ -9,10 +9,12 @@ import CitySearch from './CitySearch';
 import { AttractionInput } from './AttractionInput';
 import { CreateRouteFormData } from '@/types/route';
 import { RoutePreview } from './RoutePreview';
+import { useToast } from '@/hooks/use-toast';
 
 export function CreateRouteDialog() {
   const [open, setOpen] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const { toast } = useToast();
   
   const form = useForm<CreateRouteFormData>({
     defaultValues: {
@@ -45,11 +47,19 @@ export function CreateRouteDialog() {
     setShowPreview(false);
   };
 
-  const handleConfirmRoute = () => {
-    console.log('Route confirmed:', form.getValues());
+  const handleCreateRoute = () => {
+    console.log('Route created:', form.getValues());
+    toast({
+      title: "Percorso creato con successo!",
+      description: `Il percorso "${form.getValues().name}" è stato creato.`,
+    });
     setOpen(false);
-    setShowPreview(false);
     form.reset();
+  };
+
+  const isFormValid = () => {
+    const values = form.getValues();
+    return values.city && values.name && values.attractions.every(a => a.name || a.address);
   };
 
   return (
@@ -67,7 +77,6 @@ export function CreateRouteDialog() {
         {showPreview ? (
           <RoutePreview
             formData={form.getValues()}
-            onConfirm={handleConfirmRoute}
             onBack={handleBackFromPreview}
           />
         ) : (
@@ -126,13 +135,21 @@ export function CreateRouteDialog() {
                 />
               ))}
 
-              <div className="flex justify-end">
+              <div className="flex justify-between gap-4">
                 <Button 
                   type="button" 
+                  variant="outline"
                   onClick={handleShowPreview}
-                  disabled={!form.getValues().city || !form.getValues().name || form.getValues().attractions.some(a => !a.name && !a.address)}
+                  disabled={!isFormValid()}
                 >
-                  Visualizza Anteprima Percorso
+                  Visualizza Anteprima
+                </Button>
+                <Button 
+                  type="button"
+                  onClick={handleCreateRoute}
+                  disabled={!isFormValid()}
+                >
+                  Crea Percorso
                 </Button>
               </div>
             </form>
