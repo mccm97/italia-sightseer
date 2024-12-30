@@ -20,14 +20,7 @@ export function RoutePreview({ formData, onBack }: RoutePreviewProps) {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold">Anteprima Percorso</h2>
-      <div className="h-[400px] w-full">
-        <CityMap
-          center={[formData.city?.lat || 0, formData.city?.lng || 0]}
-          attractions={attractions}
-        />
-      </div>
-      <div className="flex justify-start">
+      <div className="flex items-center justify-between mb-4">
         <Button 
           variant="outline" 
           onClick={onBack}
@@ -36,6 +29,15 @@ export function RoutePreview({ formData, onBack }: RoutePreviewProps) {
           <ArrowLeft className="w-4 h-4" />
           Torna alla creazione
         </Button>
+      </div>
+
+      <h2 className="text-2xl font-bold">Anteprima Percorso</h2>
+      
+      <div className="h-[400px] w-full">
+        <CityMap
+          center={[formData.city?.lat || 0, formData.city?.lng || 0]}
+          attractions={attractions}
+        />
       </div>
     </div>
   );
