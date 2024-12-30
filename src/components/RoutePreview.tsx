@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from './ui/button';
 import CityMap from './CityMap';
 import { CreateRouteFormData } from '@/types/route';
+import { ArrowLeft } from 'lucide-react';
 
 interface RoutePreviewProps {
   formData: CreateRouteFormData;
@@ -9,10 +10,8 @@ interface RoutePreviewProps {
 }
 
 export function RoutePreview({ formData, onBack }: RoutePreviewProps) {
-  // Per ora usiamo coordinate di esempio per le attrazioni
   const attractions = formData.attractions.map((attraction, index) => ({
     name: attraction.name || attraction.address,
-    // Queste coordinate sono di esempio e andrebbero recuperate da un servizio di geocoding
     position: [
       formData.city?.lat + (index * 0.001),
       formData.city?.lng + (index * 0.001)
@@ -29,8 +28,13 @@ export function RoutePreview({ formData, onBack }: RoutePreviewProps) {
         />
       </div>
       <div className="flex justify-start">
-        <Button variant="outline" onClick={onBack}>
-          Torna indietro
+        <Button 
+          variant="outline" 
+          onClick={onBack}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Torna alla creazione
         </Button>
       </div>
     </div>
