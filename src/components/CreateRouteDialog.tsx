@@ -40,7 +40,9 @@ export function CreateRouteDialog() {
   }, [attractionsCount, form]);
 
   const handleShowPreview = () => {
-    setShowPreview(true);
+    if (isFormValid()) {
+      setShowPreview(true);
+    }
   };
 
   const handleBackFromPreview = () => {
@@ -48,13 +50,15 @@ export function CreateRouteDialog() {
   };
 
   const handleCreateRoute = () => {
-    console.log('Route created:', form.getValues());
-    toast({
-      title: "Percorso creato con successo!",
-      description: `Il percorso "${form.getValues().name}" è stato creato.`,
-    });
-    setOpen(false);
-    form.reset();
+    if (isFormValid()) {
+      console.log('Route created:', form.getValues());
+      toast({
+        title: "Percorso creato con successo!",
+        description: `Il percorso "${form.getValues().name}" è stato creato.`,
+      });
+      setOpen(false);
+      form.reset();
+    }
   };
 
   const isFormValid = () => {
