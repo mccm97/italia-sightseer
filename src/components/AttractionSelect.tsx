@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { getMonumentSuggestions, getAddressSuggestions } from '../services/attractions';
+import { getMonumentSuggestions } from '../services/attractions';
 
 interface AttractionSelectProps {
   value: string;
@@ -19,14 +19,24 @@ interface AttractionSelectProps {
 export function AttractionSelect({ value, onChange, inputType }: AttractionSelectProps) {
   const [searchQuery, setSearchQuery] = useState('');
   
-  const suggestions = inputType === 'name' 
-    ? getMonumentSuggestions(searchQuery)
-    : getAddressSuggestions(searchQuery);
+  const suggestions = getMonumentSuggestions(searchQuery);
+
+  if (inputType === 'address') {
+    return (
+      <Input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Inserisci l'indirizzo esatto"
+        className="w-full"
+      />
+    );
+  }
 
   return (
     <Select value={value} onValueChange={onChange}>
       <SelectTrigger className="w-full">
-        <SelectValue placeholder={inputType === 'name' ? 'Seleziona monumento' : 'Seleziona indirizzo'} />
+        <SelectValue placeholder="Seleziona monumento" />
       </SelectTrigger>
       <SelectContent>
         <div className="p-2">

@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import CityMap from './CityMap';
 import { CreateRouteFormData } from '@/types/route';
 import { ArrowLeft } from 'lucide-react';
+import { geocodeAddress } from '@/services/geocoding';
+import { useToast } from '@/hooks/use-toast';
 
 interface RoutePreviewProps {
   formData: CreateRouteFormData;
@@ -10,13 +12,40 @@ interface RoutePreviewProps {
 }
 
 export function RoutePreview({ formData, onBack }: RoutePreviewProps) {
-  const attractions = formData.attractions.map((attraction, index) => ({
-    name: attraction.name || attraction.address,
-    position: [
-      formData.city?.lat + (index * 0.001),
-      formData.city?.lng + (index * 0.001)
-    ] as [number, number]
-  }));
+  const [attractions, setAttractions] = useState<Array<{ name: string; position: [number, number] }>>([]);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const loadAttractionPositions = async () => {
+      try {
+        const positions = await Promise.all(
+          formData.attractions.map(async (attraction) => {
+            const searchTerm = attraction.inputType === 'address' 
+              ? `${attraction.address}, ${formData.city?.name}, Italia`
+              : `${attraction.name}, ${formData.city?.name}, Italia`;
+              
+            const position = await geocodeAddress(searchTerm);
+            
+            return {
+              name: attraction.name || attraction.address,
+              position: position
+            };
+          })
+        );
+        
+        setAttractions(positions);
+      } catch (error) {
+        console.error('Error loading positions:', error);
+        toast({
+          title: "Errore",
+          description: "Impossibile caricare le posizioni di alcune attrazioni",
+          variant: "destructive"
+        });
+      }
+    };
+
+    loadAttractionPositions();
+  }, [formData, toast]);
 
   return (
     <div className="space-y-4">
