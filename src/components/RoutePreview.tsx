@@ -66,6 +66,7 @@ export function RoutePreview({ formData, onBack }: RoutePreviewProps) {
         <CityMap
           center={[formData.city?.lat || 0, formData.city?.lng || 0]}
           attractions={attractions}
+          showWalkingPath={true}
         />
       </div>
     </div>
