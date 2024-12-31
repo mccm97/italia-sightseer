@@ -2,6 +2,8 @@ export interface Attraction {
   name: string;
   address: string;
   inputType: 'name' | 'address';
+  visitDuration?: number;
+  price?: number;
 }
 
 export interface CreateRouteFormData {

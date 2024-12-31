@@ -4,6 +4,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { UseFormReturn } from 'react-hook-form';
 import { CreateRouteFormData } from '@/types/route';
 import { AttractionSelect } from './AttractionSelect';
+import { Input } from '@/components/ui/input';
 
 interface AttractionInputProps {
   index: number;
@@ -44,7 +45,7 @@ export function AttractionInput({
         )}
       />
 
-      <div className="relative">
+      <div className="space-y-4">
         <FormField
           control={form.control}
           name={`attractions.${index}.${attraction?.inputType === 'name' ? 'name' : 'address'}`}
@@ -58,6 +59,45 @@ export function AttractionInput({
                   value={field.value}
                   onChange={field.onChange}
                   inputType={attraction?.inputType || 'name'}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name={`attractions.${index}.visitDuration`}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Durata Visita (minuti)</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  min="0"
+                  placeholder="Inserisci la durata della visita"
+                  {...field}
+                  onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name={`attractions.${index}.price`}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Prezzo Ingresso (€)</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="Inserisci il prezzo del biglietto"
+                  {...field}
+                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                 />
               </FormControl>
             </FormItem>

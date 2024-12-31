@@ -10,10 +10,12 @@ import { AttractionInput } from './AttractionInput';
 import { CreateRouteFormData } from '@/types/route';
 import { RoutePreview } from './RoutePreview';
 import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent } from './ui/card';
 
 export function CreateRouteDialog() {
   const [open, setOpen] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
   const { toast } = useToast();
   
   const form = useForm<CreateRouteFormData>({
@@ -21,18 +23,25 @@ export function CreateRouteDialog() {
       name: '',
       attractionsCount: 1,
       city: null,
-      attractions: [{ name: '', address: '', inputType: 'name' }]
+      attractions: [{ name: '', address: '', inputType: 'name', visitDuration: 0, price: 0 }]
     }
   });
 
   const attractionsCount = form.watch('attractionsCount');
+  const attractions = form.watch('attractions');
 
   useEffect(() => {
     const currentAttractions = form.getValues('attractions');
     if (attractionsCount > currentAttractions.length) {
       form.setValue('attractions', [
         ...currentAttractions,
-        ...Array(attractionsCount - currentAttractions.length).fill({ name: '', address: '', inputType: 'name' })
+        ...Array(attractionsCount - currentAttractions.length).fill({ 
+          name: '', 
+          address: '', 
+          inputType: 'name',
+          visitDuration: 0,
+          price: 0
+        })
       ]);
     } else if (attractionsCount < currentAttractions.length) {
       form.setValue('attractions', currentAttractions.slice(0, attractionsCount));
@@ -41,7 +50,7 @@ export function CreateRouteDialog() {
 
   const handleShowPreview = () => {
     if (isFormValid()) {
-      setShowPreview(true);
+      setShowSummary(true);
     }
   };
 
@@ -63,7 +72,17 @@ export function CreateRouteDialog() {
 
   const isFormValid = () => {
     const values = form.getValues();
-    return values.city && values.name && values.attractions.every(a => a.name || a.address);
+    return values.city && 
+           values.name && 
+           values.attractions.every(a => (a.name || a.address) && a.visitDuration > 0);
+  };
+
+  const calculateTotalDuration = () => {
+    return attractions.reduce((total, attr) => total + (attr.visitDuration || 0), 0);
+  };
+
+  const calculateTotalPrice = () => {
+    return attractions.reduce((total, attr) => total + (attr.price || 0), 0);
   };
 
   return (
@@ -83,6 +102,42 @@ export function CreateRouteDialog() {
             formData={form.getValues()}
             onBack={handleBackFromPreview}
           />
+        ) : showSummary ? (
+          <div className="space-y-4">
+            <Card>
+              <CardContent className="pt-6 space-y-2">
+                <h3 className="font-semibold text-lg">Riepilogo Percorso</h3>
+                <p><strong>Nome:</strong> {form.getValues().name}</p>
+                <p><strong>Città:</strong> {form.getValues().city?.name}</p>
+                <p><strong>Durata Totale:</strong> {calculateTotalDuration()} minuti</p>
+                <p><strong>Costo Totale:</strong> €{calculateTotalPrice().toFixed(2)}</p>
+                <div className="mt-4">
+                  <h4 className="font-medium">Attrazioni:</h4>
+                  <ul className="list-disc pl-5 mt-2">
+                    {attractions.map((attr, index) => (
+                      <li key={index}>
+                        {attr.name || attr.address} - {attr.visitDuration} min, €{attr.price}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <div className="flex justify-between gap-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowSummary(false)}
+              >
+                Modifica
+              </Button>
+              <Button 
+                onClick={() => setShowPreview(true)}
+              >
+                Visualizza su Mappa
+              </Button>
+            </div>
+          </div>
         ) : (
           <Form {...form}>
             <form className="space-y-4">
@@ -139,21 +194,13 @@ export function CreateRouteDialog() {
                 />
               ))}
 
-              <div className="flex justify-between gap-4">
+              <div className="flex justify-end">
                 <Button 
                   type="button" 
-                  variant="outline"
                   onClick={handleShowPreview}
                   disabled={!isFormValid()}
                 >
-                  Visualizza Anteprima
-                </Button>
-                <Button 
-                  type="button"
-                  onClick={handleCreateRoute}
-                  disabled={!isFormValid()}
-                >
-                  Crea Percorso
+                  Continua
                 </Button>
               </div>
             </form>
