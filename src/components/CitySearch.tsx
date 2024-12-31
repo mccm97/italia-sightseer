@@ -22,37 +22,52 @@ export default function CitySearch({ onCitySelect }: CitySearchProps) {
   const [value, setValue] = useState<string>('');
   const [cities, setCities] = useState<City[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const loadCities = async (searchTerm: string) => {
     if (!searchTerm) {
       setCities([]);
+      setError(null);
       return;
     }
 
     try {
       setIsLoading(true);
+      setError(null);
       console.log('Loading cities for search term:', searchTerm);
       
-      const { data, error } = await supabase
+      const { data, error: supabaseError } = await supabase
         .from('cities')
         .select('*')
         .ilike('name', `%${searchTerm}%`)
         .limit(5);
       
-      if (error) {
-        console.error('Error loading cities:', error);
+      if (supabaseError) {
+        console.error('Error loading cities:', supabaseError);
+        setError('Errore nel caricamento delle città');
+        setCities([]);
         return;
       }
     
       if (data) {
         console.log('Cities loaded:', data);
         setCities(data);
+      } else {
+        setCities([]);
       }
     } catch (error) {
       console.error('Error in loadCities:', error);
+      setError('Errore nel caricamento delle città');
+      setCities([]);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSelect = (city: City) => {
+    setValue(city.name);
+    onCitySelect(city);
+    setOpen(false);
   };
 
   return (
@@ -77,34 +92,36 @@ export default function CitySearch({ onCitySelect }: CitySearchProps) {
                 loadCities(search.trim());
               } else {
                 setCities([]);
+                setError(null);
               }
             }}
             disabled={isLoading}
           />
-          <CommandEmpty>
-            {isLoading ? 'Caricamento...' : 'Nessuna città trovata.'}
-          </CommandEmpty>
-          <CommandGroup>
-            {Array.isArray(cities) && cities.map((city) => (
-              <CommandItem
-                key={city.id}
-                value={city.name}
-                onSelect={() => {
-                  setValue(city.name);
-                  onCitySelect(city);
-                  setOpen(false);
-                }}
-              >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    value === city.name ? "opacity-100" : "opacity-0"
-                  )}
-                />
-                {city.name}
-              </CommandItem>
-            ))}
-          </CommandGroup>
+          {error ? (
+            <CommandEmpty className="text-red-500">{error}</CommandEmpty>
+          ) : isLoading ? (
+            <CommandEmpty>Caricamento...</CommandEmpty>
+          ) : cities.length === 0 ? (
+            <CommandEmpty>Nessuna città trovata.</CommandEmpty>
+          ) : (
+            <CommandGroup>
+              {cities.map((city) => (
+                <CommandItem
+                  key={city.id}
+                  value={city.name}
+                  onSelect={() => handleSelect(city)}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === city.name ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {city.name}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
         </Command>
       </PopoverContent>
     </Popover>

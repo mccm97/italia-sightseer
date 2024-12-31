@@ -41,6 +41,7 @@ export type Database = {
       }
       cities: {
         Row: {
+          country: string | null
           created_at: string
           id: string
           lat: number
@@ -48,6 +49,7 @@ export type Database = {
           name: string
         }
         Insert: {
+          country?: string | null
           created_at?: string
           id?: string
           lat: number
@@ -55,6 +57,7 @@ export type Database = {
           name: string
         }
         Update: {
+          country?: string | null
           created_at?: string
           id?: string
           lat?: number
