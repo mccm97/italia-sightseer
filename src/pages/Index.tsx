@@ -47,10 +47,15 @@ const Index = () => {
           
           <div className="aspect-video relative rounded-xl overflow-hidden shadow-xl">
             <img 
-              src="/lovable-uploads/e59be623-b1e0-4dc0-9220-6a63eb59880e.png" 
-              alt="App preview" 
+              src="/lovable-uploads/172840ab-5378-44c5-941a-9be547232b05.png" 
+              alt="Vista panoramica di Barcellona" 
               className="object-cover w-full h-full"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+              <h2 className="text-2xl font-bold mb-2">Esplora le Città Italiane</h2>
+              <p className="text-lg">Crea percorsi personalizzati e scopri i monumenti più belli</p>
+            </div>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6 text-center">
@@ -145,7 +150,8 @@ const Index = () => {
                   visitDuration: attr.visitDuration,
                   price: attr.price || 0
                 })),
-                attractionsCount: selectedRoute.attractions.length
+                attractionsCount: selectedRoute.attractions.length,
+                transportMode: 'walking'
               }}
               onBack={() => setShowRoutePreview(false)}
             />

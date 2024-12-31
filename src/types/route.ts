@@ -11,4 +11,5 @@ export interface CreateRouteFormData {
   attractionsCount: number;
   city: { name: string; lat: number; lng: number } | null;
   attractions: Attraction[];
+  transportMode: 'walking' | 'public';
 }
