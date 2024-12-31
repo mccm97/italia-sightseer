@@ -62,45 +62,6 @@ export function CreateRouteDialog() {
     }
   };
 
-  const handleBackFromPreview = () => {
-    setShowPreview(false);
-  };
-
-  const handleCreateRoute = async () => {
-    try {
-      setIsCreating(true);
-      
-      // Verifica se esiste già un percorso con lo stesso nome
-      const exists = await checkRouteNameExists(formData.name, formData.city?.id || '');
-      if (exists) {
-        toast({
-          title: "Errore",
-          description: "Esiste già un percorso con questo nome per questa città",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      await createRoute(formData);
-      
-      toast({
-        title: "Percorso Creato",
-        description: "Il tuo percorso è stato creato con successo!",
-      });
-      
-      onClose();
-    } catch (error) {
-      console.error('Error creating route:', error);
-      toast({
-        title: "Errore",
-        description: "Si è verificato un errore durante la creazione del percorso",
-        variant: "destructive"
-      });
-    } finally {
-      setIsCreating(false);
-    }
-  };
-
   const isFormValid = () => {
     const values = form.getValues();
     return values.city && 

@@ -15,6 +15,12 @@ export async function checkRouteNameExists(name: string, cityId: string) {
 export async function createRoute(formData: CreateRouteFormData) {
   console.log('Creating route with data:', formData);
   
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error('User must be logged in to create routes');
+  }
+
   // 1. First, ensure the city exists or create it
   const { data: cityData, error: cityError } = await supabase
     .from('cities')
@@ -37,7 +43,7 @@ export async function createRoute(formData: CreateRouteFormData) {
       .from('attractions')
       .upsert({
         name: attr.name || attr.address,
-        lat: 0, // Questi verranno aggiornati dopo
+        lat: 0, // These will be updated later
         lng: 0,
         visit_duration: attr.visitDuration,
         price: attr.price
@@ -61,9 +67,10 @@ export async function createRoute(formData: CreateRouteFormData) {
     .insert({
       name: formData.name,
       city_id: cityData.id,
+      user_id: user.id,
       transport_mode: formData.transportMode,
       total_duration: formData.attractions.reduce((sum, attr) => sum + (attr.visitDuration || 0), 0),
-      total_distance: 0, // Questo verrà calcolato dopo
+      total_distance: 0, // This will be calculated later
       is_public: true
     })
     .select()
@@ -83,7 +90,7 @@ export async function createRoute(formData: CreateRouteFormData) {
         attraction_id: attr.id,
         order_index: index,
         transport_mode: formData.transportMode,
-        travel_duration: 0, // Questo verrà calcolato dopo
+        travel_duration: 0, // This will be calculated later
         travel_distance: 0
       });
 

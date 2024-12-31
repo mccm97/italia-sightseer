@@ -9,7 +9,12 @@ export interface Attraction {
 export interface CreateRouteFormData {
   name: string;
   attractionsCount: number;
-  city: { name: string; lat: number; lng: number } | null;
+  city: { 
+    id?: string;
+    name: string; 
+    lat: number; 
+    lng: number; 
+  } | null;
   attractions: Attraction[];
   transportMode: 'walking' | 'public';
 }

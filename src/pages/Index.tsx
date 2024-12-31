@@ -154,6 +154,7 @@ const Index = () => {
                 transportMode: 'walking'
               }}
               onBack={() => setShowRoutePreview(false)}
+              onClose={() => setShowRoutePreview(false)}
             />
           )}
         </DialogContent>
