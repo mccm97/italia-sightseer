@@ -23,9 +23,17 @@ export function CreateRouteDialog() {
       name: '',
       attractionsCount: 1,
       city: null,
-      attractions: [{ name: '', address: '', inputType: 'name', visitDuration: 0, price: 0 }]
+      attractions: [{ name: '', address: '', inputType: 'name', visitDuration: 0, price: 0 }],
+      transportMode: 'walking'
     }
   });
+
+  const handleClose = () => {
+    setOpen(false);
+    setShowPreview(false);
+    setShowSummary(false);
+    form.reset();
+  };
 
   const attractionsCount = form.watch('attractionsCount');
   const attractions = form.watch('attractions');
@@ -58,15 +66,38 @@ export function CreateRouteDialog() {
     setShowPreview(false);
   };
 
-  const handleCreateRoute = () => {
-    if (isFormValid()) {
-      console.log('Route created:', form.getValues());
+  const handleCreateRoute = async () => {
+    try {
+      setIsCreating(true);
+      
+      // Verifica se esiste già un percorso con lo stesso nome
+      const exists = await checkRouteNameExists(formData.name, formData.city?.id || '');
+      if (exists) {
+        toast({
+          title: "Errore",
+          description: "Esiste già un percorso con questo nome per questa città",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      await createRoute(formData);
+      
       toast({
-        title: "Percorso creato con successo!",
-        description: `Il percorso "${form.getValues().name}" è stato creato.`,
+        title: "Percorso Creato",
+        description: "Il tuo percorso è stato creato con successo!",
       });
-      setOpen(false);
-      form.reset();
+      
+      onClose();
+    } catch (error) {
+      console.error('Error creating route:', error);
+      toast({
+        title: "Errore",
+        description: "Si è verificato un errore durante la creazione del percorso",
+        variant: "destructive"
+      });
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -100,7 +131,8 @@ export function CreateRouteDialog() {
         {showPreview ? (
           <RoutePreview
             formData={form.getValues()}
-            onBack={handleBackFromPreview}
+            onBack={() => setShowPreview(false)}
+            onClose={handleClose}
           />
         ) : showSummary ? (
           <div className="space-y-4">
