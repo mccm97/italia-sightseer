@@ -2,12 +2,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { CreateRouteFormData } from "@/types/route";
 
 export async function checkRouteNameExists(name: string, cityId: string) {
+  if (!cityId) {
+    throw new Error('City ID is required');
+  }
+
   const { data } = await supabase
     .from('routes')
     .select('id')
     .eq('name', name)
     .eq('city_id', cityId)
-    .single();
+    .maybeSingle();
   
   return !!data;
 }
@@ -25,9 +29,9 @@ export async function createRoute(formData: CreateRouteFormData) {
   const { data: cityData, error: cityError } = await supabase
     .from('cities')
     .upsert({
-      name: formData.city.name,
-      lat: formData.city.lat,
-      lng: formData.city.lng
+      name: formData.city?.name || '',
+      lat: formData.city?.lat || 0,
+      lng: formData.city?.lng || 0
     })
     .select()
     .single();

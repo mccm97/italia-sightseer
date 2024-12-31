@@ -75,8 +75,12 @@ export function RoutePreview({ formData, onBack, onClose }: RoutePreviewProps) {
     try {
       setIsCreating(true);
       
+      if (!formData.city?.id) {
+        throw new Error('City ID is required');
+      }
+
       // Verifica se esiste già un percorso con lo stesso nome
-      const exists = await checkRouteNameExists(formData.name, formData.city?.id || '');
+      const exists = await checkRouteNameExists(formData.name, formData.city.id);
       if (exists) {
         toast({
           title: "Errore",
