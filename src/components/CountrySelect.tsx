@@ -41,7 +41,7 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
         return;
       }
 
-      if (!data || data.length === 0) {
+      if (!data || !Array.isArray(data) || data.length === 0) {
         console.log('No countries found in database');
         setCountries([]);
         return;
@@ -82,7 +82,7 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">
-        <Command>
+        <Command shouldFilter={false}>
           <CommandInput placeholder="Cerca nazione..." />
           <CommandEmpty>
             {error ? (
