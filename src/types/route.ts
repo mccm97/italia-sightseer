@@ -6,16 +6,19 @@ export interface Attraction {
   price?: number;
 }
 
+export interface City {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  country: string;
+}
+
 export interface CreateRouteFormData {
   name: string;
   attractionsCount: number;
   country: string | null;
-  city: { 
-    id?: string;
-    name: string; 
-    lat: number; 
-    lng: number; 
-  } | null;
+  city: City | null;
   attractions: Attraction[];
   transportMode: 'walking' | 'public';
 }

@@ -5,14 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
-
-interface City {
-  id: string;
-  name: string;
-  lat: number;
-  lng: number;
-  country: string;
-}
+import { City } from '@/types/route';
 
 interface CitySearchProps {
   onCitySelect: (city: City | null) => void;
@@ -42,7 +35,7 @@ export default function CitySearch({ onCitySelect, selectedCountry, disabled = f
       
       const { data, error: supabaseError } = await supabase
         .from('cities')
-        .select('*')
+        .select('id, name, lat, lng, country')
         .eq('country', selectedCountry)
         .ilike('name', `%${search}%`)
         .limit(10);
@@ -56,16 +49,7 @@ export default function CitySearch({ onCitySelect, selectedCountry, disabled = f
 
       if (data) {
         console.log('Cities loaded:', data);
-        // Ensure we have valid city data
-        const validCities = data.filter((city): city is City => 
-          city && 
-          typeof city.id === 'string' && 
-          typeof city.name === 'string' && 
-          typeof city.lat === 'number' && 
-          typeof city.lng === 'number' &&
-          typeof city.country === 'string'
-        );
-        setCities(validCities);
+        setCities(data as City[]);
       } else {
         setCities([]);
       }
