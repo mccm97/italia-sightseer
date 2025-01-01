@@ -38,6 +38,7 @@ export default function CitySearch({ onCitySelect, selectedCountry, disabled = f
         .select('id, name, lat, lng, country')
         .eq('country', selectedCountry)
         .ilike('name', `%${search}%`)
+        .order('name')
         .limit(10);
       
       if (supabaseError) {

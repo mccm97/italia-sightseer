@@ -4,7 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Button } from '@/components/ui/button';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from "@/integrations/supabase/client";
 
 interface CountrySelectProps {
   onCountrySelect: (country: string | null) => void;
@@ -30,7 +30,8 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
       const { data, error: supabaseError } = await supabase
         .from('cities')
         .select('country')
-        .not('country', 'is', null);
+        .not('country', 'is', null)
+        .order('country');
 
       if (supabaseError) {
         console.error('Error loading countries:', supabaseError);
@@ -43,7 +44,7 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
         // Get unique countries and ensure they are strings
         const uniqueCountries = Array.from(new Set(data.map(item => item.country || ''))).filter(Boolean);
         console.log('Countries loaded:', uniqueCountries);
-        setCountries(uniqueCountries);
+        setCountries(uniqueCountries.sort());
       } else {
         setCountries([]);
       }
@@ -56,9 +57,9 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
     }
   };
 
-  const handleSelect = (country: string) => {
-    setValue(country);
-    onCountrySelect(country);
+  const handleSelect = (currentValue: string) => {
+    setValue(currentValue);
+    onCountrySelect(currentValue);
     setOpen(false);
   };
 
@@ -81,7 +82,11 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
           {error ? (
             <CommandEmpty className="text-red-500">{error}</CommandEmpty>
           ) : isLoading ? (
-            <CommandEmpty>Caricamento...</CommandEmpty>
+            <CommandEmpty>
+              <div className="flex items-center justify-center py-2">
+                Caricamento...
+              </div>
+            </CommandEmpty>
           ) : countries.length === 0 ? (
             <CommandEmpty>Nessuna nazione trovata.</CommandEmpty>
           ) : (
@@ -91,6 +96,7 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
                   key={country}
                   value={country}
                   onSelect={() => handleSelect(country)}
+                  className="cursor-pointer"
                 >
                   <Check
                     className={cn(
