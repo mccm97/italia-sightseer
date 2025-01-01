@@ -26,6 +26,7 @@ export default function CitySearch({ onCitySelect, selectedCountry, disabled = f
   const [cities, setCities] = useState<City[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const loadCities = async (searchTerm: string) => {
     if (!searchTerm || !selectedCountry) {
@@ -41,7 +42,7 @@ export default function CitySearch({ onCitySelect, selectedCountry, disabled = f
       
       const { data, error: supabaseError } = await supabase
         .from('cities')
-        .select('*')
+        .select('id, name, lat, lng, country')
         .eq('country', selectedCountry)
         .ilike('name', `%${searchTerm}%`)
         .limit(5);
@@ -92,7 +93,9 @@ export default function CitySearch({ onCitySelect, selectedCountry, disabled = f
         <Command>
           <CommandInput 
             placeholder="Cerca città..." 
+            value={searchQuery}
             onValueChange={(search) => {
+              setSearchQuery(search);
               if (search.trim()) {
                 loadCities(search.trim());
               } else {

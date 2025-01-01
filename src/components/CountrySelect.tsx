@@ -16,6 +16,7 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
   const [countries, setCountries] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     loadCountries();
@@ -40,10 +41,13 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
       }
     
       if (data) {
-        // Get unique countries
         const uniqueCountries = [...new Set(data.map(item => item.country))];
         console.log('Countries loaded:', uniqueCountries);
-        setCountries(uniqueCountries.filter((country): country is string => country != null));
+        setCountries(uniqueCountries.filter((country): country is string => 
+          country != null && typeof country === 'string'
+        ));
+      } else {
+        setCountries([]);
       }
     } catch (error) {
       console.error('Error in loadCountries:', error);
@@ -52,6 +56,12 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
       setIsLoading(false);
     }
   };
+
+  const filteredCountries = searchQuery
+    ? countries.filter(country =>
+        country.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : countries;
 
   const handleSelect = (country: string) => {
     setValue(country);
@@ -74,16 +84,20 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">
         <Command>
-          <CommandInput placeholder="Cerca nazione..." />
+          <CommandInput 
+            placeholder="Cerca nazione..." 
+            value={searchQuery}
+            onValueChange={setSearchQuery}
+          />
           {error ? (
             <CommandEmpty className="text-red-500">{error}</CommandEmpty>
           ) : isLoading ? (
             <CommandEmpty>Caricamento...</CommandEmpty>
-          ) : countries.length === 0 ? (
+          ) : filteredCountries.length === 0 ? (
             <CommandEmpty>Nessuna nazione trovata.</CommandEmpty>
           ) : (
             <CommandGroup>
-              {countries.map((country) => (
+              {filteredCountries.map((country) => (
                 <CommandItem
                   key={country}
                   value={country}
