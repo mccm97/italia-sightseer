@@ -1,8 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Input } from '@/components/ui/input';
+import React, { useState } from 'react';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
-import { City } from '@/types/route';
+
+interface City {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  country: string;
+}
 
 interface CitySearchProps {
   onCitySelect: (city: City | null) => void;
@@ -10,26 +20,15 @@ interface CitySearchProps {
   disabled?: boolean;
 }
 
-export default function CitySearch({
-  onCitySelect,
-  selectedCountry,
-  disabled = false
-}: CitySearchProps) {
-  const [searchTerm, setSearchTerm] = useState<string>('');
+export default function CitySearch({ onCitySelect, selectedCountry, disabled = false }: CitySearchProps) {
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState<string>('');
   const [cities, setCities] = useState<City[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (searchTerm.trim()) {
-      loadCities(searchTerm.trim());
-    } else {
-      setCities([]);
-    }
-  }, [searchTerm, selectedCountry]);
-
-  const loadCities = async (search: string) => {
-    if (!search || !selectedCountry) {
+  const loadCities = async (searchTerm: string) => {
+    if (!searchTerm || !selectedCountry) {
       setCities([]);
       setError(null);
       return;
@@ -38,23 +37,28 @@ export default function CitySearch({
     try {
       setIsLoading(true);
       setError(null);
-
+      console.log('Loading cities for search term:', searchTerm, 'in country:', selectedCountry);
+      
       const { data, error: supabaseError } = await supabase
         .from('cities')
-        .select('id, name, lat, lng, country')
+        .select('*')
         .eq('country', selectedCountry)
-        .ilike('name', `%${search}%`)
-        .order('name')
-        .limit(10);
-
+        .ilike('name', `%${searchTerm}%`)
+        .limit(5);
+      
       if (supabaseError) {
         console.error('Error loading cities:', supabaseError);
         setError('Errore nel caricamento delle città');
         setCities([]);
         return;
       }
-
-      setCities(data || []);
+    
+      if (data) {
+        console.log('Cities loaded:', data);
+        setCities(data);
+      } else {
+        setCities([]);
+      }
     } catch (error) {
       console.error('Error in loadCities:', error);
       setError('Errore nel caricamento delle città');
@@ -64,36 +68,69 @@ export default function CitySearch({
     }
   };
 
+  const handleSelect = (city: City) => {
+    setValue(city.name);
+    onCitySelect(city);
+    setOpen(false);
+  };
+
   return (
-    <div>
-      <Input
-        type="text"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        placeholder="Cerca città..."
-        className="w-full"
-        disabled={isLoading || !selectedCountry || disabled}
-      />
-      {error && <span className="text-red-500">{error}</span>}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-2">
-          Caricamento...
-        </div>
-      ) : (
-        <ul>
-          {cities.map((city) => (
-            <li key={city.id}>
-              <Button
-                variant="outline"
-                className="w-full text-left"
-                onClick={() => onCitySelect(city)}
-              >
-                {city.name}
-              </Button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between"
+          disabled={disabled}
+        >
+          {value || "Seleziona città..."}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-full p-0">
+        <Command>
+          <CommandInput 
+            placeholder="Cerca città..." 
+            onValueChange={(search) => {
+              if (search.trim()) {
+                loadCities(search.trim());
+              } else {
+                setCities([]);
+                setError(null);
+              }
+            }}
+            disabled={isLoading}
+          />
+          {!selectedCountry ? (
+            <CommandEmpty>Seleziona prima una nazione</CommandEmpty>
+          ) : error ? (
+            <CommandEmpty className="text-red-500">{error}</CommandEmpty>
+          ) : isLoading ? (
+            <CommandEmpty>Caricamento...</CommandEmpty>
+          ) : cities.length === 0 ? (
+            <CommandEmpty>Nessuna città trovata.</CommandEmpty>
+          ) : (
+            <CommandGroup>
+              {cities.map((city) => (
+                <CommandItem
+                  key={city.id}
+                  value={city.name}
+                  onSelect={() => handleSelect(city)}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === city.name ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {city.name}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }

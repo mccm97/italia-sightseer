@@ -1,14 +1,11 @@
-import React, { useState } from 'react';
-import { MapContainer, TileLayer, useMap } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import * as L from 'leaflet';
-import 'leaflet-control-geocoder';
+import React from 'react';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { UseFormReturn } from 'react-hook-form';
 import { CreateRouteFormData } from '@/types/route';
 import { AttractionInput } from '../AttractionInput';
+import CountrySelect from '../CountrySelect';
 import CitySearch from '../CitySearch';
 
 interface RouteFormProps {
@@ -18,67 +15,12 @@ interface RouteFormProps {
   onShowSummary: () => void;
 }
 
-interface GeocoderProps {
-  onGeocode: (result: any) => void;
-}
-
-function Geocoder({ onGeocode }: GeocoderProps) {
-  const map = useMap();
-
-  React.useEffect(() => {
-    // @ts-ignore - Types are not properly defined for leaflet-control-geocoder
-    const geocoder = L.Control.Geocoder.nominatim();
-    // @ts-ignore
-    const control = new L.Control.Geocoder({
-      defaultMarkGeocode: false,
-      query: '',
-      placeholder: 'Search for a place...',
-      geocoder,
-    }).on('markgeocode', function(e: any) {
-      const bbox = e.geocode.bbox;
-      const poly = L.polygon([
-        bbox.getSouthEast(),
-        bbox.getNorthEast(),
-        bbox.getNorthWest(),
-        bbox.getSouthWest(),
-      ]);
-      map.fitBounds(poly.getBounds());
-      onGeocode(e.geocode);
-    }).addTo(map);
-
-    return () => {
-      control.remove();
-    };
-  }, [map, onGeocode]);
-
-  return null;
-}
-
 export function RouteForm({ form, selectedCountry, setSelectedCountry, onShowSummary }: RouteFormProps) {
-  const [position, setPosition] = useState<[number, number] | null>(null);
-
-  const handleCountrySelect = (country: string | null) => {
-    setSelectedCountry(country);
-    form.setValue('country', country);
-    form.setValue('city', null);
-  };
-
-  const handleGeocode = (geocode: any) => {
-    setPosition([geocode.center.lat, geocode.center.lng]);
-  };
-
   const isFormValid = () => {
     const values = form.getValues();
-    return (
-      values.name &&
-      values.country &&
-      values.city &&
-      values.attractions?.every(
-        (attraction) =>
-          (attraction.inputType === 'name' && attraction.name) ||
-          (attraction.inputType === 'address' && attraction.address)
-      )
-    );
+    return values.city && 
+           values.name && 
+           values.attractions.every(a => (a.name || a.address) && a.visitDuration > 0);
   };
 
   return (
@@ -91,9 +33,12 @@ export function RouteForm({ form, selectedCountry, setSelectedCountry, onShowSum
             <FormItem>
               <FormLabel>Nazione</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="Search for a country"
-                  onChange={(e) => handleCountrySelect(e.target.value)}
+                <CountrySelect 
+                  onCountrySelect={(country) => {
+                    field.onChange(country);
+                    setSelectedCountry(country);
+                    form.setValue('city', null);
+                  }} 
                 />
               </FormControl>
             </FormItem>
@@ -107,8 +52,8 @@ export function RouteForm({ form, selectedCountry, setSelectedCountry, onShowSum
             <FormItem>
               <FormLabel>Città</FormLabel>
               <FormControl>
-                <CitySearch
-                  onCitySelect={(city) => field.onChange(city)}
+                <CitySearch 
+                  onCitySelect={(city) => field.onChange(city)} 
                   selectedCountry={selectedCountry}
                   disabled={!selectedCountry}
                 />
@@ -116,7 +61,7 @@ export function RouteForm({ form, selectedCountry, setSelectedCountry, onShowSum
             </FormItem>
           )}
         />
-
+        
         <FormField
           control={form.control}
           name="name"
@@ -137,12 +82,12 @@ export function RouteForm({ form, selectedCountry, setSelectedCountry, onShowSum
             <FormItem>
               <FormLabel>Numero di Attrazioni</FormLabel>
               <FormControl>
-                <Input
-                  type="number"
+                <Input 
+                  type="number" 
                   min="1"
                   placeholder="Inserisci il numero di attrazioni"
                   {...field}
-                  onChange={(e) => field.onChange(parseInt(e.target.value))}
+                  onChange={e => field.onChange(parseInt(e.target.value))}
                 />
               </FormControl>
             </FormItem>
@@ -150,26 +95,22 @@ export function RouteForm({ form, selectedCountry, setSelectedCountry, onShowSum
         />
 
         {form.watch('attractions')?.map((_, index) => (
-          <AttractionInput key={index} index={index} form={form} />
+          <AttractionInput
+            key={index}
+            index={index}
+            form={form}
+          />
         ))}
 
         <div className="flex justify-end">
-          <Button type="button" onClick={onShowSummary} disabled={!isFormValid()}>
+          <Button 
+            type="button" 
+            onClick={onShowSummary}
+            disabled={!isFormValid()}
+          >
             Continua
           </Button>
         </div>
-
-        <MapContainer
-          center={[51.505, -0.09]}
-          zoom={13}
-          style={{ height: '400px', width: '100%' }}
-        >
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          />
-          <Geocoder onGeocode={handleGeocode} />
-        </MapContainer>
       </form>
     </Form>
   );

@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from "@/integrations/supabase/client";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CountrySelectProps {
   onCountrySelect: (country: string | null) => void;
 }
 
 export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
-  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState<string>('');
   const [countries, setCountries] = useState<string[]>([]);
-  const [filteredCountries, setFilteredCountries] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,88 +21,87 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
     loadCountries();
   }, []);
 
-  useEffect(() => {
-    filterCountries();
-  }, [searchTerm, countries]);
-
   const loadCountries = async () => {
     try {
       setIsLoading(true);
       setError(null);
-
+      console.log('Loading countries...');
+      
       const { data, error: supabaseError } = await supabase
         .from('cities')
         .select('country')
-        .not('country', 'is', null)
-        .not('country', 'eq', '')
-        .order('country');
+        .not('country', 'is', null);
 
       if (supabaseError) {
+        console.error('Error loading countries:', supabaseError);
         setError('Errore nel caricamento delle nazioni');
         setCountries([]);
         return;
       }
-
-      if (data && Array.isArray(data)) {
-        const uniqueCountries = Array.from(
-          new Set(
-            data
-              .map(item => item.country)
-              .filter((country): country is string => typeof country === 'string' && country.trim().length > 0)
-          )
-        ).sort();
-        setCountries(uniqueCountries);
-      } else {
-        setCountries([]);
+    
+      if (data) {
+        // Get unique countries
+        const uniqueCountries = [...new Set(data.map(item => item.country))];
+        console.log('Countries loaded:', uniqueCountries);
+        setCountries(uniqueCountries.filter((country): country is string => country != null));
       }
     } catch (error) {
+      console.error('Error in loadCountries:', error);
       setError('Errore nel caricamento delle nazioni');
-      setCountries([]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const filterCountries = () => {
-    const filtered = countries.filter(country =>
-      country.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredCountries(filtered);
-  };
-
-  const handleCountrySelect = (country: string | null) => {
+  const handleSelect = (country: string) => {
+    setValue(country);
     onCountrySelect(country);
+    setOpen(false);
   };
 
   return (
-    <div>
-      <Input
-        type="text"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        placeholder="Cerca nazione..."
-        className="w-full"
-      />
-      {error && <span className="text-red-500">{error}</span>}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-2">
-          Caricamento...
-        </div>
-      ) : (
-        <ul>
-          {filteredCountries.map((country) => (
-            <li key={country}>
-              <Button
-                variant="outline"
-                className="w-full text-left"
-                onClick={() => handleCountrySelect(country)}
-              >
-                {country}
-              </Button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between"
+        >
+          {value || "Seleziona nazione..."}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-full p-0">
+        <Command>
+          <CommandInput placeholder="Cerca nazione..." />
+          {error ? (
+            <CommandEmpty className="text-red-500">{error}</CommandEmpty>
+          ) : isLoading ? (
+            <CommandEmpty>Caricamento...</CommandEmpty>
+          ) : countries.length === 0 ? (
+            <CommandEmpty>Nessuna nazione trovata.</CommandEmpty>
+          ) : (
+            <CommandGroup>
+              {countries.map((country) => (
+                <CommandItem
+                  key={country}
+                  value={country}
+                  onSelect={() => handleSelect(country)}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === country ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {country}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }

@@ -42,6 +42,7 @@ export type Database = {
       cities: {
         Row: {
           country: string | null
+          created_at: string
           id: string
           lat: number
           lng: number
@@ -49,6 +50,7 @@ export type Database = {
         }
         Insert: {
           country?: string | null
+          created_at?: string
           id?: string
           lat: number
           lng: number
@@ -56,6 +58,7 @@ export type Database = {
         }
         Update: {
           country?: string | null
+          created_at?: string
           id?: string
           lat?: number
           lng?: number
@@ -132,7 +135,6 @@ export type Database = {
       routes: {
         Row: {
           city_id: string
-          country: string | null
           created_at: string
           id: string
           is_public: boolean | null
@@ -144,7 +146,6 @@ export type Database = {
         }
         Insert: {
           city_id: string
-          country?: string | null
           created_at?: string
           id?: string
           is_public?: boolean | null
@@ -156,7 +157,6 @@ export type Database = {
         }
         Update: {
           city_id?: string
-          country?: string | null
           created_at?: string
           id?: string
           is_public?: boolean | null

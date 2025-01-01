@@ -9,10 +9,14 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { CreateRouteDialog } from '@/components/CreateRouteDialog';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { RoutePreview } from '@/components/RoutePreview';
-import { City } from '@/types/route';
 
 const Index = () => {
-  const [selectedCity, setSelectedCity] = useState<City | null>(null);
+  const [selectedCity, setSelectedCity] = useState<{
+    name: string;
+    lat: number;
+    lng: number;
+  } | null>(null);
+
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
   const [showRoutePreview, setShowRoutePreview] = useState(false);
 
@@ -138,8 +142,12 @@ const Index = () => {
             <RoutePreview
               formData={{
                 name: selectedRoute.name,
-                country: selectedCity?.country || null,
-                city: selectedCity,
+                country: selectedRoute.cityName,
+                city: { 
+                  name: selectedRoute.cityName, 
+                  lat: selectedRoute.attractions[0].position[0], 
+                  lng: selectedRoute.attractions[0].position[1] 
+                },
                 attractions: selectedRoute.attractions.map(attr => ({
                   name: attr.name,
                   address: '',
