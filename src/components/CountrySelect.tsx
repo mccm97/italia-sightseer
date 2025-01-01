@@ -14,7 +14,7 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState<string>('');
   const [countries, setCountries] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -36,22 +36,31 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
       if (supabaseError) {
         console.error('Error loading countries:', supabaseError);
         setError('Errore nel caricamento delle nazioni');
+        return;
+      }
+
+      if (!data) {
+        console.log('No data returned from countries query');
         setCountries([]);
         return;
       }
-    
-      if (data) {
-        // Get unique countries and ensure they are strings
-        const uniqueCountries = Array.from(new Set(data.map(item => item.country || ''))).filter(Boolean);
-        console.log('Countries loaded:', uniqueCountries);
-        setCountries(uniqueCountries.sort());
-      } else {
-        setCountries([]);
-      }
+
+      // Get unique countries, filter out null/empty values, and sort
+      const uniqueCountries = Array.from(
+        new Set(
+          data
+            .map(item => item.country?.trim())
+            .filter((country): country is string => 
+              typeof country === 'string' && country.length > 0
+            )
+        )
+      ).sort();
+
+      console.log('Countries loaded:', uniqueCountries);
+      setCountries(uniqueCountries);
     } catch (error) {
       console.error('Error in loadCountries:', error);
       setError('Errore nel caricamento delle nazioni');
-      setCountries([]);
     } finally {
       setIsLoading(false);
     }
@@ -79,17 +88,18 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
       <PopoverContent className="w-full p-0">
         <Command>
           <CommandInput placeholder="Cerca nazione..." />
-          {error ? (
-            <CommandEmpty className="text-red-500">{error}</CommandEmpty>
-          ) : isLoading ? (
-            <CommandEmpty>
+          <CommandEmpty>
+            {error ? (
+              <span className="text-red-500">{error}</span>
+            ) : isLoading ? (
               <div className="flex items-center justify-center py-2">
                 Caricamento...
               </div>
-            </CommandEmpty>
-          ) : countries.length === 0 ? (
-            <CommandEmpty>Nessuna nazione trovata.</CommandEmpty>
-          ) : (
+            ) : (
+              "Nessuna nazione trovata."
+            )}
+          </CommandEmpty>
+          {!isLoading && !error && countries.length > 0 && (
             <CommandGroup>
               {countries.map((country) => (
                 <CommandItem

@@ -44,20 +44,29 @@ export default function CitySearch({ onCitySelect, selectedCountry, disabled = f
       if (supabaseError) {
         console.error('Error loading cities:', supabaseError);
         setError('Errore nel caricamento delle città');
+        return;
+      }
+
+      if (!data) {
+        console.log('No data returned from cities query');
         setCities([]);
         return;
       }
 
-      if (data) {
-        console.log('Cities loaded:', data);
-        setCities(data as City[]);
-      } else {
-        setCities([]);
-      }
+      // Filter out any invalid city data
+      const validCities = data.filter((city): city is City => 
+        typeof city.id === 'string' &&
+        typeof city.name === 'string' &&
+        typeof city.lat === 'number' &&
+        typeof city.lng === 'number' &&
+        typeof city.country === 'string'
+      );
+
+      console.log('Cities loaded:', validCities);
+      setCities(validCities);
     } catch (error) {
       console.error('Error in loadCities:', error);
       setError('Errore nel caricamento delle città');
-      setCities([]);
     } finally {
       setIsLoading(false);
     }
@@ -103,23 +112,23 @@ export default function CitySearch({ onCitySelect, selectedCountry, disabled = f
             value={searchTerm}
             onValueChange={handleSearchChange}
             disabled={isLoading || !selectedCountry}
-            className="border-none focus:ring-0"
           />
-          {!selectedCountry ? (
-            <CommandEmpty>Seleziona prima una nazione</CommandEmpty>
-          ) : error ? (
-            <CommandEmpty className="text-red-500">{error}</CommandEmpty>
-          ) : isLoading ? (
-            <CommandEmpty>
+          <CommandEmpty>
+            {!selectedCountry ? (
+              "Seleziona prima una nazione"
+            ) : error ? (
+              <span className="text-red-500">{error}</span>
+            ) : isLoading ? (
               <div className="flex items-center justify-center py-2">
                 Caricamento...
               </div>
-            </CommandEmpty>
-          ) : cities.length === 0 ? (
-            <CommandEmpty>
-              {searchTerm ? "Nessuna città trovata." : "Inizia a digitare per cercare..."}
-            </CommandEmpty>
-          ) : (
+            ) : searchTerm ? (
+              "Nessuna città trovata."
+            ) : (
+              "Inizia a digitare per cercare..."
+            )}
+          </CommandEmpty>
+          {!isLoading && !error && cities.length > 0 && (
             <CommandGroup>
               {cities.map((city) => (
                 <CommandItem
