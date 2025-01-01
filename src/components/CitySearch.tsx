@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
-import { italianCities } from '../data/italianCities';
 import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
 
 interface CitySearchProps {
+  cities: { name: string; lat: number; lng: number }[];
   onCitySelect: (city: { name: string; lat: number; lng: number }) => void;
 }
 
-const CitySearch = ({ onCitySelect }: CitySearchProps) => {
+const CitySearch = ({ cities, onCitySelect }: CitySearchProps) => {
   const [search, setSearch] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  const filteredCities = italianCities.filter(city =>
+  const filteredCities = cities.filter(city =>
     city.name.toLowerCase().includes(search.toLowerCase())
   );
 
