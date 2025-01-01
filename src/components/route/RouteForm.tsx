@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import 'leaflet-control-geocoder/dist/Control.Geocoder.css';
-import 'leaflet-control-geocoder/dist/Control.Geocoder.js';
+import * as L from 'leaflet';
+import 'leaflet-control-geocoder';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -19,29 +19,33 @@ interface RouteFormProps {
   onShowSummary: () => void;
 }
 
-function Geocoder({ onGeocode }) {
+interface GeocoderProps {
+  onGeocode: (result: any) => void;
+}
+
+function Geocoder({ onGeocode }: GeocoderProps) {
   const map = useMap();
 
   React.useEffect(() => {
+    // @ts-ignore - Types are not properly defined for leaflet-control-geocoder
     const geocoder = L.Control.Geocoder.nominatim();
-    const control = L.Control.geocoder({
+    // @ts-ignore
+    const control = L.Control.Geocoder.create({
       query: '',
       placeholder: 'Search for a place...',
       geocoder,
       collapsed: false,
-    })
-      .on('markgeocode', function (e) {
-        const bbox = e.geocode.bbox;
-        const poly = L.polygon([
-          bbox.getSouthEast(),
-          bbox.getNorthEast(),
-          bbox.getNorthWest(),
-          bbox.getSouthWest(),
-        ]);
-        map.fitBounds(poly.getBounds());
-        onGeocode(e.geocode);
-      })
-      .addTo(map);
+    }).on('markgeocode', function(e: any) {
+      const bbox = e.geocode.bbox;
+      const poly = L.polygon([
+        bbox.getSouthEast(),
+        bbox.getNorthEast(),
+        bbox.getNorthWest(),
+        bbox.getSouthWest(),
+      ]);
+      map.fitBounds(poly.getBounds());
+      onGeocode(e.geocode);
+    }).addTo(map);
 
     return () => {
       control.remove();
@@ -60,8 +64,22 @@ export function RouteForm({ form, selectedCountry, setSelectedCountry, onShowSum
     form.setValue('city', null);
   };
 
-  const handleGeocode = (geocode) => {
+  const handleGeocode = (geocode: any) => {
     setPosition([geocode.center.lat, geocode.center.lng]);
+  };
+
+  const isFormValid = () => {
+    const values = form.getValues();
+    return (
+      values.name &&
+      values.country &&
+      values.city &&
+      values.attractions?.every(
+        (attraction) =>
+          (attraction.inputType === 'name' && attraction.name) ||
+          (attraction.inputType === 'address' && attraction.address)
+      )
+    );
   };
 
   return (
