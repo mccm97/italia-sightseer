@@ -7,7 +7,7 @@ interface CitySearchProps {
   onCitySelect: (city: { name: string; lat: number; lng: number }) => void;
 }
 
-const CitySearch = ({ cities, onCitySelect }: CitySearchProps) => {
+const CitySearch = ({ cities = [], onCitySelect }: CitySearchProps) => {
   const [search, setSearch] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
 
