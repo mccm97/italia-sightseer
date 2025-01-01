@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { CountrySelector } from './route/CountrySelector';
 import { CitySelector } from './route/CitySelector';
 import { FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 
 export function CreateRouteDialog() {
   const [open, setOpen] = useState(false);
