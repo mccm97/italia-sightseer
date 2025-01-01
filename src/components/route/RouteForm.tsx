@@ -30,7 +30,6 @@ export function RouteForm({ form, selectedCountry, setSelectedCountry, onShowSum
     setSelectedCountry(country);
     form.setValue('country', country);
     form.setValue('city', null);
-    navigate('/route'); // Naviga alla pagina di creazione del percorso
   };
 
   return (
