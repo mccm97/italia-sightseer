@@ -19,8 +19,6 @@ const CitySearch = ({ cities = [], onCitySelect }: CitySearchProps) => {
   const [search, setSearch] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  console.log('Cities received:', cities); // Debug log
-
   const filteredCities = cities?.filter(city =>
     city.name.toLowerCase().includes(search.toLowerCase())
   ) || [];
