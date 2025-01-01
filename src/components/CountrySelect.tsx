@@ -25,31 +25,40 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
     try {
       setIsLoading(true);
       setError(null);
+      console.log('Loading countries...');
       
       const { data, error: supabaseError } = await supabase
         .from('cities')
         .select('country')
         .not('country', 'is', null)
+        .not('country', 'eq', '')
         .order('country');
 
       if (supabaseError) {
+        console.error('Error loading countries:', supabaseError);
         setError('Errore nel caricamento delle nazioni');
         setCountries([]);
         return;
       }
 
-      if (data && Array.isArray(data)) {
-        const uniqueCountries = Array.from(
-          new Set(
-            data
-              .map(item => item.country)
-              .filter((country): country is string => country !== null && country !== '')
-          )
-        ).sort();
-        setCountries(uniqueCountries);
-      } else {
+      if (!data || data.length === 0) {
+        console.log('No countries found in database');
         setCountries([]);
+        return;
       }
+
+      // Ensure we have an array of valid country strings
+      const validCountries = data
+        .map(item => item.country)
+        .filter((country): country is string => 
+          typeof country === 'string' && country.trim().length > 0
+        );
+
+      // Remove duplicates and sort
+      const uniqueCountries = Array.from(new Set(validCountries)).sort();
+      
+      console.log(`Loaded ${uniqueCountries.length} unique countries`);
+      setCountries(uniqueCountries);
     } catch (error) {
       console.error('Error in loadCountries:', error);
       setError('Errore nel caricamento delle nazioni');
@@ -73,7 +82,7 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">
-        <Command shouldFilter={false}>
+        <Command>
           <CommandInput placeholder="Cerca nazione..." />
           <CommandEmpty>
             {error ? (
