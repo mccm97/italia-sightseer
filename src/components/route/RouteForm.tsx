@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -16,11 +17,20 @@ interface RouteFormProps {
 }
 
 export function RouteForm({ form, selectedCountry, setSelectedCountry, onShowSummary }: RouteFormProps) {
+  const navigate = useNavigate();
+
   const isFormValid = () => {
     const values = form.getValues();
     return values.city && 
            values.name && 
            values.attractions.every(a => (a.name || a.address) && a.visitDuration > 0);
+  };
+
+  const handleCountrySelect = (country: string | null) => {
+    setSelectedCountry(country);
+    form.setValue('country', country);
+    form.setValue('city', null);
+    navigate('/route'); // Naviga alla pagina di creazione del percorso
   };
 
   return (
@@ -34,11 +44,7 @@ export function RouteForm({ form, selectedCountry, setSelectedCountry, onShowSum
               <FormLabel>Nazione</FormLabel>
               <FormControl>
                 <CountrySelect 
-                  onCountrySelect={(country) => {
-                    field.onChange(country);
-                    setSelectedCountry(country);
-                    form.setValue('city', null);
-                  }} 
+                  onCountrySelect={handleCountrySelect} 
                 />
               </FormControl>
             </FormItem>
