@@ -2,11 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
+import { Input, Select, SelectItem } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { Plus } from 'lucide-react';
-import CitySearch from './CitySearch';
-import CountrySelect from './CountrySelect';
 import { AttractionInput } from './AttractionInput';
 import { CreateRouteFormData } from '@/types/route';
 import { RoutePreview } from './RoutePreview';
@@ -169,13 +167,20 @@ export function CreateRouteDialog() {
                   <FormItem>
                     <FormLabel>Paese</FormLabel>
                     <FormControl>
-                      <CountrySelect
-                        countries={countries}
-                        onCountrySelect={(country) => {
-                          setSelectedCountry(country);
-                          field.onChange(country);
+                      <Select
+                        placeholder="Seleziona un paese"
+                        value={selectedCountry}
+                        onChange={(e) => {
+                          setSelectedCountry(e.target.value);
+                          field.onChange(e.target.value);
                         }}
-                      />
+                      >
+                        {countries.map((country, index) => (
+                          <SelectItem key={index} value={country}>
+                            {country}
+                          </SelectItem>
+                        ))}
+                      </Select>
                     </FormControl>
                   </FormItem>
                 )}
@@ -188,10 +193,20 @@ export function CreateRouteDialog() {
                   <FormItem>
                     <FormLabel>Città</FormLabel>
                     <FormControl>
-                      <CitySearch 
-                        cities={filteredCities} 
-                        onCitySelect={(city) => field.onChange(city)} 
-                      />
+                      <Select
+                        placeholder="Seleziona una città"
+                        value={field.value?.name || ''}
+                        onChange={(e) => {
+                          const selectedCity = filteredCities.find(city => city.name === e.target.value);
+                          field.onChange(selectedCity);
+                        }}
+                      >
+                        {filteredCities.map((city, index) => (
+                          <SelectItem key={index} value={city.name}>
+                            {city.name}
+                          </SelectItem>
+                        ))}
+                      </Select>
                     </FormControl>
                   </FormItem>
                 )}
