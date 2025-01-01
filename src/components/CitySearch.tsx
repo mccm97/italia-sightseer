@@ -26,9 +26,10 @@ export default function CitySearch({ onCitySelect, selectedCountry, disabled = f
   const [cities, setCities] = useState<City[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const loadCities = async (searchTerm: string) => {
-    if (!searchTerm || !selectedCountry) {
+  const loadCities = async (search: string) => {
+    if (!search || !selectedCountry) {
       setCities([]);
       setError(null);
       return;
@@ -37,14 +38,14 @@ export default function CitySearch({ onCitySelect, selectedCountry, disabled = f
     try {
       setIsLoading(true);
       setError(null);
-      console.log('Loading cities for search term:', searchTerm, 'in country:', selectedCountry);
+      console.log('Loading cities for search term:', search, 'in country:', selectedCountry);
       
       const { data, error: supabaseError } = await supabase
         .from('cities')
         .select('*')
         .eq('country', selectedCountry)
-        .ilike('name', `%${searchTerm}%`)
-        .limit(5);
+        .ilike('name', `%${search}%`)
+        .limit(10);
       
       if (supabaseError) {
         console.error('Error loading cities:', supabaseError);
@@ -52,10 +53,19 @@ export default function CitySearch({ onCitySelect, selectedCountry, disabled = f
         setCities([]);
         return;
       }
-    
+
       if (data) {
         console.log('Cities loaded:', data);
-        setCities(data as City[]);
+        // Ensure we have valid city data
+        const validCities = data.filter((city): city is City => 
+          city && 
+          typeof city.id === 'string' && 
+          typeof city.name === 'string' && 
+          typeof city.lat === 'number' && 
+          typeof city.lng === 'number' &&
+          typeof city.country === 'string'
+        );
+        setCities(validCities);
       } else {
         setCities([]);
       }
@@ -74,6 +84,16 @@ export default function CitySearch({ onCitySelect, selectedCountry, disabled = f
     setOpen(false);
   };
 
+  const handleSearchChange = (search: string) => {
+    setSearchTerm(search);
+    if (search.trim()) {
+      loadCities(search.trim());
+    } else {
+      setCities([]);
+      setError(null);
+    }
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -81,7 +101,10 @@ export default function CitySearch({ onCitySelect, selectedCountry, disabled = f
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between"
+          className={cn(
+            "w-full justify-between",
+            disabled && "opacity-50 cursor-not-allowed"
+          )}
           disabled={disabled}
         >
           {value || "Seleziona città..."}
@@ -92,24 +115,25 @@ export default function CitySearch({ onCitySelect, selectedCountry, disabled = f
         <Command>
           <CommandInput 
             placeholder="Cerca città..." 
-            onValueChange={(search) => {
-              if (search.trim()) {
-                loadCities(search.trim());
-              } else {
-                setCities([]);
-                setError(null);
-              }
-            }}
-            disabled={isLoading}
+            value={searchTerm}
+            onValueChange={handleSearchChange}
+            disabled={isLoading || !selectedCountry}
+            className="border-none focus:ring-0"
           />
           {!selectedCountry ? (
             <CommandEmpty>Seleziona prima una nazione</CommandEmpty>
           ) : error ? (
             <CommandEmpty className="text-red-500">{error}</CommandEmpty>
           ) : isLoading ? (
-            <CommandEmpty>Caricamento...</CommandEmpty>
+            <CommandEmpty>
+              <div className="flex items-center justify-center py-2">
+                Caricamento...
+              </div>
+            </CommandEmpty>
           ) : cities.length === 0 ? (
-            <CommandEmpty>Nessuna città trovata.</CommandEmpty>
+            <CommandEmpty>
+              {searchTerm ? "Nessuna città trovata." : "Inizia a digitare per cercare..."}
+            </CommandEmpty>
           ) : (
             <CommandGroup>
               {cities.map((city) => (
@@ -117,6 +141,7 @@ export default function CitySearch({ onCitySelect, selectedCountry, disabled = f
                   key={city.id}
                   value={city.name}
                   onSelect={() => handleSelect(city)}
+                  className="cursor-pointer"
                 >
                   <Check
                     className={cn(
