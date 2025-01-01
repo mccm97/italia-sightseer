@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,11 @@ interface CitySearchProps {
   disabled?: boolean;
 }
 
-export default function CitySearch({ onCitySelect, selectedCountry, disabled = false }: CitySearchProps) {
+export default function CitySearch({
+  onCitySelect,
+  selectedCountry,
+  disabled = false
+}: CitySearchProps) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState<string>('');
   const [cities, setCities] = useState<City[]>([]);
@@ -31,8 +35,7 @@ export default function CitySearch({ onCitySelect, selectedCountry, disabled = f
     try {
       setIsLoading(true);
       setError(null);
-      console.log('Loading cities for search term:', search, 'in country:', selectedCountry);
-      
+
       const { data, error: supabaseError } = await supabase
         .from('cities')
         .select('id, name, lat, lng, country')
@@ -40,53 +43,19 @@ export default function CitySearch({ onCitySelect, selectedCountry, disabled = f
         .ilike('name', `%${search}%`)
         .order('name')
         .limit(10);
-      
+
       if (supabaseError) {
-        console.error('Error loading cities:', supabaseError);
         setError('Errore nel caricamento delle città');
         setCities([]);
         return;
       }
 
-      if (!data || data.length === 0) {
-        console.log('No cities found');
-        setCities([]);
-        return;
-      }
-
-      // Filter out any invalid city data
-      const validCities = data.filter((city): city is City => 
-        typeof city.id === 'string' &&
-        typeof city.name === 'string' &&
-        typeof city.lat === 'number' &&
-        typeof city.lng === 'number' &&
-        typeof city.country === 'string'
-      );
-
-      console.log('Cities loaded:', validCities);
-      setCities(validCities);
+      setCities(data || []);
     } catch (error) {
-      console.error('Error in loadCities:', error);
       setError('Errore nel caricamento delle città');
       setCities([]);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleSelect = (city: City) => {
-    setValue(city.name);
-    onCitySelect(city);
-    setOpen(false);
-  };
-
-  const handleSearchChange = (search: string) => {
-    setSearchTerm(search);
-    if (search.trim()) {
-      loadCities(search.trim());
-    } else {
-      setCities([]);
-      setError(null);
     }
   };
 
@@ -108,11 +77,18 @@ export default function CitySearch({ onCitySelect, selectedCountry, disabled = f
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">
-        <Command>
-          <CommandInput 
-            placeholder="Cerca città..." 
+        <Command shouldFilter={false}>
+          <CommandInput
+            placeholder="Cerca città..."
             value={searchTerm}
-            onValueChange={handleSearchChange}
+            onValueChange={(search) => {
+              setSearchTerm(search);
+              if (search.trim()) {
+                loadCities(search.trim());
+              } else {
+                setCities([]);
+              }
+            }}
             disabled={isLoading || !selectedCountry}
           />
           <CommandEmpty>
@@ -124,20 +100,21 @@ export default function CitySearch({ onCitySelect, selectedCountry, disabled = f
               <div className="flex items-center justify-center py-2">
                 Caricamento...
               </div>
-            ) : searchTerm ? (
-              "Nessuna città trovata."
             ) : (
-              "Inizia a digitare per cercare..."
+              searchTerm ? "Nessuna città trovata." : "Inizia a digitare per cercare..."
             )}
           </CommandEmpty>
-          {!isLoading && !error && cities.length > 0 && (
+          {cities.length > 0 && (
             <CommandGroup>
               {cities.map((city) => (
                 <CommandItem
                   key={city.id}
                   value={city.name}
-                  onSelect={() => handleSelect(city)}
-                  className="cursor-pointer"
+                  onSelect={() => {
+                    setValue(city.name);
+                    onCitySelect(city);
+                    setOpen(false);
+                  }}
                 >
                   <Check
                     className={cn(
