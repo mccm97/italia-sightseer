@@ -14,7 +14,7 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState<string>('');
   const [countries, setCountries] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -25,50 +25,37 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
     try {
       setIsLoading(true);
       setError(null);
-      console.log('Loading countries...');
       
       const { data, error: supabaseError } = await supabase
         .from('cities')
         .select('country')
-        .not('country', 'is', null);
+        .not('country', 'is', null)
+        .order('country');
 
       if (supabaseError) {
-        console.error('Error loading countries:', supabaseError);
         setError('Errore nel caricamento delle nazioni');
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        console.log('No countries found');
         setCountries([]);
         return;
       }
 
-      // Get unique countries, filter out null/empty values, and sort
-      const uniqueCountries = Array.from(
-        new Set(
-          data
-            .map(item => item.country)
-            .filter((country): country is string => 
-              typeof country === 'string' && country.length > 0
-            )
-        )
-      ).sort();
-
-      console.log('Countries loaded:', uniqueCountries);
-      setCountries(uniqueCountries);
+      if (data) {
+        const uniqueCountries = Array.from(
+          new Set(
+            data
+              .map(item => item.country)
+              .filter((country): country is string => country !== null && country !== '')
+          )
+        ).sort();
+        setCountries(uniqueCountries);
+      } else {
+        setCountries([]);
+      }
     } catch (error) {
-      console.error('Error in loadCountries:', error);
       setError('Errore nel caricamento delle nazioni');
+      setCountries([]);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleSelect = (currentValue: string) => {
-    setValue(currentValue);
-    onCountrySelect(currentValue);
-    setOpen(false);
   };
 
   return (
@@ -85,7 +72,7 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">
-        <Command>
+        <Command shouldFilter={false}>
           <CommandInput placeholder="Cerca nazione..." />
           <CommandEmpty>
             {error ? (
@@ -98,14 +85,17 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
               "Nessuna nazione trovata."
             )}
           </CommandEmpty>
-          {!isLoading && !error && countries.length > 0 && (
+          {countries.length > 0 && (
             <CommandGroup>
               {countries.map((country) => (
                 <CommandItem
                   key={country}
                   value={country}
-                  onSelect={() => handleSelect(country)}
-                  className="cursor-pointer"
+                  onSelect={(currentValue) => {
+                    setValue(currentValue);
+                    onCountrySelect(currentValue);
+                    setOpen(false);
+                  }}
                 >
                   <Check
                     className={cn(
