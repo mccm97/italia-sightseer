@@ -30,17 +30,8 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
       const { data, error: supabaseError } = await supabase
         .from('cities')
         .select('country')
-        .not('country', 'is', null)
-        .order('country')
-        .then(result => {
-          if (result.data) {
-            // Get unique countries
-            const uniqueCountries = [...new Set(result.data.map(city => city.country))];
-            return { data: uniqueCountries, error: result.error };
-          }
-          return result;
-        });
-      
+        .not('country', 'is', null);
+
       if (supabaseError) {
         console.error('Error loading countries:', supabaseError);
         setError('Errore nel caricamento delle nazioni');
@@ -49,8 +40,10 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
       }
     
       if (data) {
-        console.log('Countries loaded:', data);
-        setCountries(data);
+        // Get unique countries
+        const uniqueCountries = [...new Set(data.map(item => item.country))];
+        console.log('Countries loaded:', uniqueCountries);
+        setCountries(uniqueCountries.filter((country): country is string => country != null));
       }
     } catch (error) {
       console.error('Error in loadCountries:', error);

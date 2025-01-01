@@ -24,6 +24,7 @@ export function CreateRouteDialog() {
     defaultValues: {
       name: '',
       attractionsCount: 1,
+      country: null,
       city: null,
       attractions: [{ name: '', address: '', inputType: 'name', visitDuration: 0, price: 0 }],
       transportMode: 'walking'
@@ -140,12 +141,13 @@ export function CreateRouteDialog() {
               <FormField
                 control={form.control}
                 name="country"
-                render={() => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Nazione</FormLabel>
                     <FormControl>
                       <CountrySelect 
                         onCountrySelect={(country) => {
+                          field.onChange(country);
                           setSelectedCountry(country);
                           form.setValue('city', null);
                         }} 

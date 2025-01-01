@@ -9,6 +9,7 @@ export interface Attraction {
 export interface CreateRouteFormData {
   name: string;
   attractionsCount: number;
+  country: string | null;
   city: { 
     id?: string;
     name: string; 
