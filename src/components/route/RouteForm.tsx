@@ -17,7 +17,7 @@ interface RouteFormProps {
 }
 
 export function RouteForm({ form, selectedCountry, setSelectedCountry, onShowSummary }: RouteFormProps) {
-  const navigate = useNavigate();
+  // const navigate = useNavigate(); // Rimuovere se non viene utilizzato
 
   const isFormValid = () => {
     const values = form.getValues();
