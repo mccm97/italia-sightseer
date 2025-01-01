@@ -38,7 +38,7 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
         return;
       }
 
-      if (data) {
+      if (data && Array.isArray(data)) {
         const uniqueCountries = Array.from(
           new Set(
             data
@@ -51,6 +51,7 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
         setCountries([]);
       }
     } catch (error) {
+      console.error('Error in loadCountries:', error);
       setError('Errore nel caricamento delle nazioni');
       setCountries([]);
     } finally {
