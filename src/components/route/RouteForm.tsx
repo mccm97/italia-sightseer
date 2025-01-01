@@ -30,11 +30,11 @@ function Geocoder({ onGeocode }: GeocoderProps) {
     // @ts-ignore - Types are not properly defined for leaflet-control-geocoder
     const geocoder = L.Control.Geocoder.nominatim();
     // @ts-ignore
-    const control = L.Control.Geocoder.create({
+    const control = new L.Control.Geocoder({
+      defaultMarkGeocode: false,
       query: '',
       placeholder: 'Search for a place...',
       geocoder,
-      collapsed: false,
     }).on('markgeocode', function(e: any) {
       const bbox = e.geocode.bbox;
       const poly = L.polygon([
@@ -157,7 +157,11 @@ export function RouteForm({ form, selectedCountry, setSelectedCountry, onShowSum
           </Button>
         </div>
 
-        <MapContainer center={[51.505, -0.09]} zoom={13} style={{ height: '400px', width: '100%' }}>
+        <MapContainer 
+          center={[51.505, -0.09]} 
+          zoom={13} 
+          style={{ height: '400px', width: '100%' }}
+        >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
