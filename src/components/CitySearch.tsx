@@ -11,13 +11,16 @@ interface City {
   name: string;
   lat: number;
   lng: number;
+  country: string;
 }
 
 interface CitySearchProps {
   onCitySelect: (city: City | null) => void;
+  selectedCountry?: string | null;
+  disabled?: boolean;
 }
 
-export default function CitySearch({ onCitySelect }: CitySearchProps) {
+export default function CitySearch({ onCitySelect, selectedCountry, disabled = false }: CitySearchProps) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState<string>('');
   const [cities, setCities] = useState<City[]>([]);
@@ -25,7 +28,7 @@ export default function CitySearch({ onCitySelect }: CitySearchProps) {
   const [error, setError] = useState<string | null>(null);
 
   const loadCities = async (searchTerm: string) => {
-    if (!searchTerm) {
+    if (!searchTerm || !selectedCountry) {
       setCities([]);
       setError(null);
       return;
@@ -34,11 +37,12 @@ export default function CitySearch({ onCitySelect }: CitySearchProps) {
     try {
       setIsLoading(true);
       setError(null);
-      console.log('Loading cities for search term:', searchTerm);
+      console.log('Loading cities for search term:', searchTerm, 'in country:', selectedCountry);
       
       const { data, error: supabaseError } = await supabase
         .from('cities')
         .select('*')
+        .eq('country', selectedCountry)
         .ilike('name', `%${searchTerm}%`)
         .limit(5);
       
@@ -78,6 +82,7 @@ export default function CitySearch({ onCitySelect }: CitySearchProps) {
           role="combobox"
           aria-expanded={open}
           className="w-full justify-between"
+          disabled={disabled}
         >
           {value || "Seleziona città..."}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -97,7 +102,9 @@ export default function CitySearch({ onCitySelect }: CitySearchProps) {
             }}
             disabled={isLoading}
           />
-          {error ? (
+          {!selectedCountry ? (
+            <CommandEmpty>Seleziona prima una nazione</CommandEmpty>
+          ) : error ? (
             <CommandEmpty className="text-red-500">{error}</CommandEmpty>
           ) : isLoading ? (
             <CommandEmpty>Caricamento...</CommandEmpty>

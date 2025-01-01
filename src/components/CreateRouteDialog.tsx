@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { Plus } from 'lucide-react';
 import CitySearch from './CitySearch';
+import CountrySelect from './CountrySelect';
 import { AttractionInput } from './AttractionInput';
 import { CreateRouteFormData } from '@/types/route';
 import { RoutePreview } from './RoutePreview';
@@ -16,6 +17,7 @@ export function CreateRouteDialog() {
   const [open, setOpen] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const { toast } = useToast();
   
   const form = useForm<CreateRouteFormData>({
@@ -32,6 +34,7 @@ export function CreateRouteDialog() {
     setOpen(false);
     setShowPreview(false);
     setShowSummary(false);
+    setSelectedCountry(null);
     form.reset();
   };
 
@@ -136,12 +139,34 @@ export function CreateRouteDialog() {
             <form className="space-y-4">
               <FormField
                 control={form.control}
+                name="country"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Nazione</FormLabel>
+                    <FormControl>
+                      <CountrySelect 
+                        onCountrySelect={(country) => {
+                          setSelectedCountry(country);
+                          form.setValue('city', null);
+                        }} 
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="city"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Città</FormLabel>
                     <FormControl>
-                      <CitySearch onCitySelect={(city) => field.onChange(city)} />
+                      <CitySearch 
+                        onCitySelect={(city) => field.onChange(city)} 
+                        selectedCountry={selectedCountry}
+                        disabled={!selectedCountry}
+                      />
                     </FormControl>
                   </FormItem>
                 )}
