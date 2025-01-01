@@ -12,6 +12,7 @@ export interface City {
   lat: number;
   lng: number;
   country: string;
+  created_at?: string; // Made optional since it's not used in the UI
 }
 
 export interface CreateRouteFormData {

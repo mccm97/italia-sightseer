@@ -132,6 +132,7 @@ export type Database = {
       routes: {
         Row: {
           city_id: string
+          country: string | null
           created_at: string
           id: string
           is_public: boolean | null
@@ -143,6 +144,7 @@ export type Database = {
         }
         Insert: {
           city_id: string
+          country?: string | null
           created_at?: string
           id?: string
           is_public?: boolean | null
@@ -154,6 +156,7 @@ export type Database = {
         }
         Update: {
           city_id?: string
+          country?: string | null
           created_at?: string
           id?: string
           is_public?: boolean | null

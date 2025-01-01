@@ -48,6 +48,7 @@ export default function CitySearch({
         .limit(10);
 
       if (supabaseError) {
+        console.error('Error loading cities:', supabaseError);
         setError('Errore nel caricamento delle città');
         setCities([]);
         return;
@@ -55,6 +56,7 @@ export default function CitySearch({
 
       setCities(data || []);
     } catch (error) {
+      console.error('Error in loadCities:', error);
       setError('Errore nel caricamento delle città');
       setCities([]);
     } finally {
