@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Form } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
 import { Plus } from 'lucide-react';
 import { AttractionInput } from './AttractionInput';
@@ -12,6 +10,8 @@ import { RoutePreview } from './RoutePreview';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from './ui/card';
 import { supabase } from '@/integrations/supabase/client';
+import { CountrySelector } from './route/CountrySelector';
+import { CitySelector } from './route/CitySelector';
 
 export function CreateRouteDialog() {
   const [open, setOpen] = useState(false);
@@ -26,7 +26,12 @@ export function CreateRouteDialog() {
     const fetchCities = async () => {
       const { data, error } = await supabase.from('cities').select('*');
       if (error) {
-        console.error('Errore nel recupero delle città:', error);
+        console.error('Error fetching cities:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load cities. Please try again.",
+          variant: "destructive"
+        });
       } else {
         setCities(data);
         const uniqueCountries = [...new Set(data.map(city => city.country))];
@@ -34,13 +39,14 @@ export function CreateRouteDialog() {
       }
     };
     fetchCities();
-  }, []);
+  }, [toast]);
 
   const form = useForm<CreateRouteFormData>({
     defaultValues: {
       name: '',
       attractionsCount: 1,
       city: null,
+      country: '',
       attractions: [{ name: '', address: '', inputType: 'name', visitDuration: 0, price: 0 }]
     }
   });
@@ -103,8 +109,6 @@ export function CreateRouteDialog() {
     return attractions.reduce((total, attr) => total + (attr.price || 0), 0);
   };
 
-  const filteredCities = cities.filter(city => city.country === selectedCountry);
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -161,56 +165,16 @@ export function CreateRouteDialog() {
         ) : (
           <Form {...form}>
             <form className="space-y-4">
-              <FormField
-                control={form.control}
-                name="country"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Paese</FormLabel>
-                    <FormControl>
-                      <Select
-                        placeholder="Seleziona un paese"
-                        value={selectedCountry}
-                        onChange={(e) => {
-                          setSelectedCountry(e.target.value);
-                          field.onChange(e.target.value);
-                        }}
-                      >
-                        {countries.map((country, index) => (
-                          <SelectItem key={index} value={country}>
-                            {country}
-                          </SelectItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </FormItem>
-                )}
+              <CountrySelector 
+                form={form}
+                countries={countries}
+                onCountrySelect={setSelectedCountry}
               />
               
-              <FormField
-                control={form.control}
-                name="city"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Città</FormLabel>
-                    <FormControl>
-                      <Select
-                        placeholder="Seleziona una città"
-                        value={field.value?.name || ''}
-                        onChange={(e) => {
-                          const selectedCity = filteredCities.find(city => city.name === e.target.value);
-                          field.onChange(selectedCity);
-                        }}
-                      >
-                        {filteredCities.map((city, index) => (
-                          <SelectItem key={index} value={city.name}>
-                            {city.name}
-                          </SelectItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </FormItem>
-                )}
+              <CitySelector 
+                form={form}
+                cities={cities}
+                selectedCountry={selectedCountry}
               />
               
               <FormField
