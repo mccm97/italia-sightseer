@@ -17,20 +17,43 @@ export function CreateRouteDialog() {
   const [open, setOpen] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
-  const { toast } = useToast();
   const [cities, setCities] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchCities = async () => {
-      const { data, error } = await supabase.from('cities').select('*');
-      if (error) {
-        console.error('Errore nel recupero delle città:', error);
-      } else {
-        setCities(data);
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase.from('cities').select('*');
+        
+        if (error) {
+          console.error('Error fetching cities:', error);
+          toast({
+            title: "Errore",
+            description: "Impossibile caricare le città. Riprova più tardi.",
+            variant: "destructive",
+          });
+        } else {
+          console.log('Cities fetched:', data); // Debug log
+          setCities(data || []);
+        }
+      } catch (err) {
+        console.error('Error in fetchCities:', err);
+        toast({
+          title: "Errore",
+          description: "Si è verificato un errore nel caricamento delle città.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
       }
     };
-    fetchCities();
-  }, []);
+
+    if (open) {
+      fetchCities();
+    }
+  }, [open, toast]);
 
   const form = useForm<CreateRouteFormData>({
     defaultValues: {
