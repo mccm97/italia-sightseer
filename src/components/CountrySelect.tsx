@@ -1,103 +1,119 @@
-import React, { useState, useEffect } from 'react';
-import { supabase } from "@/integrations/supabase/client";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import React from 'react';
+import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { UseFormReturn } from 'react-hook-form';
+import { CreateRouteFormData } from '@/types/route';
+import { AttractionInput } from '../AttractionInput';
+import CountrySelect from '../CountrySelect';
+import CitySearch from '../CitySearch';
 
-interface CountrySelectProps {
-  onCountrySelect: (country: string | null) => void;
+interface RouteFormProps {
+  form: UseFormReturn<CreateRouteFormData>;
+  selectedCountry: string | null;
+  setSelectedCountry: (country: string | null) => void;
+  onShowSummary: () => void;
 }
 
-export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [countries, setCountries] = useState<string[]>([]);
-  const [filteredCountries, setFilteredCountries] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    loadCountries();
-  }, []);
-
-  useEffect(() => {
-    filterCountries();
-  }, [searchTerm, countries]);
-
-  const loadCountries = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const { data, error: supabaseError } = await supabase
-        .from('cities')
-        .select('country')
-        .not('country', 'is', null)
-        .not('country', 'eq', '')
-        .order('country');
-
-      if (supabaseError) {
-        console.error('Error loading countries:', supabaseError);
-        setError('Errore nel caricamento delle nazioni');
-        setCountries([]);
-        return;
-      }
-
-      if (data && Array.isArray(data)) {
-        const uniqueCountries = Array.from(
-          new Set(
-            data
-              .map(item => item.country)
-              .filter((country): country is string => typeof country === 'string' && country.trim().length > 0)
-          )
-        ).sort();
-        setCountries(uniqueCountries);
-      } else {
-        setCountries([]);
-      }
-    } catch (error) {
-      console.error('Error in loadCountries:', error);
-      setError('Errore nel caricamento delle nazioni');
-      setCountries([]);
-    } finally {
-      setIsLoading(false);
-    }
+export function RouteForm({ form, selectedCountry, setSelectedCountry, onShowSummary }: RouteFormProps) {
+  const isFormValid = () => {
+    const values = form.getValues();
+    return values.city && 
+           values.name && 
+           values.attractions.every(a => (a.name || a.address) && a.visitDuration > 0);
   };
 
-  const filterCountries = () => {
-    const filtered = countries.filter(country =>
-      country.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredCountries(filtered);
+  const handleCountrySelect = (country: string | null) => {
+    setSelectedCountry(country);
+    form.setValue('country', country);
+    form.setValue('city', null);
   };
 
   return (
-    <div>
-      <Input
-        type="text"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        placeholder="Cerca nazione..."
-        className="w-full"
-      />
-      {error && <span className="text-red-500">{error}</span>}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-2">
-          Caricamento...
+    <Form {...form}>
+      <form className="space-y-4">
+        <FormField
+          control={form.control}
+          name="country"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nazione</FormLabel>
+              <FormControl>
+                <CountrySelect 
+                  onCountrySelect={handleCountrySelect} 
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="city"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Città</FormLabel>
+              <FormControl>
+                <CitySearch 
+                  onCitySelect={(city) => field.onChange(city)} 
+                  selectedCountry={selectedCountry}
+                  disabled={!selectedCountry}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nome del Percorso</FormLabel>
+              <FormControl>
+                <Input placeholder="Inserisci il nome del percorso" {...field} />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="attractionsCount"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Numero di Attrazioni</FormLabel>
+              <FormControl>
+                <Input 
+                  type="number" 
+                  min="1"
+                  placeholder="Inserisci il numero di attrazioni"
+                  {...field}
+                  onChange={e => field.onChange(parseInt(e.target.value))}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        {form.watch('attractions')?.map((_, index) => (
+          <AttractionInput
+            key={index}
+            index={index}
+            form={form}
+          />
+        ))}
+
+        <div className="flex justify-end">
+          <Button 
+            type="button" 
+            onClick={onShowSummary}
+            disabled={!isFormValid()}
+          >
+            Continua
+          </Button>
         </div>
-      ) : (
-        <ul>
-          {filteredCountries.map((country) => (
-            <li key={country}>
-              <Button
-                variant="outline"
-                className="w-full text-left"
-                onClick={() => onCountrySelect(country)}
-              >
-                {country}
-              </Button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+      </form>
+    </Form>
   );
 }
