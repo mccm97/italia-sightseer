@@ -11,13 +11,27 @@ import { CreateRouteFormData } from '@/types/route';
 import { RoutePreview } from './RoutePreview';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from './ui/card';
+import { supabase } from '@/integrations/supabase/client';
 
 export function CreateRouteDialog() {
   const [open, setOpen] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const { toast } = useToast();
-  
+  const [cities, setCities] = useState([]);
+
+  useEffect(() => {
+    const fetchCities = async () => {
+      const { data, error } = await supabase.from('cities').select('*');
+      if (error) {
+        console.error('Errore nel recupero delle città:', error);
+      } else {
+        setCities(data);
+      }
+    };
+    fetchCities();
+  }, []);
+
   const form = useForm<CreateRouteFormData>({
     defaultValues: {
       name: '',
@@ -148,7 +162,10 @@ export function CreateRouteDialog() {
                   <FormItem>
                     <FormLabel>Città</FormLabel>
                     <FormControl>
-                      <CitySearch onCitySelect={(city) => field.onChange(city)} />
+                      <CitySearch 
+                        cities={cities} 
+                        onCitySelect={(city) => field.onChange(city)} 
+                      />
                     </FormControl>
                   </FormItem>
                 )}
