@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { UseFormReturn } from 'react-hook-form';
 import { CreateRouteFormData } from '@/types/route';
 import { AttractionInput } from '../AttractionInput';
-import CountrySelect from '../CountrySelect';
 import CitySearch from '../CitySearch';
 
 interface RouteFormProps {
@@ -92,7 +91,10 @@ export function RouteForm({ form, selectedCountry, setSelectedCountry, onShowSum
             <FormItem>
               <FormLabel>Nazione</FormLabel>
               <FormControl>
-                <CountrySelect onCountrySelect={handleCountrySelect} />
+                <Input
+                  placeholder="Search for a country"
+                  onChange={(e) => handleCountrySelect(e.target.value)}
+                />
               </FormControl>
             </FormItem>
           )}
@@ -157,9 +159,9 @@ export function RouteForm({ form, selectedCountry, setSelectedCountry, onShowSum
           </Button>
         </div>
 
-        <MapContainer 
-          center={[51.505, -0.09]} 
-          zoom={13} 
+        <MapContainer
+          center={[51.505, -0.09]}
+          zoom={13}
           style={{ height: '400px', width: '100%' }}
         >
           <TileLayer
