@@ -30,8 +30,7 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
       const { data, error: supabaseError } = await supabase
         .from('cities')
         .select('country')
-        .not('country', 'is', null)
-        .order('country');
+        .not('country', 'is', null);
 
       if (supabaseError) {
         console.error('Error loading countries:', supabaseError);
@@ -39,8 +38,8 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
         return;
       }
 
-      if (!data) {
-        console.log('No data returned from countries query');
+      if (!data || data.length === 0) {
+        console.log('No countries found');
         setCountries([]);
         return;
       }
@@ -49,7 +48,7 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
       const uniqueCountries = Array.from(
         new Set(
           data
-            .map(item => item.country?.trim())
+            .map(item => item.country)
             .filter((country): country is string => 
               typeof country === 'string' && country.length > 0
             )

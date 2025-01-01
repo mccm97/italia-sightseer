@@ -44,11 +44,12 @@ export default function CitySearch({ onCitySelect, selectedCountry, disabled = f
       if (supabaseError) {
         console.error('Error loading cities:', supabaseError);
         setError('Errore nel caricamento delle città');
+        setCities([]);
         return;
       }
 
-      if (!data) {
-        console.log('No data returned from cities query');
+      if (!data || data.length === 0) {
+        console.log('No cities found');
         setCities([]);
         return;
       }
@@ -67,6 +68,7 @@ export default function CitySearch({ onCitySelect, selectedCountry, disabled = f
     } catch (error) {
       console.error('Error in loadCities:', error);
       setError('Errore nel caricamento delle città');
+      setCities([]);
     } finally {
       setIsLoading(false);
     }
