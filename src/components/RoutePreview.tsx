@@ -5,18 +5,15 @@ import { CreateRouteFormData } from '@/types/route';
 import { ArrowLeft } from 'lucide-react';
 import { geocodeAddress } from '@/services/geocoding';
 import { useToast } from '@/hooks/use-toast';
-import { createRoute, checkRouteNameExists } from '@/services/routes';
 
 interface RoutePreviewProps {
   formData: CreateRouteFormData;
   onBack: () => void;
-  onClose: () => void;
 }
 
-export function RoutePreview({ formData, onBack, onClose }: RoutePreviewProps) {
+export function RoutePreview({ formData, onBack }: RoutePreviewProps) {
   const [attractions, setAttractions] = useState<Array<{ name: string; position: [number, number] }>>([]);
   const [totalTravelTime, setTotalTravelTime] = useState(0);
-  const [isCreating, setIsCreating] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -39,6 +36,7 @@ export function RoutePreview({ formData, onBack, onClose }: RoutePreviewProps) {
         
         setAttractions(positions);
 
+        // Calculate travel times between attractions
         if (positions.length > 1) {
           const travelTimes = await Promise.all(
             positions.slice(0, -1).map(async (start, i) => {
@@ -47,11 +45,13 @@ export function RoutePreview({ formData, onBack, onClose }: RoutePreviewProps) {
                 `https://router.project-osrm.org/route/v1/foot/${start.position[1]},${start.position[0]};${end.position[1]},${end.position[0]}?overview=full`
               );
               const data = await response.json();
+              // Duration is in seconds, convert to minutes
               return Math.round(data.routes[0].duration / 60);
             })
           );
 
           const totalTime = travelTimes.reduce((sum, time) => sum + time, 0);
+          // If using public transport, estimate 1/3 of walking time
           setTotalTravelTime(formData.transportMode === 'public' ? Math.round(totalTime / 3) : totalTime);
         }
       } catch (error) {
@@ -71,43 +71,12 @@ export function RoutePreview({ formData, onBack, onClose }: RoutePreviewProps) {
   const totalDuration = totalVisitDuration + totalTravelTime;
   const totalPrice = formData.attractions.reduce((sum, attr) => sum + (attr.price || 0), 0);
 
-  const handleCreateRoute = async () => {
-    try {
-      setIsCreating(true);
-      
-      if (!formData.city?.id) {
-        throw new Error('City ID is required');
-      }
-
-      // Verifica se esiste già un percorso con lo stesso nome
-      const exists = await checkRouteNameExists(formData.name, formData.city.id);
-      if (exists) {
-        toast({
-          title: "Errore",
-          description: "Esiste già un percorso con questo nome per questa città",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      await createRoute(formData);
-      
-      toast({
-        title: "Percorso Creato",
-        description: "Il tuo percorso è stato creato con successo!",
-      });
-      
-      onClose();
-    } catch (error) {
-      console.error('Error creating route:', error);
-      toast({
-        title: "Errore",
-        description: "Si è verificato un errore durante la creazione del percorso",
-        variant: "destructive"
-      });
-    } finally {
-      setIsCreating(false);
-    }
+  const handleCreateRoute = () => {
+    // Here you would typically save the route to your backend
+    toast({
+      title: "Percorso Creato",
+      description: "Il tuo percorso è stato creato con successo!",
+    });
   };
 
   return (
@@ -124,9 +93,8 @@ export function RoutePreview({ formData, onBack, onClose }: RoutePreviewProps) {
         <Button 
           onClick={handleCreateRoute}
           className="bg-primary text-white"
-          disabled={isCreating}
         >
-          {isCreating ? 'Creazione in corso...' : 'Crea Percorso'}
+          Crea Percorso
         </Button>
       </div>
 

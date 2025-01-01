@@ -1,139 +1,53 @@
 import React, { useState } from 'react';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
-import { Check, ChevronsUpDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { supabase } from '@/integrations/supabase/client';
-
-interface City {
-  id: string;
-  name: string;
-  lat: number;
-  lng: number;
-  country: string;
-}
+import { italianCities } from '../data/italianCities';
+import { Input } from './ui/input';
+import { ScrollArea } from './ui/scroll-area';
 
 interface CitySearchProps {
-  onCitySelect: (city: City | null) => void;
-  selectedCountry?: string | null;
-  disabled?: boolean;
+  onCitySelect: (city: { name: string; lat: number; lng: number }) => void;
 }
 
-export default function CitySearch({ onCitySelect, selectedCountry, disabled = false }: CitySearchProps) {
-  const [open, setOpen] = useState(false);
-  const [value, setValue] = useState<string>('');
-  const [cities, setCities] = useState<City[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+const CitySearch = ({ onCitySelect }: CitySearchProps) => {
+  const [search, setSearch] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
-  const loadCities = async (searchTerm: string) => {
-    if (!searchTerm || !selectedCountry) {
-      setCities([]);
-      setError(null);
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      setError(null);
-      console.log('Loading cities for search term:', searchTerm, 'in country:', selectedCountry);
-      
-      const { data, error: supabaseError } = await supabase
-        .from('cities')
-        .select('id, name, lat, lng, country')
-        .eq('country', selectedCountry)
-        .ilike('name', `%${searchTerm}%`)
-        .limit(5);
-      
-      if (supabaseError) {
-        console.error('Error loading cities:', supabaseError);
-        setError('Errore nel caricamento delle città');
-        setCities([]);
-        return;
-      }
-    
-      if (data) {
-        console.log('Cities loaded:', data);
-        setCities(data);
-      } else {
-        setCities([]);
-      }
-    } catch (error) {
-      console.error('Error in loadCities:', error);
-      setError('Errore nel caricamento delle città');
-      setCities([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSelect = (city: City) => {
-    setValue(city.name);
-    onCitySelect(city);
-    setOpen(false);
-  };
+  const filteredCities = italianCities.filter(city =>
+    city.name.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-full justify-between"
-          disabled={disabled}
-        >
-          {value || "Seleziona città..."}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-full p-0">
-        <Command>
-          <CommandInput 
-            placeholder="Cerca città..." 
-            value={searchQuery}
-            onValueChange={(search) => {
-              setSearchQuery(search);
-              if (search.trim()) {
-                loadCities(search.trim());
-              } else {
-                setCities([]);
-                setError(null);
-              }
-            }}
-            disabled={isLoading}
-          />
-          {!selectedCountry ? (
-            <CommandEmpty>Seleziona prima una nazione</CommandEmpty>
-          ) : error ? (
-            <CommandEmpty className="text-red-500">{error}</CommandEmpty>
-          ) : isLoading ? (
-            <CommandEmpty>Caricamento...</CommandEmpty>
-          ) : cities.length === 0 ? (
-            <CommandEmpty>Nessuna città trovata.</CommandEmpty>
-          ) : (
-            <CommandGroup>
-              {cities.map((city) => (
-                <CommandItem
-                  key={city.id}
-                  value={city.name}
-                  onSelect={() => handleSelect(city)}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === city.name ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {city.name}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          )}
-        </Command>
-      </PopoverContent>
-    </Popover>
+    <div className="relative w-full max-w-sm">
+      <Input
+        type="text"
+        placeholder="Cerca una città..."
+        value={search}
+        onChange={(e) => {
+          setSearch(e.target.value);
+          setShowSuggestions(true);
+        }}
+        onFocus={() => setShowSuggestions(true)}
+      />
+      {showSuggestions && search && (
+        <ScrollArea className="absolute z-50 w-full mt-1 bg-white rounded-md shadow-lg max-h-60">
+          <div className="p-2">
+            {filteredCities.map((city) => (
+              <button
+                key={city.name}
+                className="w-full px-4 py-2 text-left hover:bg-gray-100 rounded-md"
+                onClick={() => {
+                  onCitySelect(city);
+                  setSearch(city.name);
+                  setShowSuggestions(false);
+                }}
+              >
+                {city.name}
+              </button>
+            ))}
+          </div>
+        </ScrollArea>
+      )}
+    </div>
   );
-}
+};
+
+export default CitySearch;
