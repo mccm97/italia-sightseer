@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -14,7 +13,6 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
   const [filteredCountries, setFilteredCountries] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     loadCountries();
@@ -71,7 +69,6 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
 
   const handleCountrySelect = (country: string | null) => {
     onCountrySelect(country);
-    navigate('/route'); // Naviga alla pagina di creazione del percorso
   };
 
   return (
