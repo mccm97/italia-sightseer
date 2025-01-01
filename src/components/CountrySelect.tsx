@@ -16,6 +16,7 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
   const [countries, setCountries] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     loadCountries();
@@ -41,7 +42,7 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
         return;
       }
 
-      if (!data || !Array.isArray(data) || data.length === 0) {
+      if (!data || data.length === 0) {
         console.log('No countries found in database');
         setCountries([]);
         return;
@@ -68,6 +69,10 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
     }
   };
 
+  const filteredCountries = countries.filter(country =>
+    country.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -82,8 +87,12 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">
-        <Command shouldFilter={false}>
-          <CommandInput placeholder="Cerca nazione..." />
+        <Command>
+          <CommandInput 
+            placeholder="Cerca nazione..." 
+            value={searchQuery}
+            onValueChange={setSearchQuery}
+          />
           <CommandEmpty>
             {error ? (
               <span className="text-red-500">{error}</span>
@@ -95,9 +104,9 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
               "Nessuna nazione trovata."
             )}
           </CommandEmpty>
-          {countries.length > 0 && (
+          {filteredCountries.length > 0 && (
             <CommandGroup>
-              {countries.map((country) => (
+              {filteredCountries.map((country) => (
                 <CommandItem
                   key={country}
                   value={country}
