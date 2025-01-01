@@ -142,7 +142,12 @@ const Index = () => {
             <RoutePreview
               formData={{
                 name: selectedRoute.name,
-                city: { name: selectedRoute.cityName, lat: selectedRoute.attractions[0].position[0], lng: selectedRoute.attractions[0].position[1] },
+                country: selectedRoute.cityName,
+                city: { 
+                  name: selectedRoute.cityName, 
+                  lat: selectedRoute.attractions[0].position[0], 
+                  lng: selectedRoute.attractions[0].position[1] 
+                },
                 attractions: selectedRoute.attractions.map(attr => ({
                   name: attr.name,
                   address: '',
