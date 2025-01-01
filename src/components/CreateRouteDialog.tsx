@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
-import { Input, Select, SelectItem } from '@/components/ui/input';
+import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { Plus } from 'lucide-react';
 import CitySearch from './CitySearch';
+import CountrySelect from './CountrySelect';
 import { AttractionInput } from './AttractionInput';
 import { CreateRouteFormData } from '@/types/route';
 import { RoutePreview } from './RoutePreview';
@@ -168,20 +169,13 @@ export function CreateRouteDialog() {
                   <FormItem>
                     <FormLabel>Paese</FormLabel>
                     <FormControl>
-                      <Select
-                        placeholder="Seleziona un paese"
-                        value={selectedCountry}
-                        onChange={(e) => {
-                          setSelectedCountry(e.target.value);
-                          field.onChange(e.target.value);
+                      <CountrySelect
+                        countries={countries}
+                        onCountrySelect={(country) => {
+                          setSelectedCountry(country);
+                          field.onChange(country);
                         }}
-                      >
-                        {countries.map((country, index) => (
-                          <SelectItem key={index} value={country}>
-                            {country}
-                          </SelectItem>
-                        ))}
-                      </Select>
+                      />
                     </FormControl>
                   </FormItem>
                 )}
