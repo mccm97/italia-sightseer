@@ -12,6 +12,7 @@ import { Card, CardContent } from './ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { CountrySelector } from './route/CountrySelector';
 import { CitySelector } from './route/CitySelector';
+import { FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
 
 export function CreateRouteDialog() {
   const [open, setOpen] = useState(false);
