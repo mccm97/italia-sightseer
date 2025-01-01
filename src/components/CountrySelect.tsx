@@ -40,14 +40,17 @@ export default function CountrySelect({ onCountrySelect }: CountrySelectProps) {
       }
     
       if (data) {
-        // Get unique countries
-        const uniqueCountries = [...new Set(data.map(item => item.country))];
+        // Get unique countries and ensure they are strings
+        const uniqueCountries = Array.from(new Set(data.map(item => item.country || ''))).filter(Boolean);
         console.log('Countries loaded:', uniqueCountries);
-        setCountries(uniqueCountries.filter((country): country is string => country != null));
+        setCountries(uniqueCountries);
+      } else {
+        setCountries([]);
       }
     } catch (error) {
       console.error('Error in loadCountries:', error);
       setError('Errore nel caricamento delle nazioni');
+      setCountries([]);
     } finally {
       setIsLoading(false);
     }

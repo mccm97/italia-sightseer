@@ -55,7 +55,7 @@ export default function CitySearch({ onCitySelect, selectedCountry, disabled = f
     
       if (data) {
         console.log('Cities loaded:', data);
-        setCities(data);
+        setCities(data as City[]);
       } else {
         setCities([]);
       }
