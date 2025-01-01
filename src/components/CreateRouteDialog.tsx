@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
+import { Input, Select, SelectItem } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { Plus } from 'lucide-react';
 import CitySearch from './CitySearch';
@@ -18,42 +18,23 @@ export function CreateRouteDialog() {
   const [showPreview, setShowPreview] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [cities, setCities] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [countries, setCountries] = useState([]);
+  const [selectedCountry, setSelectedCountry] = useState('');
   const { toast } = useToast();
 
   useEffect(() => {
     const fetchCities = async () => {
-      try {
-        setIsLoading(true);
-        const { data, error } = await supabase.from('cities').select('*');
-        
-        if (error) {
-          console.error('Error fetching cities:', error);
-          toast({
-            title: "Errore",
-            description: "Impossibile caricare le città. Riprova più tardi.",
-            variant: "destructive",
-          });
-        } else {
-          console.log('Cities fetched:', data); // Debug log
-          setCities(data || []);
-        }
-      } catch (err) {
-        console.error('Error in fetchCities:', err);
-        toast({
-          title: "Errore",
-          description: "Si è verificato un errore nel caricamento delle città.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
+      const { data, error } = await supabase.from('cities').select('*');
+      if (error) {
+        console.error('Errore nel recupero delle città:', error);
+      } else {
+        setCities(data);
+        const uniqueCountries = [...new Set(data.map(city => city.country))];
+        setCountries(uniqueCountries);
       }
     };
-
-    if (open) {
-      fetchCities();
-    }
-  }, [open, toast]);
+    fetchCities();
+  }, []);
 
   const form = useForm<CreateRouteFormData>({
     defaultValues: {
@@ -122,6 +103,8 @@ export function CreateRouteDialog() {
     return attractions.reduce((total, attr) => total + (attr.price || 0), 0);
   };
 
+  const filteredCities = cities.filter(city => city.country === selectedCountry);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -180,13 +163,39 @@ export function CreateRouteDialog() {
             <form className="space-y-4">
               <FormField
                 control={form.control}
+                name="country"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Paese</FormLabel>
+                    <FormControl>
+                      <Select
+                        placeholder="Seleziona un paese"
+                        value={selectedCountry}
+                        onChange={(e) => {
+                          setSelectedCountry(e.target.value);
+                          field.onChange(e.target.value);
+                        }}
+                      >
+                        {countries.map((country, index) => (
+                          <SelectItem key={index} value={country}>
+                            {country}
+                          </SelectItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
                 name="city"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Città</FormLabel>
                     <FormControl>
                       <CitySearch 
-                        cities={cities} 
+                        cities={filteredCities} 
                         onCitySelect={(city) => field.onChange(city)} 
                       />
                     </FormControl>
