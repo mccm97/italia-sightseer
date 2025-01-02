@@ -22,30 +22,58 @@ export default function Profile() {
 
   useEffect(() => {
     const getProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        navigate('/login');
-        return;
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          navigate('/login');
+          return;
+        }
+
+        setUser(user);
+
+        // Try to get existing profile
+        const { data: existingProfile, error: fetchError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (fetchError) {
+          throw fetchError;
+        }
+
+        if (!existingProfile) {
+          // Create new profile if none exists
+          const { data: newProfile, error: insertError } = await supabase
+            .from('profiles')
+            .insert([{ id: user.id, username: null }])
+            .select()
+            .maybeSingle();
+
+          if (insertError) {
+            throw insertError;
+          }
+
+          setProfile(newProfile);
+        } else {
+          setProfile(existingProfile);
+        }
+
+      } catch (error: any) {
+        console.error('Error fetching profile:', error);
+        toast({
+          title: "Errore",
+          description: "Si è verificato un errore durante il caricamento del profilo",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
       }
-
-      setUser(user);
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      if (profile) {
-        setProfile(profile);
-      }
-
-      setLoading(false);
     };
 
     getProfile();
-  }, [navigate]);
+  }, [navigate, toast]);
 
   const updateProfile = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -53,6 +81,7 @@ export default function Profile() {
 
     try {
       if (avatar) {
+        setUploading(true);
         const fileExt = avatar.name.split('.').pop();
         const filePath = `${user.id}/${Math.random()}.${fileExt}`;
 
@@ -91,6 +120,7 @@ export default function Profile() {
       });
     } finally {
       setLoading(false);
+      setUploading(false);
     }
   };
 
