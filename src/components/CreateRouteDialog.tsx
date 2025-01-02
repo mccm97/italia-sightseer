@@ -84,15 +84,103 @@ export function CreateRouteDialog() {
     setShowPreview(false);
   };
 
-  const handleCreateRoute = () => {
-    if (isFormValid()) {
-      console.log('Route created:', form.getValues());
+  const handleCreateRoute = async () => {
+    if (!isFormValid()) return;
+
+    try {
+      console.log('Creating route with data:', form.getValues());
+      
+      // Get the current authenticated user
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Errore",
+          description: "Devi essere autenticato per creare un percorso.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // First, create the route
+      const { data: route, error: routeError } = await supabase
+        .from('routes')
+        .insert({
+          name: form.getValues().name,
+          city_id: form.getValues().city?.id,
+          user_id: user.id,
+          transport_mode: form.getValues().transportMode || 'walking',
+          total_duration: calculateTotalDuration(),
+          total_distance: 0, // This would need to be calculated based on the actual route
+          country: form.getValues().country,
+          is_public: true
+        })
+        .select()
+        .single();
+
+      if (routeError) {
+        console.error('Error creating route:', routeError);
+        throw new Error('Failed to create route');
+      }
+
+      // Then, create attractions and link them to the route
+      const attractionsPromises = form.getValues().attractions.map(async (attr, index) => {
+        // First create the attraction
+        const { data: attraction, error: attractionError } = await supabase
+          .from('attractions')
+          .insert({
+            name: attr.name || attr.address,
+            lat: 0, // These would need to be set based on geocoding
+            lng: 0,
+            visit_duration: attr.visitDuration,
+            price: attr.price
+          })
+          .select()
+          .single();
+
+        if (attractionError) {
+          console.error('Error creating attraction:', attractionError);
+          throw new Error('Failed to create attraction');
+        }
+
+        // Then create the route_attraction link
+        const { error: linkError } = await supabase
+          .from('route_attractions')
+          .insert({
+            route_id: route.id,
+            attraction_id: attraction.id,
+            order_index: index,
+            transport_mode: form.getValues().transportMode || 'walking',
+            travel_duration: 0, // This would need to be calculated
+            travel_distance: 0 // This would need to be calculated
+          });
+
+        if (linkError) {
+          console.error('Error linking attraction to route:', linkError);
+          throw new Error('Failed to link attraction to route');
+        }
+      });
+
+      await Promise.all(attractionsPromises);
+
       toast({
         title: "Percorso creato con successo!",
         description: `Il percorso "${form.getValues().name}" è stato creato.`,
       });
-      setOpen(false);
+
+      // Reset form and close dialog
       form.reset();
+      setOpen(false);
+      setShowPreview(false);
+      setShowSummary(false);
+      
+    } catch (error) {
+      console.error('Error in route creation:', error);
+      toast({
+        title: "Errore",
+        description: "Si è verificato un errore durante la creazione del percorso.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -127,6 +215,7 @@ export function CreateRouteDialog() {
           <RoutePreview
             formData={form.getValues()}
             onBack={handleBackFromPreview}
+            onCreateRoute={handleCreateRoute}
           />
         ) : showSummary ? (
           <div className="space-y-4">

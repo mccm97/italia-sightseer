@@ -1,17 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import CitySearch from '@/components/CitySearch';
 import CityMap from '@/components/CityMap';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { Route, sampleRoutes } from '@/data/routes';
+import { Route } from '@/data/routes';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { CreateRouteDialog } from '@/components/CreateRouteDialog';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { RoutePreview } from '@/components/RoutePreview';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
   const [selectedCity, setSelectedCity] = useState<{
+    id?: string;
     name: string;
     lat: number;
     lng: number;
@@ -20,10 +23,72 @@ const Index = () => {
 
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
   const [showRoutePreview, setShowRoutePreview] = useState(false);
+  const [cityRoutes, setCityRoutes] = useState<Route[]>([]);
+  const [isLoadingRoutes, setIsLoadingRoutes] = useState(false);
+  const { toast } = useToast();
 
-  const cityRoutes = selectedCity 
-    ? sampleRoutes.filter(route => route.cityName.toLowerCase() === selectedCity.name.toLowerCase())
-    : [];
+  useEffect(() => {
+    const fetchCityRoutes = async () => {
+      if (!selectedCity?.id) return;
+      
+      setIsLoadingRoutes(true);
+      try {
+        console.log('Fetching routes for city:', selectedCity.id);
+        
+        const { data: routes, error } = await supabase
+          .from('routes')
+          .select(`
+            *,
+            route_attractions (
+              *,
+              attraction: attractions (*)
+            )
+          `)
+          .eq('city_id', selectedCity.id)
+          .eq('is_public', true);
+
+        if (error) {
+          console.error('Error fetching routes:', error);
+          toast({
+            title: "Errore",
+            description: "Impossibile caricare i percorsi per questa città",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        console.log('Fetched routes:', routes);
+
+        // Transform the data to match the Route interface
+        const transformedRoutes: Route[] = routes.map(route => ({
+          id: route.id,
+          cityName: selectedCity.name,
+          name: route.name,
+          duration: route.total_duration,
+          attractions: route.route_attractions.map((ra: any) => ({
+            name: ra.attraction.name,
+            position: [ra.attraction.lat, ra.attraction.lng],
+            visitDuration: ra.attraction.visit_duration,
+            price: ra.attraction.price
+          })),
+          isPublic: route.is_public
+        }));
+
+        setCityRoutes(transformedRoutes);
+      } catch (error) {
+        console.error('Error in fetchCityRoutes:', error);
+        toast({
+          title: "Errore",
+          description: "Si è verificato un errore durante il caricamento dei percorsi",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoadingRoutes(false);
+      }
+    };
+
+    fetchCityRoutes();
+  }, [selectedCity, toast]);
 
   const handleBackClick = () => {
     setSelectedCity(null);
@@ -107,7 +172,11 @@ const Index = () => {
             <h2 className="text-2xl font-semibold mb-4">Percorsi Disponibili</h2>
             <ScrollArea className="h-[300px] rounded-md border">
               <div className="p-4 space-y-4">
-                {cityRoutes.length > 0 ? (
+                {isLoadingRoutes ? (
+                  <p className="text-center text-gray-500">
+                    Caricamento percorsi...
+                  </p>
+                ) : cityRoutes.length > 0 ? (
                   cityRoutes.map((route) => (
                     <Card 
                       key={route.id}

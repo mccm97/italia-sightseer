@@ -9,9 +9,10 @@ import { useToast } from '@/hooks/use-toast';
 interface RoutePreviewProps {
   formData: CreateRouteFormData;
   onBack: () => void;
+  onCreateRoute?: () => void;
 }
 
-export function RoutePreview({ formData, onBack }: RoutePreviewProps) {
+export function RoutePreview({ formData, onBack, onCreateRoute }: RoutePreviewProps) {
   const [attractions, setAttractions] = useState<Array<{ name: string; position: [number, number] }>>([]);
   const [totalTravelTime, setTotalTravelTime] = useState(0);
   const { toast } = useToast();
@@ -71,14 +72,6 @@ export function RoutePreview({ formData, onBack }: RoutePreviewProps) {
   const totalDuration = totalVisitDuration + totalTravelTime;
   const totalPrice = formData.attractions.reduce((sum, attr) => sum + (attr.price || 0), 0);
 
-  const handleCreateRoute = () => {
-    // Here you would typically save the route to your backend
-    toast({
-      title: "Percorso Creato",
-      description: "Il tuo percorso è stato creato con successo!",
-    });
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-4">
@@ -91,7 +84,7 @@ export function RoutePreview({ formData, onBack }: RoutePreviewProps) {
           Torna alla creazione
         </Button>
         <Button 
-          onClick={handleCreateRoute}
+          onClick={onCreateRoute}
           className="bg-primary text-white"
         >
           Crea Percorso
