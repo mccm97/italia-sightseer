@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import CitySearch from '@/components/CitySearch';
 import CityMap from '@/components/CityMap';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, LogIn } from 'lucide-react';
 import { Route } from '@/data/routes';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -11,6 +11,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { RoutePreview } from '@/components/RoutePreview';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const [selectedCity, setSelectedCity] = useState<{
@@ -26,6 +27,7 @@ const Index = () => {
   const [cityRoutes, setCityRoutes] = useState<Route[]>([]);
   const [isLoadingRoutes, setIsLoadingRoutes] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCityRoutes = async () => {
@@ -127,6 +129,12 @@ const Index = () => {
 
   return (
     <div className="container mx-auto p-4 space-y-6">
+      <div className="flex justify-end">
+        <Button onClick={() => navigate('/login')} variant="ghost">
+          <LogIn className="mr-2 h-4 w-4" />
+          Accedi
+        </Button>
+      </div>
       {!selectedCity ? (
         <div className="max-w-4xl mx-auto space-y-8 py-12">
           <div className="text-center space-y-4">
