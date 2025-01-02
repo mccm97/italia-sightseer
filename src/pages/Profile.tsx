@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ArrowLeft } from 'lucide-react';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { EditProfileForm } from '@/components/profile/EditProfileForm';
 import { UserRoutes } from '@/components/profile/UserRoutes';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 export default function Profile() {
   const [loading, setLoading] = useState(true);
@@ -74,6 +75,12 @@ export default function Profile() {
 
   return (
     <div className="container max-w-4xl mx-auto p-4">
+      <div className="flex justify-start mb-4">
+        <Button variant="ghost" onClick={() => navigate('/')}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Indietro
+        </Button>
+      </div>
       <Card>
         <CardContent className="pt-6">
           {isEditing ? (
