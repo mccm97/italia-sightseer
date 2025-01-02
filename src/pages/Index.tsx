@@ -54,7 +54,8 @@ const Index = () => {
             route_attractions (
               *,
               attraction: attractions (*)
-            )
+            ),
+            profiles (username)
           `)
           .eq('city_id', selectedCity.id);
 
@@ -83,6 +84,8 @@ const Index = () => {
           cityName: selectedCity.name,
           name: route.name,
           duration: route.total_duration,
+          price: route.route_attractions.reduce((sum, ra) => sum + (ra.attraction?.price || 0), 0),
+          username: route.profiles.username,
           attractions: route.route_attractions
             .filter(ra => ra.attraction) // Filter out any null attractions
             .map((ra: any) => {
@@ -134,14 +137,6 @@ const Index = () => {
         description: "Questo percorso non ha attrazioni valide da visualizzare sulla mappa",
         variant: "destructive"
       });
-    }
-  };
-
-  const handleLoginClick = () => {
-    if (user) {
-      navigate('/profile');
-    } else {
-      navigate('/login');
     }
   };
 
@@ -243,11 +238,12 @@ const Index = () => {
                     >
                       <CardHeader>
                         <CardTitle>{route.name}</CardTitle>
+                        <p className="text-sm text-muted-foreground">Creato da: {route.username}</p>
                       </CardHeader>
                       <CardContent>
                         <p>Durata totale: {route.duration} minuti</p>
+                        <p>Prezzo totale: €{route.price}</p>
                         <p>Attrazioni: {route.attractions.length}</p>
-                        <p>Costo totale: €{route.attractions.reduce((sum, attr) => sum + (attr.price || 0), 0)}</p>
                       </CardContent>
                     </Card>
                   ))
