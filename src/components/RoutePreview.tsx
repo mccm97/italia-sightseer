@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { CityMap } from '@/components/CityMap';
+import CityMap from '@/components/CityMap';
 import { geocodeAddress } from '@/services/geocoding';
 import { Route } from '@/data/routes';
 
