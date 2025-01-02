@@ -6,6 +6,7 @@ import { Loader2, ArrowLeft } from 'lucide-react';
 import CitySearch from '@/components/CitySearch'; // Importa il componente CitySearch come default export
 import { Button } from '@/components/ui/button';
 import { AuthButton } from '@/components/auth/AuthButton';
+import CityMap from '@/components/CityMap'; // Importa il componente CityMap per visualizzare la mappa
 
 export default function Index() {
   const [selectedCity, setSelectedCity] = useState(null);
@@ -112,6 +113,7 @@ export default function Index() {
             <h1 className="text-3xl font-bold">{selectedCity.name}</h1>
             <div className="w-[100px]" />
           </div>
+          <CityMap center={selectedCity.center} attractions={selectedCity.attractions} /> {/* Aggiungi il componente CityMap per visualizzare la mappa */}
           <div className="mt-4">
             {isLoadingRoutes ? (
               <Loader2 className="h-8 w-8 animate-spin" />
