@@ -4,18 +4,27 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch'; // Added missing import
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Check } from 'lucide-react';
 
+interface Profile {
+  id: string; // Added missing id property
+  username: string | null;
+  avatar_url: string | null;
+  bio: string | null;
+  is_public: boolean | null;
+}
+
 interface EditProfileFormProps {
-  initialProfile: { username: string | null; avatar_url: string | null; bio: string | null; is_public: boolean | null };
+  initialProfile: Profile;
   onCancel: () => void;
   onSave: () => void;
 }
 
 export function EditProfileForm({ initialProfile, onCancel, onSave }: EditProfileFormProps) {
-  const [profile, setProfile] = useState(initialProfile);
+  const [profile, setProfile] = useState<Profile>(initialProfile);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -46,11 +55,18 @@ export function EditProfileForm({ initialProfile, onCancel, onSave }: EditProfil
 
     setUploading(true);
     try {
-      const { data, error } = await supabase.storage.from('avatars').upload(`public/${profile.username}`, selectedImage);
+      const { data, error } = await supabase.storage
+        .from('avatars')
+        .upload(`public/${profile.username}`, selectedImage);
+      
       if (error) throw error;
-      const avatarUrl = data?.publicURL;
 
-      setProfile((prev) => ({ ...prev, avatar_url: avatarUrl }));
+      // Get the public URL using getPublicUrl instead of accessing publicURL directly
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(`public/${profile.username}`);
+
+      setProfile((prev) => ({ ...prev, avatar_url: publicUrl }));
     } catch (error) {
       console.error('Error uploading avatar:', error);
       toast({
@@ -79,7 +95,12 @@ export function EditProfileForm({ initialProfile, onCancel, onSave }: EditProfil
     try {
       const { error } = await supabase
         .from('profiles')
-        .update(profile)
+        .update({
+          username: profile.username,
+          bio: profile.bio,
+          avatar_url: profile.avatar_url,
+          is_public: profile.is_public
+        })
         .eq('id', profile.id);
 
       if (error) throw error;
@@ -105,7 +126,7 @@ export function EditProfileForm({ initialProfile, onCancel, onSave }: EditProfil
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="flex flex-col items-center space-y-4">
         <Avatar className="h-24 w-24">
-          <AvatarImage src={selectedImage || previewUrl} />
+          <AvatarImage src={previewUrl || undefined} />
           <AvatarFallback>{profile?.username?.[0]?.toUpperCase() || '?'}</AvatarFallback>
         </Avatar>
         <div className="flex items-center gap-2">
