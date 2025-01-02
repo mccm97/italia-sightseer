@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, ArrowLeft } from 'lucide-react';
-import CitySearch from '@/components/CitySearch'; // Changed from named to default import
+import CitySearch from '@/components/CitySearch'; // Importa il componente CitySearch come default export
 import { Button } from '@/components/ui/button';
 import { AuthButton } from '@/components/auth/AuthButton';
 
 export default function Index() {
   const [selectedCity, setSelectedCity] = useState(null);
-  const [selectedRoute, setSelectedRoute] = useState(null);
+  const [selectedRoutes, setSelectedRoutes] = useState([]);
   const [showRoutePreview, setShowRoutePreview] = useState(false);
   const [isLoadingRoutes, setIsLoadingRoutes] = useState(false);
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ export default function Index() {
 
         if (error) throw error;
 
-        setSelectedRoute(routes);
+        setSelectedRoutes(routes);
       } catch (error) {
         console.error('Error fetching city routes:', error);
         toast({
@@ -46,11 +46,11 @@ export default function Index() {
 
   const handleBackClick = () => {
     setSelectedCity(null);
-    setSelectedRoute(null);
+    setSelectedRoutes([]);
   };
 
   const handleRouteClick = (route) => {
-    setSelectedRoute(route);
+    setSelectedRoutes(route);
     setShowRoutePreview(true);
   };
 
@@ -111,6 +111,29 @@ export default function Index() {
             </Button>
             <h1 className="text-3xl font-bold">{selectedCity.name}</h1>
             <div className="w-[100px]" />
+          </div>
+          <div className="mt-4">
+            {isLoadingRoutes ? (
+              <Loader2 className="h-8 w-8 animate-spin" />
+            ) : (
+              <>
+                {selectedRoutes.length > 0 ? (
+                  <div className="space-y-4">
+                    {selectedRoutes.map((route) => (
+                      <div key={route.id} className="p-4 border rounded-lg shadow-md">
+                        <h2 className="text-xl font-semibold">{route.name}</h2>
+                        <p>{route.description}</p>
+                        <Button variant="link" onClick={() => handleRouteClick(route)}>
+                          Visualizza dettagli
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground">Nessun percorso trovato per questa città.</p>
+                )}
+              </>
+            )}
           </div>
         </>
       )}
