@@ -10,8 +10,6 @@ export interface Route {
     price?: number; // in euros
   }>;
   isPublic: boolean;
-  username?: string; // Added username property
-  price?: number; // Added total price property
 }
 
 export const sampleRoutes: Route[] = [
