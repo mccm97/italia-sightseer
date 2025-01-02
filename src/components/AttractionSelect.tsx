@@ -13,6 +13,28 @@ import * as L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-control-geocoder';
 
+// Add type declaration for the Geocoder
+declare module 'leaflet' {
+  namespace Control {
+    interface GeocoderOptions {
+      geocodingQueryParams?: {
+        countrycodes?: string;
+        limit?: number;
+        format?: string;
+      };
+    }
+    
+    class Geocoder extends Control {
+      constructor(options?: GeocoderOptions);
+      geocode(query: string, cb: (results: any[]) => void): void;
+    }
+
+    namespace Geocoder {
+      function nominatim(options?: GeocoderOptions): Geocoder;
+    }
+  }
+}
+
 interface AttractionSelectProps {
   value: string;
   onChange: (value: string) => void;
