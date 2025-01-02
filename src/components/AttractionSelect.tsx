@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Select,
   SelectContent,
@@ -8,9 +8,8 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { getMonumentSuggestions } from '../services/attractions';
+import 'leaflet-control-geocoder/dist/Control.Geocoder.css';
 import * as L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import 'leaflet-control-geocoder';
 
 interface AttractionSelectProps {
@@ -21,29 +20,42 @@ interface AttractionSelectProps {
 
 export function AttractionSelect({ value, onChange, inputType }: AttractionSelectProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  
-  const suggestions = getMonumentSuggestions(searchQuery);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (inputType === 'address' && searchQuery) {
+      const geocoder = L.Control.Geocoder.nominatim();
+      geocoder.geocode(searchQuery, (results) => {
+        const newSuggestions = results.map(result => result.name);
+        setSuggestions(newSuggestions);
+      });
+    }
+  }, [searchQuery, inputType]);
 
   if (inputType === 'address') {
-    const geocoder = L.Control.Geocoder.nominatim();
-
     return (
-      <Input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Inserisci l'indirizzo esatto"
-        className="w-full"
-        onFocus={() => {
-          geocoder.geocode(value, (results) => {
-            if (results.length > 0) {
-              const result = results[0];
-              setSearchQuery(result.name);
-              onChange(result.name);
-            }
-          });
-        }}
-      />
+      <div>
+        <Input
+          type="text"
+          value={value}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Inserisci l'indirizzo esatto"
+          className="w-full"
+        />
+        {suggestions.length > 0 && (
+          <ScrollArea className="h-[200px]">
+            {suggestions.map((suggestion, index) => (
+              <SelectItem
+                key={index}
+                value={suggestion}
+                onClick={() => onChange(suggestion)}
+              >
+                {suggestion}
+              </SelectItem>
+            ))}
+          </ScrollArea>
+        )}
+      </div>
     );
   }
 
@@ -63,8 +75,8 @@ export function AttractionSelect({ value, onChange, inputType }: AttractionSelec
           />
         </div>
         <ScrollArea className="h-[200px]">
-          {suggestions.map((suggestion) => (
-            <SelectItem key={suggestion} value={suggestion}>
+          {suggestions.map((suggestion, index) => (
+            <SelectItem key={index} value={suggestion}>
               {suggestion}
             </SelectItem>
           ))}
