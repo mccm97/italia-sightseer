@@ -26,8 +26,17 @@ const Index = () => {
   const [showRoutePreview, setShowRoutePreview] = useState(false);
   const [cityRoutes, setCityRoutes] = useState<Route[]>([]);
   const [isLoadingRoutes, setIsLoadingRoutes] = useState(false);
+  const [user, setUser] = useState<any>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    fetchUser();
+  }, []);
 
   useEffect(() => {
     const fetchCityRoutes = async () => {
@@ -127,10 +136,18 @@ const Index = () => {
     }
   };
 
+  const handleLoginClick = () => {
+    if (user) {
+      navigate('/profile');
+    } else {
+      navigate('/login');
+    }
+  };
+
   return (
     <div className="container mx-auto p-4 space-y-6">
       <div className="flex justify-end">
-        <Button onClick={() => navigate('/login')} variant="ghost">
+        <Button onClick={handleLoginClick} variant="ghost">
           <LogIn className="mr-2 h-4 w-4" />
           Accedi
         </Button>
