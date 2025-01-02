@@ -1,71 +1,56 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Loader2, Check } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { Loader2, Check } from 'lucide-react';
 
 interface EditProfileFormProps {
-  initialProfile: any;
+  initialProfile: { username: string | null; avatar_url: string | null; bio: string | null; is_public: boolean | null };
   onCancel: () => void;
   onSave: () => void;
 }
 
 export function EditProfileForm({ initialProfile, onCancel, onSave }: EditProfileFormProps) {
   const [profile, setProfile] = useState(initialProfile);
-  const [avatar, setAvatar] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(profile?.avatar_url);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(initialProfile.avatar_url);
   const { toast } = useToast();
 
-  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      const file = event.target.files[0];
-      setAvatar(file);
-      setSelectedImage(URL.createObjectURL(file));
+  useEffect(() => {
+    if (selectedImage) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(selectedImage);
+    } else {
+      setPreviewUrl(initialProfile.avatar_url);
+    }
+  }, [selectedImage, initialProfile.avatar_url]);
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
     }
   };
 
   const handleConfirmAvatar = async () => {
-    if (!avatar) return;
+    if (!selectedImage) return;
+
     setUploading(true);
-
     try {
-      const fileExt = avatar.name.split('.').pop();
-      const filePath = `${profile.id}/${Math.random()}.${fileExt}`;
+      const { data, error } = await supabase.storage.from('avatars').upload(`public/${profile.username}`, selectedImage);
+      if (error) throw error;
+      const avatarUrl = data?.publicURL;
 
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, avatar);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
-
-      // Update the profile in the database with the new avatar URL
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ avatar_url: publicUrl })
-        .eq('id', profile.id);
-
-      if (updateError) throw updateError;
-
-      // Update local state
-      setProfile({ ...profile, avatar_url: publicUrl });
-      setPreviewUrl(publicUrl);
-      
-      toast({
-        title: "Immagine caricata",
-        description: "L'immagine del profilo è stata aggiornata",
-      });
+      setProfile((prev) => ({ ...prev, avatar_url: avatarUrl }));
     } catch (error) {
       console.error('Error uploading avatar:', error);
       toast({
@@ -75,7 +60,6 @@ export function EditProfileForm({ initialProfile, onCancel, onSave }: EditProfil
       });
     } finally {
       setUploading(false);
-      setAvatar(null);
       setSelectedImage(null);
     }
   };
@@ -182,12 +166,9 @@ export function EditProfileForm({ initialProfile, onCancel, onSave }: EditProfil
         </Button>
         <Button type="submit" disabled={loading}>
           {loading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Salvataggio...
-            </>
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            'Salva modifiche'
+            'Salva'
           )}
         </Button>
       </div>
