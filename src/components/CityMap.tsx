@@ -16,14 +16,14 @@ interface CityMapProps {
   center: [number, number];
   attractions?: Array<{
     name: string;
-    position: [number, number];
+    position?: [number, number];
   }>;
   routes?: Route[];
   onRouteClick?: (route: Route) => void;
   showWalkingPath?: boolean;
 }
 
-// Component per aggiornare il percorso a piedi
+// Component to update walking path
 const WalkingPath = ({ points }: { points: [number, number][] }) => {
   const map = useMap();
 
@@ -43,14 +43,14 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
           })
         );
 
-        // Rimuovi i vecchi layer se presenti
+        // Remove old layers if present
         map.eachLayer((layer) => {
           if (layer instanceof L.Polyline && layer.options.className === 'walking-path') {
             map.removeLayer(layer);
           }
         });
 
-        // Aggiungi i nuovi percorsi
+        // Add new paths
         paths.forEach(path => {
           L.polyline(path, {
             color: 'blue',
@@ -71,6 +71,11 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
 };
 
 const CityMap = ({ center, attractions = [], routes = [], onRouteClick, showWalkingPath = false }: CityMapProps) => {
+  // Filter out attractions without positions
+  const validAttractions = attractions.filter((attr): attr is { name: string; position: [number, number] } => 
+    !!attr.position
+  );
+
   return (
     <MapContainer
       center={center}
@@ -82,11 +87,11 @@ const CityMap = ({ center, attractions = [], routes = [], onRouteClick, showWalk
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
       
-      {/* Mostra i percorsi esistenti */}
+      {/* Show existing routes */}
       {routes.map((route) => (
         <Polyline
           key={route.id}
-          positions={route.attractions.map(a => a.position)}
+          positions={route.attractions.filter(a => a.position).map(a => a.position as [number, number])}
           color="purple"
           weight={3}
           opacity={0.6}
@@ -96,8 +101,8 @@ const CityMap = ({ center, attractions = [], routes = [], onRouteClick, showWalk
         />
       ))}
 
-      {/* Mostra i marker delle attrazioni */}
-      {attractions.map((attraction, index) => (
+      {/* Show attraction markers */}
+      {validAttractions.map((attraction, index) => (
         <Marker
           key={index}
           position={attraction.position}
@@ -105,9 +110,9 @@ const CityMap = ({ center, attractions = [], routes = [], onRouteClick, showWalk
         />
       ))}
 
-      {/* Mostra il percorso a piedi se richiesto */}
-      {showWalkingPath && attractions.length > 1 && (
-        <WalkingPath points={attractions.map(a => a.position)} />
+      {/* Show walking path if requested */}
+      {showWalkingPath && validAttractions.length > 1 && (
+        <WalkingPath points={validAttractions.map(a => a.position)} />
       )}
     </MapContainer>
   );
