@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { UserCog } from 'lucide-react';
+import { UserCog, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface ProfileHeaderProps {
   username: string | null;
@@ -10,6 +11,8 @@ interface ProfileHeaderProps {
 }
 
 export function ProfileHeader({ username, avatarUrl, bio, onEditClick }: ProfileHeaderProps) {
+  const navigate = useNavigate();
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -23,10 +26,16 @@ export function ProfileHeader({ username, avatarUrl, bio, onEditClick }: Profile
             {bio && <p className="text-muted-foreground">{bio}</p>}
           </div>
         </div>
-        <Button variant="outline" onClick={onEditClick}>
-          <UserCog className="mr-2 h-4 w-4" />
-          Modifica Profilo
-        </Button>
+        <div className="flex space-x-4">
+          <Button variant="ghost" onClick={() => navigate('/')}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Indietro
+          </Button>
+          <Button variant="outline" onClick={onEditClick}>
+            <UserCog className="mr-2 h-4 w-4" />
+            Modifica Profilo
+          </Button>
+        </div>
       </div>
     </div>
   );
