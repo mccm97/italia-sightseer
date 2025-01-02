@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { Route } from '@/data/routes';
 
-// Fix per le icone dei marker di default in React-Leaflet
+// Fix for default marker icons in React-Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -23,7 +23,7 @@ interface CityMapProps {
   showWalkingPath?: boolean;
 }
 
-// Component per aggiornare il percorso a piedi
+// Component for updating walking path
 const WalkingPath = ({ points }: { points: [number, number][] }) => {
   const map = useMap();
 
@@ -43,14 +43,14 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
           })
         );
 
-        // Rimuovi i vecchi layer se presenti
+        // Remove old layers if present
         map.eachLayer((layer) => {
           if (layer instanceof L.Polyline && layer.options.className === 'walking-path') {
             map.removeLayer(layer);
           }
         });
 
-        // Aggiungi i nuovi percorsi
+        // Add new paths
         paths.forEach(path => {
           L.polyline(path, {
             color: 'blue',
@@ -70,9 +70,23 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
   return null;
 };
 
-const CityMap = ({ center, attractions = [], routes = [], onRouteClick, showWalkingPath = false }: CityMapProps) => {
+const CityMap = ({ 
+  center = [41.9028, 12.4964], // Default to Rome coordinates
+  attractions = [], 
+  routes = [], 
+  onRouteClick, 
+  showWalkingPath = false 
+}: CityMapProps) => {
+  console.log('CityMap rendering with center:', center);
+
+  if (!center || center.some(coord => !Number.isFinite(coord))) {
+    console.warn('Invalid center coordinates, using default');
+    center = [41.9028, 12.4964]; // Default to Rome coordinates
+  }
+
   return (
     <MapContainer
+      key={`${center[0]}-${center[1]}`} // Force re-render when center changes
       center={center}
       zoom={13}
       className="w-full h-[500px] rounded-lg"
