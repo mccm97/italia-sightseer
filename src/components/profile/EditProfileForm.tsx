@@ -21,6 +21,7 @@ export function EditProfileForm({ initialProfile, onCancel, onSave }: EditProfil
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(profile?.avatar_url);
   const { toast } = useToast();
 
   const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,7 +50,18 @@ export function EditProfileForm({ initialProfile, onCancel, onSave }: EditProfil
         .from('avatars')
         .getPublicUrl(filePath);
 
+      // Update the profile in the database with the new avatar URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', profile.id);
+
+      if (updateError) throw updateError;
+
+      // Update local state
       setProfile({ ...profile, avatar_url: publicUrl });
+      setPreviewUrl(publicUrl);
+      
       toast({
         title: "Immagine caricata",
         description: "L'immagine del profilo è stata aggiornata",
@@ -109,7 +121,7 @@ export function EditProfileForm({ initialProfile, onCancel, onSave }: EditProfil
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="flex flex-col items-center space-y-4">
         <Avatar className="h-24 w-24">
-          <AvatarImage src={selectedImage || profile?.avatar_url} />
+          <AvatarImage src={selectedImage || previewUrl} />
           <AvatarFallback>{profile?.username?.[0]?.toUpperCase() || '?'}</AvatarFallback>
         </Avatar>
         <div className="flex items-center gap-2">
