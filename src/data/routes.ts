@@ -5,7 +5,7 @@ export interface Route {
   duration: number; // in minutes
   attractions: Array<{
     name: string;
-    position: [number, number];
+    position?: [number, number];
     visitDuration: number; // in minutes
     price?: number; // in euros
   }>;

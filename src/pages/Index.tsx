@@ -46,7 +46,6 @@ const Index = () => {
           `)
           .eq('city_id', selectedCity.id);
 
-        // If user is authenticated, also fetch their private routes
         if (user) {
           query.or(`is_public.eq.true,user_id.eq.${user.id}`);
         } else {
@@ -67,7 +66,6 @@ const Index = () => {
 
         console.log('Fetched routes:', routes);
 
-        // Transform the data to match the Route interface
         const transformedRoutes: Route[] = routes.map(route => ({
           id: route.id,
           cityName: selectedCity.name,
@@ -75,14 +73,19 @@ const Index = () => {
           duration: route.total_duration,
           attractions: route.route_attractions
             .filter(ra => ra.attraction) // Filter out any null attractions
-            .map((ra: any) => ({
-              name: ra.attraction.name,
-              position: ra.attraction.lat && ra.attraction.lng 
-                ? [ra.attraction.lat, ra.attraction.lng]
-                : undefined,
-              visitDuration: ra.attraction.visit_duration,
-              price: ra.attraction.price
-            }))
+            .map((ra: any) => {
+              const position: [number, number] | undefined = 
+                ra.attraction.lat != null && ra.attraction.lng != null
+                  ? [ra.attraction.lat, ra.attraction.lng]
+                  : undefined;
+              
+              return {
+                name: ra.attraction.name,
+                position,
+                visitDuration: ra.attraction.visit_duration,
+                price: ra.attraction.price || undefined
+              };
+            })
             .filter(attr => attr.position), // Only include attractions with valid positions
           isPublic: route.is_public
         }));
