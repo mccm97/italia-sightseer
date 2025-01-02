@@ -73,12 +73,17 @@ const Index = () => {
           cityName: selectedCity.name,
           name: route.name,
           duration: route.total_duration,
-          attractions: route.route_attractions.map((ra: any) => ({
-            name: ra.attraction.name,
-            position: [ra.attraction.lat, ra.attraction.lng],
-            visitDuration: ra.attraction.visit_duration,
-            price: ra.attraction.price
-          })),
+          attractions: route.route_attractions
+            .filter(ra => ra.attraction) // Filter out any null attractions
+            .map((ra: any) => ({
+              name: ra.attraction.name,
+              position: ra.attraction.lat && ra.attraction.lng 
+                ? [ra.attraction.lat, ra.attraction.lng]
+                : undefined,
+              visitDuration: ra.attraction.visit_duration,
+              price: ra.attraction.price
+            }))
+            .filter(attr => attr.position), // Only include attractions with valid positions
           isPublic: route.is_public
         }));
 
@@ -104,8 +109,17 @@ const Index = () => {
   };
 
   const handleRouteClick = (route: Route) => {
-    setSelectedRoute(route);
-    setShowRoutePreview(true);
+    // Only set the route if it has valid attractions with positions
+    if (route.attractions.some(attr => attr.position)) {
+      setSelectedRoute(route);
+      setShowRoutePreview(true);
+    } else {
+      toast({
+        title: "Errore",
+        description: "Questo percorso non ha attrazioni valide da visualizzare sulla mappa",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -171,7 +185,7 @@ const Index = () => {
               center={[selectedCity.lat, selectedCity.lng]}
               routes={cityRoutes}
               onRouteClick={handleRouteClick}
-              attractions={selectedRoute?.attractions || []}
+              attractions={selectedRoute?.attractions.filter(attr => attr.position) || []}
               showWalkingPath={!!selectedRoute}
             />
           </div>
@@ -221,10 +235,10 @@ const Index = () => {
               formData={{
                 name: selectedRoute.name,
                 city: {
-                  id: selectedCity?.id || 'temp-id', // Add the id property
+                  id: selectedCity?.id || 'temp-id',
                   name: selectedRoute.cityName,
-                  lat: selectedRoute.attractions[0].position[0],
-                  lng: selectedRoute.attractions[0].position[1],
+                  lat: selectedRoute.attractions[0]?.position?.[0] || selectedCity?.lat || 0,
+                  lng: selectedRoute.attractions[0]?.position?.[1] || selectedCity?.lng || 0,
                   country: selectedCity?.country
                 },
                 country: selectedCity?.country || 'Italy',
