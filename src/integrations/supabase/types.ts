@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       attractions: {
         Row: {
+          city_id: string | null
           created_at: string
           id: string
           lat: number
@@ -20,6 +21,7 @@ export type Database = {
           visit_duration: number
         }
         Insert: {
+          city_id?: string | null
           created_at?: string
           id?: string
           lat: number
@@ -29,6 +31,7 @@ export type Database = {
           visit_duration: number
         }
         Update: {
+          city_id?: string | null
           created_at?: string
           id?: string
           lat?: number
@@ -37,7 +40,15 @@ export type Database = {
           price?: number | null
           visit_duration?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "attractions_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       cities: {
         Row: {

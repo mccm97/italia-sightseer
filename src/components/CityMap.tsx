@@ -23,6 +23,13 @@ interface CityMapProps {
   showWalkingPath?: boolean;
 }
 
+// Helper function to validate coordinates
+const isValidCoordinate = (coord: [number, number]): boolean => {
+  return coord[0] !== 0 && coord[1] !== 0 && 
+         !isNaN(coord[0]) && !isNaN(coord[1]) &&
+         Math.abs(coord[0]) <= 90 && Math.abs(coord[1]) <= 180;
+};
+
 // Component to update walking path
 const WalkingPath = ({ points }: { points: [number, number][] }) => {
   const map = useMap();
@@ -30,14 +37,26 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
   useEffect(() => {
     if (points.length < 2) return;
 
+    // Validate all points before making the API call
+    const validPoints = points.filter(isValidCoordinate);
+    if (validPoints.length < 2) {
+      console.warn('Not enough valid points for walking path');
+      return;
+    }
+
     const fetchWalkingPath = async () => {
       try {
         const paths = await Promise.all(
-          points.slice(0, -1).map(async (start, i) => {
-            const end = points[i + 1];
+          validPoints.slice(0, -1).map(async (start, i) => {
+            const end = validPoints[i + 1];
             const response = await fetch(
               `https://router.project-osrm.org/route/v1/foot/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`
             );
+            
+            if (!response.ok) {
+              throw new Error(`OSRM API error: ${response.status} ${response.statusText}`);
+            }
+            
             const data = await response.json();
             return data.routes[0].geometry.coordinates.map((coord: [number, number]) => [coord[1], coord[0]]);
           })
@@ -71,9 +90,9 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
 };
 
 const CityMap = ({ center, attractions = [], routes = [], onRouteClick, showWalkingPath = false }: CityMapProps) => {
-  // Filter out attractions without positions
+  // Filter out attractions without positions and with invalid coordinates
   const validAttractions = attractions.filter((attr): attr is { name: string; position: [number, number] } => 
-    !!attr.position
+    !!attr.position && isValidCoordinate(attr.position)
   );
 
   return (
@@ -91,7 +110,9 @@ const CityMap = ({ center, attractions = [], routes = [], onRouteClick, showWalk
       {routes.map((route) => (
         <Polyline
           key={route.id}
-          positions={route.attractions.filter(a => a.position).map(a => a.position as [number, number])}
+          positions={route.attractions
+            .filter(a => a.position && isValidCoordinate(a.position))
+            .map(a => a.position as [number, number])}
           color="purple"
           weight={3}
           opacity={0.6}
