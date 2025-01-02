@@ -31,6 +31,10 @@ const Index = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  const handleLoginClick = () => {
+    navigate('/login');
+  };
+
   useEffect(() => {
     const fetchUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
