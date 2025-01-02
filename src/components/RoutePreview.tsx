@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { Button } from './ui/button';
+import CityMap from './CityMap';
+import { CreateRouteFormData } from '@/types/route';
 import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import CityMap from '@/components/CityMap';
 import { geocodeAddress } from '@/services/geocoding';
-import { Route } from '@/data/routes';
+import { useToast } from '@/hooks/use-toast';
 
 interface RoutePreviewProps {
-  formData: any;
+  formData: CreateRouteFormData;
   onBack: () => void;
-  onCreateRoute: () => void;
+  onCreateRoute?: () => void;
 }
 
-const RoutePreview: React.FC<RoutePreviewProps> = ({ formData, onBack, onCreateRoute }) => {
-  const [attractions, setAttractions] = useState<{ name: string, position: [number, number] }[]>([]);
+export function RoutePreview({ formData, onBack, onCreateRoute }: RoutePreviewProps) {
+  const [attractions, setAttractions] = useState<Array<{ name: string; position: [number, number] }>>([]);
   const [totalTravelTime, setTotalTravelTime] = useState(0);
   const { toast } = useToast();
 
@@ -21,9 +21,13 @@ const RoutePreview: React.FC<RoutePreviewProps> = ({ formData, onBack, onCreateR
     const loadAttractionPositions = async () => {
       try {
         const positions = await Promise.all(
-          formData.attractions.map(async (attraction: { name: string, address: string }) => {
-            const searchTerm = attraction.address || attraction.name;
+          formData.attractions.map(async (attraction) => {
+            const searchTerm = attraction.inputType === 'address' 
+              ? `${attraction.address}, ${formData.city?.name}, Italia`
+              : `${attraction.name}, ${formData.city?.name}, Italia`;
+              
             const position = await geocodeAddress(searchTerm);
+            
             return {
               name: attraction.name || attraction.address,
               position: position
@@ -106,6 +110,4 @@ const RoutePreview: React.FC<RoutePreviewProps> = ({ formData, onBack, onCreateR
       </div>
     </div>
   );
-};
-
-export default RoutePreview;
+}

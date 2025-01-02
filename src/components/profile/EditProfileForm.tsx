@@ -4,27 +4,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Check } from 'lucide-react';
 
-interface Profile {
-  id: string;
-  username: string | null;
-  avatar_url: string | null;
-  bio: string | null;
-  is_public: boolean | null;
-}
-
 interface EditProfileFormProps {
-  initialProfile: Profile;
+  initialProfile: { username: string | null; avatar_url: string | null; bio: string | null; is_public: boolean | null };
   onCancel: () => void;
   onSave: () => void;
 }
 
 export function EditProfileForm({ initialProfile, onCancel, onSave }: EditProfileFormProps) {
-  const [profile, setProfile] = useState<Profile>(initialProfile);
+  const [profile, setProfile] = useState(initialProfile);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -55,26 +46,11 @@ export function EditProfileForm({ initialProfile, onCancel, onSave }: EditProfil
 
     setUploading(true);
     try {
-      const { data, error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(`public/${profile.username}`, selectedImage, {
-          upsert: true
-        });
+      const { data, error } = await supabase.storage.from('avatars').upload(`public/${profile.username}`, selectedImage);
+      if (error) throw error;
+      const avatarUrl = data?.publicURL;
 
-      if (uploadError) throw uploadError;
-
-      if (data) {
-        const { data: { publicUrl } } = supabase.storage
-          .from('avatars')
-          .getPublicUrl(data.path);
-
-        setProfile((prev) => ({ ...prev, avatar_url: publicUrl }));
-        
-        toast({
-          title: "Immagine caricata",
-          description: "L'immagine del profilo è stata aggiornata con successo",
-        });
-      }
+      setProfile((prev) => ({ ...prev, avatar_url: avatarUrl }));
     } catch (error) {
       console.error('Error uploading avatar:', error);
       toast({
@@ -103,12 +79,7 @@ export function EditProfileForm({ initialProfile, onCancel, onSave }: EditProfil
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({
-          username: profile.username,
-          bio: profile.bio,
-          avatar_url: profile.avatar_url,
-          is_public: profile.is_public
-        })
+        .update(profile)
         .eq('id', profile.id);
 
       if (error) throw error;
@@ -134,7 +105,7 @@ export function EditProfileForm({ initialProfile, onCancel, onSave }: EditProfil
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="flex flex-col items-center space-y-4">
         <Avatar className="h-24 w-24">
-          <AvatarImage src={previewUrl || undefined} />
+          <AvatarImage src={selectedImage || previewUrl} />
           <AvatarFallback>{profile?.username?.[0]?.toUpperCase() || '?'}</AvatarFallback>
         </Avatar>
         <div className="flex items-center gap-2">
@@ -165,7 +136,7 @@ export function EditProfileForm({ initialProfile, onCancel, onSave }: EditProfil
         <Label htmlFor="username">Username *</Label>
         <Input
           id="username"
-          value={profile.username || ''}
+          value={profile?.username || ''}
           onChange={(e) => setProfile({ ...profile, username: e.target.value })}
           required
         />
@@ -175,7 +146,7 @@ export function EditProfileForm({ initialProfile, onCancel, onSave }: EditProfil
         <Label htmlFor="bio">Biografia (opzionale)</Label>
         <Textarea
           id="bio"
-          value={profile.bio || ''}
+          value={profile?.bio || ''}
           onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
         />
       </div>
@@ -183,7 +154,7 @@ export function EditProfileForm({ initialProfile, onCancel, onSave }: EditProfil
       <div className="flex items-center space-x-2">
         <Switch
           id="public-profile"
-          checked={profile.is_public || false}
+          checked={profile?.is_public || false}
           onCheckedChange={(checked) => setProfile({ ...profile, is_public: checked })}
         />
         <Label htmlFor="public-profile">Profilo pubblico</Label>

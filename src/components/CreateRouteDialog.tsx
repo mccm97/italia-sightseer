@@ -1,16 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { FormField, FormItem, FormLabel, FormControl, Form } from '@/components/ui/form';
-import { useNavigate } from 'react-router-dom';
-import CitySelect from '@/components/CitySelect';
-import CountrySelect from '@/components/CountrySelect';
-import { AttractionSelect } from '@/components/AttractionSelect';
-import RoutePreview from '@/components/RoutePreview';
+import { Form } from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
+import { Plus } from 'lucide-react';
+import { AttractionInput } from './AttractionInput';
 import { CreateRouteFormData } from '@/types/route';
+import { RoutePreview } from './RoutePreview';
+import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent } from './ui/card';
+import { supabase } from '@/integrations/supabase/client';
+import { CountrySelector } from './route/CountrySelector';
+import { CitySelector } from './route/CitySelector';
+import { FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { useNavigate } from 'react-router-dom';
 
 export function CreateRouteDialog() {
   const [open, setOpen] = useState(false);
@@ -56,8 +60,7 @@ export function CreateRouteDialog() {
       attractionsCount: 1,
       city: null,
       country: '',
-      attractions: [{ name: '', address: '', inputType: 'name', visitDuration: 0, price: 0 }],
-      transportMode: 'walking'
+      attractions: [{ name: '', address: '', inputType: 'name', visitDuration: 0, price: 0 }]
     }
   });
 
@@ -109,41 +112,97 @@ export function CreateRouteDialog() {
     if (!isFormValid()) return;
 
     try {
-      const formData = form.getValues();
-      const routeData = {
-        name: formData.name,
-        city_id: formData.city?.id,
-        user_id: user.id,
-        country: formData.country,
-        transport_mode: formData.transportMode || 'walking',
-        total_duration: formData.attractions.reduce((sum, attr) => sum + (attr.visitDuration || 0), 0),
-        total_distance: 0, // This will be calculated based on the actual route
-        is_public: false
-      };
+      console.log('Creating route with data:', form.getValues());
+      
+      // Get the current authenticated user
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Errore",
+          description: "Devi essere autenticato per creare un percorso.",
+          variant: "destructive"
+        });
+        return;
+      }
 
-      const { data, error } = await supabase
+      // First, create the route
+      const { data: route, error: routeError } = await supabase
         .from('routes')
-        .insert([routeData])
+        .insert({
+          name: form.getValues().name,
+          city_id: form.getValues().city?.id,
+          user_id: user.id,
+          transport_mode: form.getValues().transportMode || 'walking',
+          total_duration: calculateTotalDuration(),
+          total_distance: 0, // This would need to be calculated based on the actual route
+          country: form.getValues().country,
+          is_public: true
+        })
         .select()
         .single();
 
-      if (error) throw error;
-
-      if (data) {
-        toast({
-          title: "Percorso creato",
-          description: "Il tuo percorso è stato creato con successo",
-          variant: "default"
-        });
-
-        setOpen(false);
-        navigate(`/routes/${data.id}`);
+      if (routeError) {
+        console.error('Error creating route:', routeError);
+        throw new Error('Failed to create route');
       }
+
+      // Then, create attractions and link them to the route
+      const attractionsPromises = form.getValues().attractions.map(async (attr, index) => {
+        // First create the attraction
+        const { data: attraction, error: attractionError } = await supabase
+          .from('attractions')
+          .insert({
+            name: attr.name || attr.address,
+            lat: 0, // These would need to be set based on geocoding
+            lng: 0,
+            visit_duration: attr.visitDuration,
+            price: attr.price
+          })
+          .select()
+          .single();
+
+        if (attractionError) {
+          console.error('Error creating attraction:', attractionError);
+          throw new Error('Failed to create attraction');
+        }
+
+        // Then create the route_attraction link
+        const { error: linkError } = await supabase
+          .from('route_attractions')
+          .insert({
+            route_id: route.id,
+            attraction_id: attraction.id,
+            order_index: index,
+            transport_mode: form.getValues().transportMode || 'walking',
+            travel_duration: 0, // This would need to be calculated
+            travel_distance: 0 // This would need to be calculated
+          });
+
+        if (linkError) {
+          console.error('Error linking attraction to route:', linkError);
+          throw new Error('Failed to link attraction to route');
+        }
+      });
+
+      await Promise.all(attractionsPromises);
+
+      toast({
+        title: "Percorso creato con successo!",
+        description: `Il percorso "${form.getValues().name}" è stato creato.`,
+      });
+
+      // Reset form and close dialog
+      form.reset();
+      setOpen(false);
+      setShowPreview(false);
+      setShowSummary(false);
+      
     } catch (error) {
-      console.error('Error creating route:', error);
+      console.error('Error in route creation:', error);
       toast({
         title: "Errore",
-        description: "Si è verificato un errore durante la creazione del percorso",
+        description: "Si è verificato un errore durante la creazione del percorso.",
         variant: "destructive"
       });
     }
@@ -151,162 +210,141 @@ export function CreateRouteDialog() {
 
   const isFormValid = () => {
     const values = form.getValues();
-    return values.name.trim() !== '' && values.city && values.attractions.every(attr => 
-      attr.name.trim() !== '' || attr.address.trim() !== ''
-    );
+    return values.city && 
+           values.name && 
+           values.attractions.every(a => (a.name || a.address) && a.visitDuration > 0);
+  };
+
+  const calculateTotalDuration = () => {
+    return attractions.reduce((total, attr) => total + (attr.visitDuration || 0), 0);
+  };
+
+  const calculateTotalPrice = () => {
+    return attractions.reduce((total, attr) => total + (attr.price || 0), 0);
   };
 
   return (
-    <>
-      <Button onClick={() => handleOpenChange(true)}>
-        Crea Percorso
-      </Button>
-
-      {open && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-          <div className="bg-white rounded-lg p-4 w-full max-w-2xl">
-            <h2 className="text-2xl font-bold mb-4">Crea Nuovo Percorso</h2>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleShowPreview)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nome del Percorso</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="country"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Paese</FormLabel>
-                      <FormControl>
-                        <CountrySelect 
-                          countries={countries} 
-                          onCountrySelect={(country) => {
-                            field.onChange(country);
-                            setSelectedCountry(country);
-                          }} 
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="city"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Città</FormLabel>
-                      <FormControl>
-                        <CitySelect 
-                          cities={cities} 
-                          country={selectedCountry}
-                          onCitySelect={(city) => field.onChange(city)} 
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="attractionsCount"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Numero di Attrazioni</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                {attractions.map((attraction, index) => (
-                  <div key={index} className="space-y-2">
-                    <FormField
-                      control={form.control}
-                      name={`attractions.${index}.name`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nome Attrazione</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name={`attractions.${index}.address`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Indirizzo</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name={`attractions.${index}.visitDuration`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Durata Visita (minuti)</FormLabel>
-                          <FormControl>
-                            <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value))} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name={`attractions.${index}.price`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Prezzo (€)</FormLabel>
-                          <FormControl>
-                            <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                ))}
-
-                <div className="flex items-center justify-between mt-4">
-                  <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
-                    Annulla
-                  </Button>
-                  <Button type="submit">
-                    Anteprima
-                  </Button>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
+        <Button className="fixed bottom-6 right-6 rounded-full w-12 h-12 p-0">
+          <Plus className="w-6 h-6" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Crea Nuovo Percorso</DialogTitle>
+        </DialogHeader>
+        
+        {showPreview ? (
+          <RoutePreview
+            formData={form.getValues()}
+            onBack={handleBackFromPreview}
+            onCreateRoute={handleCreateRoute}
+          />
+        ) : showSummary ? (
+          <div className="space-y-4">
+            <Card>
+              <CardContent className="pt-6 space-y-2">
+                <h3 className="font-semibold text-lg">Riepilogo Percorso</h3>
+                <p><strong>Nome:</strong> {form.getValues().name}</p>
+                <p><strong>Città:</strong> {form.getValues().city?.name}</p>
+                <p><strong>Durata Totale:</strong> {calculateTotalDuration()} minuti</p>
+                <p><strong>Costo Totale:</strong> €{calculateTotalPrice().toFixed(2)}</p>
+                <div className="mt-4">
+                  <h4 className="font-medium">Attrazioni:</h4>
+                  <ul className="list-disc pl-5 mt-2">
+                    {attractions.map((attr, index) => (
+                      <li key={index}>
+                        {attr.name || attr.address} - {attr.visitDuration} min, €{attr.price}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-              </form>
-            </Form>
-
-            {showSummary && (
-              <RoutePreview
-                formData={form.getValues()}
-                onBack={handleBackFromPreview}
-                onCreateRoute={handleCreateRoute}
-              />
-            )}
+              </CardContent>
+            </Card>
+            
+            <div className="flex justify-between gap-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowSummary(false)}
+              >
+                Modifica
+              </Button>
+              <Button 
+                onClick={() => setShowPreview(true)}
+              >
+                Visualizza su Mappa
+              </Button>
+            </div>
           </div>
-        </div>
-      )}
-    </>
+        ) : (
+          <Form {...form}>
+            <form className="space-y-4">
+              <CountrySelector 
+                form={form}
+                countries={countries}
+                onCountrySelect={setSelectedCountry}
+              />
+              
+              <CitySelector 
+                form={form}
+                cities={cities}
+                selectedCountry={selectedCountry}
+              />
+              
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome del Percorso</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Inserisci il nome del percorso" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="attractionsCount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Numero di Attrazioni</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        min="1"
+                        placeholder="Inserisci il numero di attrazioni"
+                        {...field}
+                        onChange={e => field.onChange(parseInt(e.target.value))}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              {form.watch('attractions')?.map((_, index) => (
+                <AttractionInput
+                  key={index}
+                  index={index}
+                  form={form}
+                />
+              ))}
+
+              <div className="flex justify-end">
+                <Button 
+                  type="button" 
+                  onClick={handleShowPreview}
+                  disabled={!isFormValid()}
+                >
+                  Continua
+                </Button>
+              </div>
+            </form>
+          </Form>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }

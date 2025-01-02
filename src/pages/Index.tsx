@@ -3,14 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, ArrowLeft } from 'lucide-react';
-import CitySearch from '@/components/CitySearch';
+import { CitySearch } from '@/components/CitySearch';
 import { Button } from '@/components/ui/button';
-import { AuthButton } from '@/components/auth/AuthButton';
-import CityMap from '@/components/CityMap';
+import { AuthButton } from '@/components/auth/AuthButton'; // Importa il componente AuthButton
 
 export default function Index() {
   const [selectedCity, setSelectedCity] = useState(null);
-  const [selectedRoutes, setSelectedRoutes] = useState([]);
+  const [selectedRoute, setSelectedRoute] = useState(null);
   const [showRoutePreview, setShowRoutePreview] = useState(false);
   const [isLoadingRoutes, setIsLoadingRoutes] = useState(false);
   const navigate = useNavigate();
@@ -29,7 +28,7 @@ export default function Index() {
 
         if (error) throw error;
 
-        setSelectedRoutes(routes);
+        setSelectedRoute(routes);
       } catch (error) {
         console.error('Error fetching city routes:', error);
         toast({
@@ -47,21 +46,17 @@ export default function Index() {
 
   const handleBackClick = () => {
     setSelectedCity(null);
-    setSelectedRoutes([]);
+    setSelectedRoute(null);
   };
 
   const handleRouteClick = (route) => {
-    setSelectedRoutes(route);
+    setSelectedRoute(route);
     setShowRoutePreview(true);
-  };
-
-  const handleCreateRouteClick = () => {
-    // Logic to handle route creation
   };
 
   return (
     <div className="container mx-auto p-4 space-y-6">
-      <AuthButton />
+      <AuthButton /> {/* Aggiungi il componente AuthButton qui */}
       {!selectedCity ? (
         <div className="max-w-4xl mx-auto space-y-8 py-12">
           <div className="text-center space-y-4">
@@ -117,33 +112,7 @@ export default function Index() {
             <h1 className="text-3xl font-bold">{selectedCity.name}</h1>
             <div className="w-[100px]" />
           </div>
-          <CityMap center={selectedCity.center} attractions={selectedCity.attractions} />
-          <div className="mt-4">
-            {isLoadingRoutes ? (
-              <Loader2 className="h-8 w-8 animate-spin" />
-            ) : (
-              <>
-                {selectedRoutes.length > 0 ? (
-                  <div className="space-y-4">
-                    {selectedRoutes.map((route) => (
-                      <div key={route.id} className="p-4 border rounded-lg shadow-md">
-                        <h2 className="text-xl font-semibold">{route.name}</h2>
-                        <p>{route.description}</p>
-                        <Button variant="link" onClick={() => handleRouteClick(route)}>
-                          Visualizza dettagli
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground">Nessun percorso trovato per questa città.</p>
-                )}
-                <Button variant="primary" onClick={handleCreateRouteClick}>
-                  Crea un nuovo percorso
-                </Button>
-              </>
-            )}
-          </div>
+          {/* Aggiungi qui il resto del codice per visualizzare i dettagli del percorso */}
         </>
       )}
     </div>

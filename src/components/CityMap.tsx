@@ -23,7 +23,7 @@ interface CityMapProps {
   showWalkingPath?: boolean;
 }
 
-// Component for updating walking path
+// Component per aggiornare il percorso a piedi
 const WalkingPath = ({ points }: { points: [number, number][] }) => {
   const map = useMap();
 
@@ -43,14 +43,14 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
           })
         );
 
-        // Remove old layers if present
+        // Rimuovi i vecchi layer se presenti
         map.eachLayer((layer) => {
           if (layer instanceof L.Polyline && layer.options.className === 'walking-path') {
             map.removeLayer(layer);
           }
         });
 
-        // Add new paths
+        // Aggiungi i nuovi percorsi
         paths.forEach(path => {
           L.polyline(path, {
             color: 'blue',
@@ -70,23 +70,9 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
   return null;
 };
 
-const CityMap = ({ 
-  center = [41.9028, 12.4964], // Default to Rome coordinates
-  attractions = [], 
-  routes = [], 
-  onRouteClick, 
-  showWalkingPath = false 
-}: CityMapProps) => {
-  console.log('CityMap rendering with center:', center);
-
-  if (!center || center.some(coord => !Number.isFinite(coord))) {
-    console.warn('Invalid center coordinates, using default');
-    center = [41.9028, 12.4964]; // Default to Rome coordinates
-  }
-
+const CityMap = ({ center, attractions = [], routes = [], onRouteClick, showWalkingPath = false }: CityMapProps) => {
   return (
     <MapContainer
-      key={`${center[0]}-${center[1]}`} // Force re-render when center changes
       center={center}
       zoom={13}
       className="w-full h-[500px] rounded-lg"
@@ -96,6 +82,7 @@ const CityMap = ({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
       
+      {/* Mostra i percorsi esistenti */}
       {routes.map((route) => (
         <Polyline
           key={route.id}
@@ -109,6 +96,7 @@ const CityMap = ({
         />
       ))}
 
+      {/* Mostra i marker delle attrazioni */}
       {attractions.map((attraction, index) => (
         <Marker
           key={index}
@@ -117,6 +105,7 @@ const CityMap = ({
         />
       ))}
 
+      {/* Mostra il percorso a piedi se richiesto */}
       {showWalkingPath && attractions.length > 1 && (
         <WalkingPath points={attractions.map(a => a.position)} />
       )}

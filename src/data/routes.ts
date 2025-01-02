@@ -23,22 +23,22 @@ export const sampleRoutes: Route[] = [
         name: 'Colosseo',
         position: [41.8902, 12.4922],
         visitDuration: 90,
-        price: 16,
+        price: 16
       },
       {
         name: 'Fontana di Trevi',
         position: [41.9009, 12.4833],
         visitDuration: 30,
-        price: 0,
+        price: 0
       },
       {
         name: 'Pantheon',
         position: [41.8986, 12.4769],
         visitDuration: 60,
-        price: 0,
-      },
+        price: 0
+      }
     ],
-    isPublic: true,
+    isPublic: true
   },
   {
     id: '2',
@@ -50,15 +50,15 @@ export const sampleRoutes: Route[] = [
         name: 'Duomo',
         position: [43.7731, 11.2566],
         visitDuration: 60,
-        price: 18,
+        price: 18
       },
       {
         name: 'Galleria degli Uffizi',
         position: [43.7677, 11.2556],
         visitDuration: 90,
-        price: 20,
-      },
+        price: 20
+      }
     ],
-    isPublic: true,
-  },
+    isPublic: true
+  }
 ];
