@@ -15,6 +15,7 @@ const Index = () => {
     name: string;
     lat: number;
     lng: number;
+    country?: string;
   } | null>(null);
 
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
@@ -143,6 +144,7 @@ const Index = () => {
               formData={{
                 name: selectedRoute.name,
                 city: { name: selectedRoute.cityName, lat: selectedRoute.attractions[0].position[0], lng: selectedRoute.attractions[0].position[1] },
+                country: selectedCity?.country || 'Italy',
                 attractions: selectedRoute.attractions.map(attr => ({
                   name: attr.name,
                   address: '',
