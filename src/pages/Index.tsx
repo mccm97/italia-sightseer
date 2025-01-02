@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, ArrowLeft } from 'lucide-react';
-import { CitySearch } from '@/components/CitySearch';
+import CitySearch from '@/components/CitySearch'; // Changed from named to default import
 import { Button } from '@/components/ui/button';
-import { AuthButton } from '@/components/auth/AuthButton'; // Importa il componente AuthButton
+import { AuthButton } from '@/components/auth/AuthButton';
 
 export default function Index() {
   const [selectedCity, setSelectedCity] = useState(null);
@@ -56,7 +56,7 @@ export default function Index() {
 
   return (
     <div className="container mx-auto p-4 space-y-6">
-      <AuthButton /> {/* Aggiungi il componente AuthButton qui */}
+      <AuthButton />
       {!selectedCity ? (
         <div className="max-w-4xl mx-auto space-y-8 py-12">
           <div className="text-center space-y-4">
@@ -112,7 +112,6 @@ export default function Index() {
             <h1 className="text-3xl font-bold">{selectedCity.name}</h1>
             <div className="w-[100px]" />
           </div>
-          {/* Aggiungi qui il resto del codice per visualizzare i dettagli del percorso */}
         </>
       )}
     </div>
