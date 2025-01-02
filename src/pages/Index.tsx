@@ -12,6 +12,7 @@ import { RoutePreview } from '@/components/RoutePreview';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 const Index = () => {
   const [selectedCity, setSelectedCity] = useState<{
@@ -147,10 +148,17 @@ const Index = () => {
   return (
     <div className="container mx-auto p-4 space-y-6">
       <div className="flex justify-end">
-        <Button onClick={handleLoginClick} variant="ghost">
-          <LogIn className="mr-2 h-4 w-4" />
-          Accedi
-        </Button>
+        {user ? (
+          <Avatar onClick={() => navigate('/profile')} className="cursor-pointer">
+            <AvatarImage src={user.user_metadata.avatar_url} alt={user.email} />
+            <AvatarFallback>{user.email.charAt(0)}</AvatarFallback>
+          </Avatar>
+        ) : (
+          <Button onClick={handleLoginClick} variant="ghost">
+            <LogIn className="mr-2 h-4 w-4" />
+            Accedi
+          </Button>
+        )}
       </div>
       {!selectedCity ? (
         <div className="max-w-4xl mx-auto space-y-8 py-12">
