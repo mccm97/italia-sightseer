@@ -1,72 +1,71 @@
-import { useState, useEffect } from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch'; // Added missing import
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Loader2, Check } from 'lucide-react';
-
-interface Profile {
-  id: string; // Added missing id property
-  username: string | null;
-  avatar_url: string | null;
-  bio: string | null;
-  is_public: boolean | null;
-}
+import { supabase } from '@/integrations/supabase/client';
 
 interface EditProfileFormProps {
-  initialProfile: Profile;
+  initialProfile: any;
   onCancel: () => void;
   onSave: () => void;
 }
 
 export function EditProfileForm({ initialProfile, onCancel, onSave }: EditProfileFormProps) {
-  const [profile, setProfile] = useState<Profile>(initialProfile);
+  const [profile, setProfile] = useState(initialProfile);
+  const [avatar, setAvatar] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(initialProfile.avatar_url);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(profile?.avatar_url);
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (selectedImage) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result as string);
-      };
-      reader.readAsDataURL(selectedImage);
-    } else {
-      setPreviewUrl(initialProfile.avatar_url);
-    }
-  }, [selectedImage, initialProfile.avatar_url]);
-
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedImage(file);
+  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      const file = event.target.files[0];
+      setAvatar(file);
+      setSelectedImage(URL.createObjectURL(file));
     }
   };
 
   const handleConfirmAvatar = async () => {
-    if (!selectedImage) return;
-
+    if (!avatar) return;
     setUploading(true);
-    try {
-      const { data, error } = await supabase.storage
-        .from('avatars')
-        .upload(`public/${profile.username}`, selectedImage);
-      
-      if (error) throw error;
 
-      // Get the public URL using getPublicUrl instead of accessing publicURL directly
+    try {
+      const fileExt = avatar.name.split('.').pop();
+      const filePath = `${profile.id}/${Math.random()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, avatar);
+
+      if (uploadError) throw uploadError;
+
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
-        .getPublicUrl(`public/${profile.username}`);
+        .getPublicUrl(filePath);
 
-      setProfile((prev) => ({ ...prev, avatar_url: publicUrl }));
+      // Update the profile in the database with the new avatar URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', profile.id);
+
+      if (updateError) throw updateError;
+
+      // Update local state
+      setProfile({ ...profile, avatar_url: publicUrl });
+      setPreviewUrl(publicUrl);
+      
+      toast({
+        title: "Immagine caricata",
+        description: "L'immagine del profilo è stata aggiornata",
+      });
     } catch (error) {
       console.error('Error uploading avatar:', error);
       toast({
@@ -76,6 +75,7 @@ export function EditProfileForm({ initialProfile, onCancel, onSave }: EditProfil
       });
     } finally {
       setUploading(false);
+      setAvatar(null);
       setSelectedImage(null);
     }
   };
@@ -95,12 +95,7 @@ export function EditProfileForm({ initialProfile, onCancel, onSave }: EditProfil
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({
-          username: profile.username,
-          bio: profile.bio,
-          avatar_url: profile.avatar_url,
-          is_public: profile.is_public
-        })
+        .update(profile)
         .eq('id', profile.id);
 
       if (error) throw error;
@@ -126,7 +121,7 @@ export function EditProfileForm({ initialProfile, onCancel, onSave }: EditProfil
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="flex flex-col items-center space-y-4">
         <Avatar className="h-24 w-24">
-          <AvatarImage src={previewUrl || undefined} />
+          <AvatarImage src={selectedImage || previewUrl} />
           <AvatarFallback>{profile?.username?.[0]?.toUpperCase() || '?'}</AvatarFallback>
         </Avatar>
         <div className="flex items-center gap-2">
@@ -187,9 +182,12 @@ export function EditProfileForm({ initialProfile, onCancel, onSave }: EditProfil
         </Button>
         <Button type="submit" disabled={loading}>
           {loading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Salvataggio...
+            </>
           ) : (
-            'Salva'
+            'Salva modifiche'
           )}
         </Button>
       </div>
