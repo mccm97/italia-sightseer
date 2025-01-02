@@ -1,11 +1,11 @@
 import { FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
-import { CreateRouteFormData } from '@/types/route';
+import { CreateRouteFormData, City } from '@/types/route';
 
 interface CitySelectorProps {
   form: UseFormReturn<CreateRouteFormData>;
-  cities: any[];
+  cities: City[];
   selectedCountry: string;
 }
 
@@ -31,8 +31,8 @@ export function CitySelector({ form, cities, selectedCountry }: CitySelectorProp
                 <SelectValue placeholder="Seleziona una città" />
               </SelectTrigger>
               <SelectContent>
-                {filteredCities.map((city, index) => (
-                  <SelectItem key={index} value={city.name}>
+                {filteredCities.map((city) => (
+                  <SelectItem key={city.id} value={city.name}>
                     {city.name}
                   </SelectItem>
                 ))}
