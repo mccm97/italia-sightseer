@@ -82,7 +82,6 @@ const CityMap = ({ center, attractions = [], routes = [], onRouteClick, showWalk
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
       
-      {/* Mostra i percorsi esistenti */}
       {routes.map((route) => (
         <Polyline
           key={route.id}
@@ -96,7 +95,6 @@ const CityMap = ({ center, attractions = [], routes = [], onRouteClick, showWalk
         />
       ))}
 
-      {/* Mostra i marker delle attrazioni */}
       {attractions.map((attraction, index) => (
         <Marker
           key={index}
@@ -105,7 +103,6 @@ const CityMap = ({ center, attractions = [], routes = [], onRouteClick, showWalk
         />
       ))}
 
-      {/* Mostra il percorso a piedi se richiesto */}
       {showWalkingPath && attractions.length > 1 && (
         <WalkingPath points={attractions.map(a => a.position)} />
       )}
