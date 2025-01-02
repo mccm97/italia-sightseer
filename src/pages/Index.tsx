@@ -212,7 +212,13 @@ const Index = () => {
             <RoutePreview
               formData={{
                 name: selectedRoute.name,
-                city: { name: selectedRoute.cityName, lat: selectedRoute.attractions[0].position[0], lng: selectedRoute.attractions[0].position[1] },
+                city: {
+                  id: selectedCity?.id || 'temp-id', // Add the id property
+                  name: selectedRoute.cityName,
+                  lat: selectedRoute.attractions[0].position[0],
+                  lng: selectedRoute.attractions[0].position[1],
+                  country: selectedCity?.country
+                },
                 country: selectedCity?.country || 'Italy',
                 attractions: selectedRoute.attractions.map(attr => ({
                   name: attr.name,
