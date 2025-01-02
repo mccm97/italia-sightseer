@@ -9,8 +9,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getMonumentSuggestions } from '../services/attractions';
-import 'leaflet-control-geocoder/dist/Control.Geocoder.css';
 import * as L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import 'leaflet-control-geocoder';
 
 interface AttractionSelectProps {
