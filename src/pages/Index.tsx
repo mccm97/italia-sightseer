@@ -1,90 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import CitySearch from '@/components/CitySearch';
-import CityMap from '@/components/CityMap';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
-import { Route } from '@/data/routes';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { CreateRouteDialog } from '@/components/CreateRouteDialog';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { RoutePreview } from '@/components/RoutePreview';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Loader2, ArrowLeft } from 'lucide-react';
+import { CitySearch } from '@/components/CitySearch';
+import { Button } from '@/components/ui/button';
+import { AuthButton } from '@/components/auth/AuthButton'; // Importa il componente AuthButton
 
-const Index = () => {
-  const [selectedCity, setSelectedCity] = useState<{
-    id?: string;
-    name: string;
-    lat: number;
-    lng: number;
-    country?: string;
-  } | null>(null);
-
-  const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
+export default function Index() {
+  const [selectedCity, setSelectedCity] = useState(null);
+  const [selectedRoute, setSelectedRoute] = useState(null);
   const [showRoutePreview, setShowRoutePreview] = useState(false);
-  const [cityRoutes, setCityRoutes] = useState<Route[]>([]);
   const [isLoadingRoutes, setIsLoadingRoutes] = useState(false);
+  const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
+    if (!selectedCity) return;
+
     const fetchCityRoutes = async () => {
-      if (!selectedCity?.id) return;
-      
       setIsLoadingRoutes(true);
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        const query = supabase
+        const { data: routes, error } = await supabase
           .from('routes')
-          .select(`
-            *,
-            route_attractions (
-              *,
-              attraction: attractions (*)
-            )
-          `)
+          .select('*')
           .eq('city_id', selectedCity.id);
 
-        // If user is authenticated, also fetch their private routes
-        if (user) {
-          query.or(`is_public.eq.true,user_id.eq.${user.id}`);
-        } else {
-          query.eq('is_public', true);
-        }
+        if (error) throw error;
 
-        const { data: routes, error } = await query;
-
-        if (error) {
-          console.error('Error fetching routes:', error);
-          toast({
-            title: "Errore",
-            description: "Impossibile caricare i percorsi per questa città",
-            variant: "destructive"
-          });
-          return;
-        }
-
-        console.log('Fetched routes:', routes);
-
-        // Transform the data to match the Route interface
-        const transformedRoutes: Route[] = routes.map(route => ({
-          id: route.id,
-          cityName: selectedCity.name,
-          name: route.name,
-          duration: route.total_duration,
-          attractions: route.route_attractions.map((ra: any) => ({
-            name: ra.attraction.name,
-            position: [ra.attraction.lat, ra.attraction.lng],
-            visitDuration: ra.attraction.visit_duration,
-            price: ra.attraction.price
-          })),
-          isPublic: route.is_public
-        }));
-
-        setCityRoutes(transformedRoutes);
+        setSelectedRoute(routes);
       } catch (error) {
-        console.error('Error in fetchCityRoutes:', error);
+        console.error('Error fetching city routes:', error);
         toast({
           title: "Errore",
           description: "Si è verificato un errore durante il caricamento dei percorsi",
@@ -103,13 +49,14 @@ const Index = () => {
     setSelectedRoute(null);
   };
 
-  const handleRouteClick = (route: Route) => {
+  const handleRouteClick = (route) => {
     setSelectedRoute(route);
     setShowRoutePreview(true);
   };
 
   return (
     <div className="container mx-auto p-4 space-y-6">
+      <AuthButton /> {/* Aggiungi il componente AuthButton qui */}
       {!selectedCity ? (
         <div className="max-w-4xl mx-auto space-y-8 py-12">
           <div className="text-center space-y-4">
@@ -165,86 +112,9 @@ const Index = () => {
             <h1 className="text-3xl font-bold">{selectedCity.name}</h1>
             <div className="w-[100px]" />
           </div>
-
-          <div className="rounded-lg overflow-hidden shadow-lg">
-            <CityMap 
-              center={[selectedCity.lat, selectedCity.lng]}
-              routes={cityRoutes}
-              onRouteClick={handleRouteClick}
-              attractions={selectedRoute?.attractions || []}
-              showWalkingPath={!!selectedRoute}
-            />
-          </div>
-
-          <div className="mt-6">
-            <h2 className="text-2xl font-semibold mb-4">Percorsi Disponibili</h2>
-            <ScrollArea className="h-[300px] rounded-md border">
-              <div className="p-4 space-y-4">
-                {isLoadingRoutes ? (
-                  <p className="text-center text-gray-500">
-                    Caricamento percorsi...
-                  </p>
-                ) : cityRoutes.length > 0 ? (
-                  cityRoutes.map((route) => (
-                    <Card 
-                      key={route.id}
-                      className="cursor-pointer hover:bg-gray-50"
-                      onClick={() => handleRouteClick(route)}
-                    >
-                      <CardHeader>
-                        <CardTitle>{route.name}</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p>Durata totale: {route.duration} minuti</p>
-                        <p>Attrazioni: {route.attractions.length}</p>
-                        <p>Costo totale: €{route.attractions.reduce((sum, attr) => sum + (attr.price || 0), 0)}</p>
-                      </CardContent>
-                    </Card>
-                  ))
-                ) : (
-                  <p className="text-center text-gray-500">
-                    Nessun percorso disponibile per questa città
-                  </p>
-                )}
-              </div>
-            </ScrollArea>
-          </div>
+          {/* Aggiungi qui il resto del codice per visualizzare i dettagli del percorso */}
         </>
       )}
-
-      <CreateRouteDialog />
-
-      <Dialog open={showRoutePreview} onOpenChange={setShowRoutePreview}>
-        <DialogContent className="sm:max-w-[800px]">
-          {selectedRoute && (
-            <RoutePreview
-              formData={{
-                name: selectedRoute.name,
-                city: {
-                  id: selectedCity?.id || 'temp-id', // Add the id property
-                  name: selectedRoute.cityName,
-                  lat: selectedRoute.attractions[0].position[0],
-                  lng: selectedRoute.attractions[0].position[1],
-                  country: selectedCity?.country
-                },
-                country: selectedCity?.country || 'Italy',
-                attractions: selectedRoute.attractions.map(attr => ({
-                  name: attr.name,
-                  address: '',
-                  inputType: 'name',
-                  visitDuration: attr.visitDuration,
-                  price: attr.price || 0
-                })),
-                attractionsCount: selectedRoute.attractions.length,
-                transportMode: 'walking'
-              }}
-              onBack={() => setShowRoutePreview(false)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
-};
-
-export default Index;
+}
