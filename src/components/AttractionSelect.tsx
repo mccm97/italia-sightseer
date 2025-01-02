@@ -9,6 +9,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getMonumentSuggestions } from '../services/attractions';
+import 'leaflet-control-geocoder/dist/Control.Geocoder.css';
+import * as L from 'leaflet';
+import 'leaflet-control-geocoder';
 
 interface AttractionSelectProps {
   value: string;
@@ -22,6 +25,8 @@ export function AttractionSelect({ value, onChange, inputType }: AttractionSelec
   const suggestions = getMonumentSuggestions(searchQuery);
 
   if (inputType === 'address') {
+    const geocoder = L.Control.Geocoder.nominatim();
+
     return (
       <Input
         type="text"
@@ -29,6 +34,15 @@ export function AttractionSelect({ value, onChange, inputType }: AttractionSelec
         onChange={(e) => onChange(e.target.value)}
         placeholder="Inserisci l'indirizzo esatto"
         className="w-full"
+        onFocus={() => {
+          geocoder.geocode(value, (results) => {
+            if (results.length > 0) {
+              const result = results[0];
+              setSearchQuery(result.name);
+              onChange(result.name);
+            }
+          });
+        }}
       />
     );
   }
