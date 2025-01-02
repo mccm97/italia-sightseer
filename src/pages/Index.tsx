@@ -33,9 +33,9 @@ const Index = () => {
       
       setIsLoadingRoutes(true);
       try {
-        console.log('Fetching routes for city:', selectedCity.id);
+        const { data: { user } } = await supabase.auth.getUser();
         
-        const { data: routes, error } = await supabase
+        const query = supabase
           .from('routes')
           .select(`
             *,
@@ -44,8 +44,16 @@ const Index = () => {
               attraction: attractions (*)
             )
           `)
-          .eq('city_id', selectedCity.id)
-          .eq('is_public', true);
+          .eq('city_id', selectedCity.id);
+
+        // If user is authenticated, also fetch their private routes
+        if (user) {
+          query.or(`is_public.eq.true,user_id.eq.${user.id}`);
+        } else {
+          query.eq('is_public', true);
+        }
+
+        const { data: routes, error } = await query;
 
         if (error) {
           console.error('Error fetching routes:', error);

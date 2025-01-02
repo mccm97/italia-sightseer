@@ -14,6 +14,7 @@ import { CountrySelector } from './route/CountrySelector';
 import { CitySelector } from './route/CitySelector';
 import { FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { useNavigate } from 'react-router-dom';
 
 export function CreateRouteDialog() {
   const [open, setOpen] = useState(false);
@@ -22,7 +23,17 @@ export function CreateRouteDialog() {
   const [cities, setCities] = useState([]);
   const [countries, setCountries] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState('');
+  const [user, setUser] = useState<any>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    getUser();
+  }, []);
 
   useEffect(() => {
     const fetchCities = async () => {
@@ -52,6 +63,19 @@ export function CreateRouteDialog() {
       attractions: [{ name: '', address: '', inputType: 'name', visitDuration: 0, price: 0 }]
     }
   });
+
+  const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen && !user) {
+      toast({
+        title: "Accesso richiesto",
+        description: "Devi essere autenticato per creare un percorso",
+        variant: "destructive"
+      });
+      navigate('/login');
+      return;
+    }
+    setOpen(newOpen);
+  };
 
   const attractionsCount = form.watch('attractionsCount');
   const attractions = form.watch('attractions');
@@ -200,7 +224,7 @@ export function CreateRouteDialog() {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button className="fixed bottom-6 right-6 rounded-full w-12 h-12 p-0">
           <Plus className="w-6 h-6" />
