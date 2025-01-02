@@ -1,8 +1,10 @@
-import { Route } from '@/data/routes';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
-import { Route as RouteIcon, RouteOff } from 'lucide-react';
+import { Route, RouteOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Tables } from '@/integrations/supabase/types';
+
+type DbRoute = Tables<'routes'>;
 
 export function UserRoutes() {
   const { data: routes, isLoading } = useQuery({
@@ -10,11 +12,11 @@ export function UserRoutes() {
     queryFn: async () => {
       const { data: routes, error } = await supabase
         .from('routes')
-        .select('*')
+        .select('*, cities(name)')
         .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
 
       if (error) throw error;
-      return routes as Route[];
+      return routes as (DbRoute & { cities: { name: string } })[];
     },
   });
 
@@ -31,9 +33,9 @@ export function UserRoutes() {
               to={`/routes/${route.id}`}
               className="p-4 border rounded-lg hover:bg-accent transition-colors"
             >
-              <RouteIcon className="mb-2 h-5 w-5" />
+              <Route className="mb-2 h-5 w-5" />
               <h3 className="font-medium">{route.name}</h3>
-              <p className="text-sm text-muted-foreground">{route.cityName}</p>
+              <p className="text-sm text-muted-foreground">{route.cities.name}</p>
             </Link>
           ))}
         </div>
