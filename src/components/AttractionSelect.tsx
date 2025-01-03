@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Select,
   SelectContent,
@@ -14,12 +14,23 @@ interface AttractionSelectProps {
   value: string;
   onChange: (value: string) => void;
   inputType: 'name' | 'address';
+  cityId?: string;
 }
 
-export function AttractionSelect({ value, onChange, inputType }: AttractionSelectProps) {
+export function AttractionSelect({ value, onChange, inputType, cityId }: AttractionSelectProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  
-  const suggestions = getMonumentSuggestions(searchQuery);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (cityId) {
+        const monumentSuggestions = await getMonumentSuggestions(searchQuery, cityId);
+        setSuggestions(monumentSuggestions);
+      }
+    };
+
+    fetchSuggestions();
+  }, [searchQuery, cityId]);
 
   if (inputType === 'address') {
     return (

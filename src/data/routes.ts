@@ -8,12 +8,15 @@ export interface Route {
   id: string;
   cityName: string;
   name: string;
-  duration: number; // in minutes
+  duration: number;
+  creator?: {
+    username: string;
+  };
   attractions: Array<{
     name: string;
     position?: [number, number];
-    visitDuration: number; // in minutes
-    price?: number; // in euros
+    visitDuration: number;
+    price?: number;
   }>;
   isPublic: boolean;
   directions?: DirectionsStep[];

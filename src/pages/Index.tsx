@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import CityMap from '@/components/CityMap';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, LogIn } from 'lucide-react';
-import { Route } from '@/data/routes';
+import { useNavigate } from 'react-router-dom';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { CreateRouteDialog } from '@/components/CreateRouteDialog';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { RoutePreview } from '@/components/RoutePreview';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { CitySearchButton } from '@/components/home/CitySearchButton';
 import { DirectionsDialog } from '@/components/route/DirectionsDialog';
+import { Header } from '@/components/layout/Header';
+import { RouteCard } from '@/components/route/RouteCard';
+import CityMap from '@/components/CityMap';
+import { Route } from '@/data/routes';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 const Index = () => {
   const [selectedCity, setSelectedCity] = useState<{
@@ -65,7 +65,8 @@ const Index = () => {
             route_attractions (
               *,
               attraction: attractions (*)
-            )
+            ),
+            creator:profiles (username)
           `)
           .eq('city_id', selectedCity.id);
 
@@ -94,8 +95,9 @@ const Index = () => {
           cityName: selectedCity.name,
           name: route.name,
           duration: route.total_duration,
+          creator: route.creator,
           attractions: route.route_attractions
-            .filter(ra => ra.attraction) // Filter out any null attractions
+            .filter(ra => ra.attraction)
             .map((ra: any) => {
               const position: [number, number] | undefined = 
                 ra.attraction.lat != null && ra.attraction.lng != null
@@ -109,8 +111,9 @@ const Index = () => {
                 price: ra.attraction.price || undefined
               };
             })
-            .filter(attr => attr.position), // Only include attractions with valid positions
-          isPublic: route.is_public
+            .filter(attr => attr.position),
+          isPublic: route.is_public,
+          directions: route.directions
         }));
 
         setCityRoutes(transformedRoutes);
@@ -153,27 +156,10 @@ const Index = () => {
 
   return (
     <div className="container mx-auto p-4 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Italia Sightseer</h1>
-        {user ? (
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-medium">{user.username}</span>
-            <Avatar onClick={() => navigate('/profile')} className="cursor-pointer">
-              <AvatarImage src={user.avatar_url} alt={user.username || user.email} />
-              <AvatarFallback>{(user.username || user.email)?.[0]?.toUpperCase()}</AvatarFallback>
-            </Avatar>
-          </div>
-        ) : (
-          <Button onClick={() => navigate('/login')} variant="ghost">
-            <LogIn className="mr-2 h-4 w-4" />
-            Accedi
-          </Button>
-        )}
-      </div>
+      <Header user={user} />
 
       {!selectedCity ? (
         <div className="max-w-4xl mx-auto space-y-8 py-12">
-          <div className="text-center space-y-4">
             <h1 className="text-4xl font-bold text-primary">Italia Sightseer</h1>
             <p className="text-xl text-muted-foreground">
               Pianifica i tuoi itinerari culturali in Italia con facilità
@@ -247,32 +233,15 @@ const Index = () => {
                   </p>
                 ) : cityRoutes.length > 0 ? (
                   cityRoutes.map((route) => (
-                    <Card 
+                    <RouteCard
                       key={route.id}
-                      className="cursor-pointer hover:bg-gray-50"
-                    >
-                      <CardHeader>
-                        <CardTitle className="flex justify-between items-center">
-                          <span>{route.name}</span>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedRouteDirections(route.directions || []);
-                              setShowDirections(true);
-                            }}
-                          >
-                            Visualizza Indicazioni
-                          </Button>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent onClick={() => handleRouteClick(route)}>
-                        <p>Durata totale: {route.duration} minuti</p>
-                        <p>Attrazioni: {route.attractions.length}</p>
-                        <p>Costo totale: €{route.attractions.reduce((sum, attr) => sum + (attr.price || 0), 0)}</p>
-                      </CardContent>
-                    </Card>
+                      route={route}
+                      onRouteClick={() => handleRouteClick(route)}
+                      onDirectionsClick={() => {
+                        setSelectedRouteDirections(route.directions || []);
+                        setShowDirections(true);
+                      }}
+                    />
                   ))
                 ) : (
                   <p className="text-center text-gray-500">

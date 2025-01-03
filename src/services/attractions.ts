@@ -1,16 +1,19 @@
-// Questo è un esempio di dati. In un'app reale, questi verrebbero da un'API
-const monumentiNapoli = [
-  "Castel dell'Ovo",
-  "Castel Nuovo (Maschio Angioino)",
-  "Castel Sant'Elmo",
-  "Castello del Carmine",
-  "Palazzo Reale",
-  "Teatro San Carlo",
-  "Galleria Umberto I",
-  "Duomo di Napoli",
-  "Cappella Sansevero",
-  "Catacombe di San Gennaro"
-];
+import { supabase } from '@/integrations/supabase/client';
+
+export const getMonumentSuggestions = async (query: string, cityId: string) => {
+  const { data: attractions, error } = await supabase
+    .from('attractions')
+    .select('name')
+    .eq('city_id', cityId)
+    .ilike('name', `%${query}%`);
+
+  if (error) {
+    console.error('Error fetching attractions:', error);
+    return [];
+  }
+
+  return attractions.map(attraction => attraction.name);
+};
 
 const indirizziNapoli = [
   "Via Partenope, 80132 Napoli NA",
@@ -24,13 +27,6 @@ const indirizziNapoli = [
   "Via Francesco de Sanctis, 19/21, 80134 Napoli NA",
   "Via Capodimonte, 13, 80136 Napoli NA"
 ];
-
-export const getMonumentSuggestions = (query: string) => {
-  const normalizedQuery = query.toLowerCase();
-  return monumentiNapoli.filter(monumento => 
-    monumento.toLowerCase().includes(normalizedQuery)
-  );
-};
 
 export const getAddressSuggestions = (query: string) => {
   const normalizedQuery = query.toLowerCase();
