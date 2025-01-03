@@ -28,7 +28,7 @@ const Index = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [showDirections, setShowDirections] = useState(false);
-  const [selectedRouteDirections, setSelectedRouteDirections] = useState<any[]>([]);
+  const [selectedRouteDirections, setSelectedRouteDirections] = useState<DirectionsStep[]>([]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -91,7 +91,7 @@ const Index = () => {
           duration: route.total_duration,
           creator: route.creator,
           attractions: route.route_attractions
-            .filter(ra => ra.attraction)
+            .filter((ra: any) => ra.attraction)
             .map((ra: any) => {
               const position: [number, number] | undefined = 
                 ra.attraction.lat != null && ra.attraction.lng != null
@@ -107,7 +107,11 @@ const Index = () => {
             })
             .filter(attr => attr.position),
           isPublic: route.is_public,
-          directions: route.directions as DirectionsStep[] || undefined
+          directions: route.directions ? (route.directions as any[]).map((dir: any) => ({
+            instruction: dir.instruction,
+            distance: dir.distance,
+            duration: dir.duration
+          })) as DirectionsStep[] : undefined
         }));
 
         setCityRoutes(transformedRoutes);
