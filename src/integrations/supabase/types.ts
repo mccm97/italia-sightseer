@@ -348,7 +348,7 @@ export type Database = {
     Functions: {
       can_create_route: {
         Args: {
-          user_id: string
+          input_user_id: string
         }
         Returns: boolean
       }
