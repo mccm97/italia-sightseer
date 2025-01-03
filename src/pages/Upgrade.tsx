@@ -29,7 +29,7 @@ const plans = [
   {
     name: "Silver",
     description: "Per gli esploratori frequenti",
-    price: "€4.99/mese",
+    price: "€29.99/mese",
     color: "bg-gray-400",
     features: [
       "10 percorsi al mese",
@@ -45,7 +45,7 @@ const plans = [
   {
     name: "Gold",
     description: "Per i veri appassionati",
-    price: "€9.99/mese",
+    price: "€39.99/mese",
     color: "bg-yellow-400",
     features: [
       "Percorsi illimitati",

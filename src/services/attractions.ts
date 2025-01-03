@@ -1,6 +1,8 @@
 import { supabase } from '@/integrations/supabase/client';
 
 export const getMonumentSuggestions = async (query: string, cityId: string) => {
+  console.log('Fetching monuments for city:', cityId, 'with query:', query);
+  
   const { data: attractions, error } = await supabase
     .from('attractions')
     .select('name')
@@ -12,6 +14,7 @@ export const getMonumentSuggestions = async (query: string, cityId: string) => {
     return [];
   }
 
+  console.log('Found attractions:', attractions);
   return attractions.map(attraction => attraction.name);
 };
 
