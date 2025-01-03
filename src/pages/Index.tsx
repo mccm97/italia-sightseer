@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import CitySearch from '@/components/CitySearch';
 import CityMap from '@/components/CityMap';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, LogIn } from 'lucide-react';
@@ -13,6 +12,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { CitySearchButton } from '@/components/home/CitySearchButton';
+import { DirectionsDialog } from '@/components/route/DirectionsDialog';
 
 const Index = () => {
   const [selectedCity, setSelectedCity] = useState<{
@@ -30,11 +31,21 @@ const Index = () => {
   const [user, setUser] = useState<any>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [showDirections, setShowDirections] = useState(false);
+  const [selectedRouteDirections, setSelectedRouteDirections] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('username, avatar_url')
+          .eq('id', user.id)
+          .single();
+        
+        setUser({ ...user, ...profile });
+      }
     };
     fetchUser();
   }, []);
@@ -123,17 +134,12 @@ const Index = () => {
     setSelectedRoute(null);
   };
 
-  const handleRouteClick = (route: Route) => {
-    // Only set the route if it has valid attractions with positions
-    if (route.attractions.some(attr => attr.position)) {
-      setSelectedRoute(route);
-      setShowRoutePreview(true);
-    } else {
-      toast({
-        title: "Errore",
-        description: "Questo percorso non ha attrazioni valide da visualizzare sulla mappa",
-        variant: "destructive"
-      });
+  const handleRouteClick = async (route: Route) => {
+    setSelectedRoute(route);
+    setShowRoutePreview(true);
+    
+    if (route.directions) {
+      setSelectedRouteDirections(route.directions);
     }
   };
 
@@ -147,19 +153,24 @@ const Index = () => {
 
   return (
     <div className="container mx-auto p-4 space-y-6">
-      <div className="flex justify-end">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Italia Sightseer</h1>
         {user ? (
-          <Avatar onClick={() => navigate('/profile')} className="cursor-pointer">
-            <AvatarImage src={user.user_metadata.avatar_url} alt={user.email} />
-            <AvatarFallback>{user.email.charAt(0)}</AvatarFallback>
-          </Avatar>
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium">{user.username}</span>
+            <Avatar onClick={() => navigate('/profile')} className="cursor-pointer">
+              <AvatarImage src={user.avatar_url} alt={user.username || user.email} />
+              <AvatarFallback>{(user.username || user.email)?.[0]?.toUpperCase()}</AvatarFallback>
+            </Avatar>
+          </div>
         ) : (
-          <Button onClick={handleLoginClick} variant="ghost">
+          <Button onClick={() => navigate('/login')} variant="ghost">
             <LogIn className="mr-2 h-4 w-4" />
             Accedi
           </Button>
         )}
       </div>
+
       {!selectedCity ? (
         <div className="max-w-4xl mx-auto space-y-8 py-12">
           <div className="text-center space-y-4">
@@ -172,7 +183,7 @@ const Index = () => {
           <div className="aspect-video relative rounded-xl overflow-hidden shadow-xl">
             <img 
               src="/lovable-uploads/172840ab-5378-44c5-941a-9be547232b05.png" 
-              alt="Vista panoramica di Barcellona" 
+              alt="Vista panoramica di una città italiana" 
               className="object-cover w-full h-full"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -198,7 +209,7 @@ const Index = () => {
           </div>
 
           <div className="max-w-xl mx-auto">
-            <CitySearch onCitySelect={setSelectedCity} />
+            <CitySearchButton onCitySelect={setSelectedCity} />
           </div>
         </div>
       ) : (
@@ -239,12 +250,24 @@ const Index = () => {
                     <Card 
                       key={route.id}
                       className="cursor-pointer hover:bg-gray-50"
-                      onClick={() => handleRouteClick(route)}
                     >
                       <CardHeader>
-                        <CardTitle>{route.name}</CardTitle>
+                        <CardTitle className="flex justify-between items-center">
+                          <span>{route.name}</span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedRouteDirections(route.directions || []);
+                              setShowDirections(true);
+                            }}
+                          >
+                            Visualizza Indicazioni
+                          </Button>
+                        </CardTitle>
                       </CardHeader>
-                      <CardContent>
+                      <CardContent onClick={() => handleRouteClick(route)}>
                         <p>Durata totale: {route.duration} minuti</p>
                         <p>Attrazioni: {route.attractions.length}</p>
                         <p>Costo totale: €{route.attractions.reduce((sum, attr) => sum + (attr.price || 0), 0)}</p>
@@ -293,6 +316,12 @@ const Index = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      <DirectionsDialog
+        isOpen={showDirections}
+        onClose={() => setShowDirections(false)}
+        directions={selectedRouteDirections}
+      />
     </div>
   );
 };

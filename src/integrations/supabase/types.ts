@@ -81,6 +81,8 @@ export type Database = {
           created_at: string
           id: string
           is_public: boolean | null
+          last_route_created_at: string | null
+          subscription_level: Database["public"]["Enums"]["subscription_level"]
           username: string | null
         }
         Insert: {
@@ -89,6 +91,8 @@ export type Database = {
           created_at?: string
           id: string
           is_public?: boolean | null
+          last_route_created_at?: string | null
+          subscription_level?: Database["public"]["Enums"]["subscription_level"]
           username?: string | null
         }
         Update: {
@@ -97,6 +101,8 @@ export type Database = {
           created_at?: string
           id?: string
           is_public?: boolean | null
+          last_route_created_at?: string | null
+          subscription_level?: Database["public"]["Enums"]["subscription_level"]
           username?: string | null
         }
         Relationships: []
@@ -149,11 +155,126 @@ export type Database = {
           },
         ]
       }
+      route_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          route_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          route_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          route_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "route_comments_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "routes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "route_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      route_likes: {
+        Row: {
+          created_at: string
+          id: string
+          route_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          route_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          route_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "route_likes_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "routes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "route_likes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      route_ratings: {
+        Row: {
+          created_at: string
+          id: string
+          rating: number
+          route_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          rating: number
+          route_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          rating?: number
+          route_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "route_ratings_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "routes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "route_ratings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       routes: {
         Row: {
           city_id: string
           country: string | null
           created_at: string
+          directions: Json | null
           id: string
           is_public: boolean | null
           name: string
@@ -166,6 +287,7 @@ export type Database = {
           city_id: string
           country?: string | null
           created_at?: string
+          directions?: Json | null
           id?: string
           is_public?: boolean | null
           name: string
@@ -178,6 +300,7 @@ export type Database = {
           city_id?: string
           country?: string | null
           created_at?: string
+          directions?: Json | null
           id?: string
           is_public?: boolean | null
           name?: string
@@ -203,15 +326,35 @@ export type Database = {
           },
         ]
       }
+      subscription_limits: {
+        Row: {
+          max_routes_per_month: number | null
+          subscription_level: string
+        }
+        Insert: {
+          max_routes_per_month?: number | null
+          subscription_level: string
+        }
+        Update: {
+          max_routes_per_month?: number | null
+          subscription_level?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      can_create_route: {
+        Args: {
+          user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      subscription_level: "bronze" | "silver" | "gold"
     }
     CompositeTypes: {
       [_ in never]: never

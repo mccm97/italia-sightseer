@@ -5,8 +5,8 @@ import { Routes, Route } from 'react-router-dom';
 import Profile from '@/pages/Profile';
 import Login from '@/pages/Login';
 import Index from '@/pages/Index';
+import Upgrade from '@/pages/Upgrade';
 
-// Create a client
 const queryClient = new QueryClient();
 
 function App() {
@@ -17,6 +17,7 @@ function App() {
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/upgrade" element={<Upgrade />} />
         </Routes>
         <Toaster />
       </BrowserRouter>
