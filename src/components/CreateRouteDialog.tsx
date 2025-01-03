@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useDirections } from '@/hooks/useDirections';
 import { CreateRouteForm } from './route/CreateRouteForm';
+import { Json } from '@/integrations/supabase/types';
 
 export function CreateRouteDialog() {
   const [open, setOpen] = useState(false);
