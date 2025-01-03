@@ -15,7 +15,7 @@ interface RouteCardProps {
 export function RouteCard({ route, onRouteClick, onDirectionsClick }: RouteCardProps) {
   const { toast } = useToast();
 
-  const { data: routeStats } = useQuery({
+  const { data: routeStats, refetch: refetchStats } = useQuery({
     queryKey: ['routeStats', route.id],
     queryFn: async () => {
       const [likesResponse, ratingsResponse] = await Promise.all([
@@ -41,35 +41,65 @@ export function RouteCard({ route, onRouteClick, onDirectionsClick }: RouteCardP
   });
 
   const handleLike = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      toast({
-        title: "Errore",
-        description: "Devi essere autenticato per mettere like",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const { error } = await supabase
-      .from('route_likes')
-      .insert({ route_id: route.id, user_id: user.id });
-
-    if (error) {
-      if (error.code === '23505') { // Unique violation
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
         toast({
           title: "Errore",
-          description: "Hai già messo like a questo percorso",
+          description: "Devi essere autenticato per mettere like",
           variant: "destructive"
         });
-      } else {
+        return;
+      }
+
+      // First check if the user has already liked this route
+      const { data: existingLike } = await supabase
+        .from('route_likes')
+        .select('id')
+        .eq('route_id', route.id)
+        .eq('user_id', user.id)
+        .single();
+
+      if (existingLike) {
+        // User has already liked this route
+        toast({
+          title: "Già messo like",
+          description: "Hai già messo like a questo percorso",
+          variant: "default"
+        });
+        return;
+      }
+
+      // If we get here, the user hasn't liked the route yet
+      const { error } = await supabase
+        .from('route_likes')
+        .insert({ route_id: route.id, user_id: user.id });
+
+      if (error) {
         console.error('Error liking route:', error);
         toast({
           title: "Errore",
           description: "Impossibile mettere like al percorso",
           variant: "destructive"
         });
+        return;
       }
+
+      // Refetch the stats to update the likes count
+      refetchStats();
+
+      toast({
+        title: "Like aggiunto",
+        description: "Hai messo like al percorso",
+      });
+
+    } catch (error) {
+      console.error('Error in handleLike:', error);
+      toast({
+        title: "Errore",
+        description: "Si è verificato un errore durante l'operazione",
+        variant: "destructive"
+      });
     }
   };
 
