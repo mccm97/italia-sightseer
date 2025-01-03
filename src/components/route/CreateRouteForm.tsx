@@ -7,6 +7,7 @@ import { CitySelector } from './CitySelector';
 import { FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useEffect } from 'react';
 
 interface CreateRouteFormProps {
   onSubmit: (data: CreateRouteFormData) => void;
@@ -34,6 +35,12 @@ export function CreateRouteForm({
   });
 
   const attractionsCount = form.watch('attractionsCount');
+
+  useEffect(() => {
+    const currentAttractions = form.getValues('attractions');
+    const updatedAttractions = Array(attractionsCount).fill({ name: '', address: '', inputType: 'name', visitDuration: 0, price: 0 }).map((attr, index) => currentAttractions[index] || attr);
+    form.setValue('attractions', updatedAttractions);
+  }, [attractionsCount, form]);
 
   return (
     <Form {...form}>
