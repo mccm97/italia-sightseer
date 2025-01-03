@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { DirectionsDialog } from '@/components/route/DirectionsDialog';
 import { Header } from '@/components/layout/Header';
-import { Route } from '@/data/routes';
+import { Route, DirectionsStep } from '@/data/routes';
 import { HomeHero } from '@/components/home/HomeHero';
 import { CityView } from '@/components/city/CityView';
 
@@ -107,7 +107,7 @@ const Index = () => {
             })
             .filter(attr => attr.position),
           isPublic: route.is_public,
-          directions: route.directions
+          directions: route.directions as DirectionsStep[] || undefined
         }));
 
         setCityRoutes(transformedRoutes);
