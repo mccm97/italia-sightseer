@@ -16,6 +16,7 @@ export function AttractionInput({
   form,
 }: AttractionInputProps) {
   const attraction = form.watch(`attractions.${index}`);
+  const selectedCity = form.watch('city');
 
   return (
     <div className="space-y-4 p-4 border rounded-lg">
@@ -59,6 +60,7 @@ export function AttractionInput({
                   value={field.value}
                   onChange={field.onChange}
                   inputType={attraction?.inputType || 'name'}
+                  cityId={selectedCity?.id}
                 />
               </FormControl>
             </FormItem>

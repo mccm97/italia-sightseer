@@ -3,6 +3,11 @@ import { supabase } from '@/integrations/supabase/client';
 export const getMonumentSuggestions = async (query: string, cityId: string) => {
   console.log('Fetching monuments for city:', cityId, 'with query:', query);
   
+  if (!cityId) {
+    console.log('No city ID provided, returning empty array');
+    return [];
+  }
+
   const { data: attractions, error } = await supabase
     .from('attractions')
     .select('name')
