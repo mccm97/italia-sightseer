@@ -135,7 +135,7 @@ export function CreateRouteDialog() {
           total_distance: 0,
           country: formData.country,
           is_public: true,
-          directions: directions
+          directions: directions as unknown as Json // Type assertion to match the database schema
         })
         .select()
         .single();

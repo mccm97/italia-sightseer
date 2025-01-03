@@ -1,3 +1,9 @@
+export interface DirectionsStep {
+  instruction: string;
+  distance: number;
+  duration: number;
+}
+
 export interface Route {
   id: string;
   cityName: string;
@@ -10,6 +16,7 @@ export interface Route {
     price?: number; // in euros
   }>;
   isPublic: boolean;
+  directions?: DirectionsStep[];
 }
 
 export const sampleRoutes: Route[] = [
