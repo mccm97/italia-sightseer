@@ -1,19 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { CreateRouteDialog } from '@/components/CreateRouteDialog';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { RoutePreview } from '@/components/RoutePreview';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { CitySearchButton } from '@/components/home/CitySearchButton';
 import { DirectionsDialog } from '@/components/route/DirectionsDialog';
 import { Header } from '@/components/layout/Header';
-import { RouteCard } from '@/components/route/RouteCard';
-import CityMap from '@/components/CityMap';
 import { Route } from '@/data/routes';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { HomeHero } from '@/components/home/HomeHero';
+import { CityView } from '@/components/city/CityView';
 
 const Index = () => {
   const [selectedCity, setSelectedCity] = useState<{
@@ -88,8 +84,6 @@ const Index = () => {
           return;
         }
 
-        console.log('Fetched routes:', routes);
-
         const transformedRoutes: Route[] = routes.map(route => ({
           id: route.id,
           cityName: selectedCity.name,
@@ -132,12 +126,7 @@ const Index = () => {
     fetchCityRoutes();
   }, [selectedCity, toast]);
 
-  const handleBackClick = () => {
-    setSelectedCity(null);
-    setSelectedRoute(null);
-  };
-
-  const handleRouteClick = async (route: Route) => {
+  const handleRouteClick = (route: Route) => {
     setSelectedRoute(route);
     setShowRoutePreview(true);
     
@@ -146,112 +135,28 @@ const Index = () => {
     }
   };
 
-  const handleLoginClick = () => {
-    if (user) {
-      navigate('/profile');
-    } else {
-      navigate('/login');
-    }
-  };
-
   return (
     <div className="container mx-auto p-4 space-y-6">
       <Header user={user} />
 
       {!selectedCity ? (
-        <div className="max-w-4xl mx-auto space-y-8 py-12">
-            <h1 className="text-4xl font-bold text-primary">Italia Sightseer</h1>
-            <p className="text-xl text-muted-foreground">
-              Pianifica i tuoi itinerari culturali in Italia con facilità
-            </p>
-          </div>
-          
-          <div className="aspect-video relative rounded-xl overflow-hidden shadow-xl">
-            <img 
-              src="/lovable-uploads/172840ab-5378-44c5-941a-9be547232b05.png" 
-              alt="Vista panoramica di una città italiana" 
-              className="object-cover w-full h-full"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-              <h2 className="text-2xl font-bold mb-2">Esplora le Città Italiane</h2>
-              <p className="text-lg">Crea percorsi personalizzati e scopri i monumenti più belli</p>
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6 text-center">
-            <div className="p-6 space-y-2">
-              <h3 className="font-semibold text-lg">Pianifica Percorsi</h3>
-              <p className="text-muted-foreground">Crea itinerari personalizzati per le tue visite culturali</p>
-            </div>
-            <div className="p-6 space-y-2">
-              <h3 className="font-semibold text-lg">Calcola Tempi e Costi</h3>
-              <p className="text-muted-foreground">Gestisci durata e budget del tuo itinerario</p>
-            </div>
-            <div className="p-6 space-y-2">
-              <h3 className="font-semibold text-lg">Esplora le Città</h3>
-              <p className="text-muted-foreground">Scopri i migliori percorsi nelle città italiane</p>
-            </div>
-          </div>
-
-          <div className="max-w-xl mx-auto">
-            <CitySearchButton onCitySelect={setSelectedCity} />
-          </div>
-        </div>
+        <HomeHero onCitySelect={setSelectedCity} />
       ) : (
-        <>
-          <div className="w-full flex items-center justify-between">
-            <Button 
-              variant="ghost" 
-              onClick={handleBackClick}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Indietro
-            </Button>
-            <h1 className="text-3xl font-bold">{selectedCity.name}</h1>
-            <div className="w-[100px]" />
-          </div>
-
-          <div className="rounded-lg overflow-hidden shadow-lg">
-            <CityMap 
-              center={[selectedCity.lat, selectedCity.lng]}
-              routes={cityRoutes}
-              onRouteClick={handleRouteClick}
-              attractions={selectedRoute?.attractions.filter(attr => attr.position) || []}
-              showWalkingPath={!!selectedRoute}
-            />
-          </div>
-
-          <div className="mt-6">
-            <h2 className="text-2xl font-semibold mb-4">Percorsi Disponibili</h2>
-            <ScrollArea className="h-[300px] rounded-md border">
-              <div className="p-4 space-y-4">
-                {isLoadingRoutes ? (
-                  <p className="text-center text-gray-500">
-                    Caricamento percorsi...
-                  </p>
-                ) : cityRoutes.length > 0 ? (
-                  cityRoutes.map((route) => (
-                    <RouteCard
-                      key={route.id}
-                      route={route}
-                      onRouteClick={() => handleRouteClick(route)}
-                      onDirectionsClick={() => {
-                        setSelectedRouteDirections(route.directions || []);
-                        setShowDirections(true);
-                      }}
-                    />
-                  ))
-                ) : (
-                  <p className="text-center text-gray-500">
-                    Nessun percorso disponibile per questa città
-                  </p>
-                )}
-              </div>
-            </ScrollArea>
-          </div>
-        </>
+        <CityView
+          city={selectedCity}
+          routes={cityRoutes}
+          isLoadingRoutes={isLoadingRoutes}
+          selectedRoute={selectedRoute}
+          onBackClick={() => {
+            setSelectedCity(null);
+            setSelectedRoute(null);
+          }}
+          onRouteClick={handleRouteClick}
+          onDirectionsClick={(directions) => {
+            setSelectedRouteDirections(directions);
+            setShowDirections(true);
+          }}
+        />
       )}
 
       <CreateRouteDialog />
