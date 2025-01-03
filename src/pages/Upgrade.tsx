@@ -73,9 +73,7 @@ export default function Upgrade() {
         <Card>
           <CardHeader>
             <CardTitle>Gold</CardTitle>
-            <Car
-
-dDescription>Per i veri appassionati</CardDescription>
+            <CardDescription>Per i veri appassionati</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold mb-6">€9.99/mese</div>
