@@ -14,7 +14,6 @@ export function useRouteCreation() {
 
   const handleFormSubmit = async (data: CreateRouteFormData, userId: string) => {
     try {
-      // Check if user can create route - Note the parameter name change here
       const { data: canCreate, error: checkError } = await supabase
         .rpc('can_create_route', { input_user_id: userId });
 
@@ -153,6 +152,7 @@ export function useRouteCreation() {
 
   return {
     formData,
+    setFormData,
     handleFormSubmit,
     createRoute,
     calculateTotalDuration,

@@ -23,6 +23,7 @@ export function CreateRouteDialog() {
   const navigate = useNavigate();
   const { 
     formData,
+    setFormData,
     handleFormSubmit,
     createRoute,
     calculateTotalDuration,
