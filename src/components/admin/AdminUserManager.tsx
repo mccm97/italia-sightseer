@@ -23,6 +23,7 @@ interface AdminUser {
   user_id: string;
   email?: string;
   created_at: string;
+  is_superadmin?: boolean;
 }
 
 export function AdminUserManager() {
@@ -37,7 +38,6 @@ export function AdminUserManager() {
   const fetchAdminUsers = async () => {
     try {
       console.log('Fetching admin users...');
-      // First get all admin users
       const { data: adminUsersData, error: adminError } = await supabase
         .from('admin_users')
         .select('*');
@@ -47,7 +47,6 @@ export function AdminUserManager() {
         return;
       }
 
-      // Then get their profile information
       const adminUsersWithProfiles = await Promise.all(
         adminUsersData.map(async (admin) => {
           const { data: profileData, error: profileError } = await supabase
@@ -61,14 +60,16 @@ export function AdminUserManager() {
             return {
               user_id: admin.user_id,
               created_at: admin.created_at,
-              email: 'Username not found'
+              email: 'Username not found',
+              is_superadmin: admin.is_superadmin
             };
           }
 
           return {
             user_id: admin.user_id,
             created_at: admin.created_at,
-            email: profileData?.username || 'Username not found'
+            email: profileData?.username || 'Username not found',
+            is_superadmin: admin.is_superadmin
           };
         })
       );
@@ -82,7 +83,6 @@ export function AdminUserManager() {
 
   const handleAddAdmin = async () => {
     try {
-      // First, get the user ID from the email
       const { data: userData, error: userError } = await supabase
         .from('profiles')
         .select('id')
@@ -93,7 +93,6 @@ export function AdminUserManager() {
         throw new Error('Utente non trovato');
       }
 
-      // Then add them as an admin
       const { error: adminError } = await supabase
         .from('admin_users')
         .insert({ user_id: userData.id });
@@ -154,33 +153,37 @@ export function AdminUserManager() {
                   {new Date(admin.created_at).toLocaleDateString()}
                 </TableCell>
                 <TableCell>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={async () => {
-                      const { error } = await supabase
-                        .from('admin_users')
-                        .delete()
-                        .eq('user_id', admin.user_id);
-                      
-                      if (error) {
-                        toast({
-                          title: "Errore",
-                          description: "Impossibile rimuovere l'amministratore",
-                          variant: "destructive",
-                        });
-                        return;
-                      }
+                  {!admin.is_superadmin ? (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={async () => {
+                        const { error } = await supabase
+                          .from('admin_users')
+                          .delete()
+                          .eq('user_id', admin.user_id);
+                        
+                        if (error) {
+                          toast({
+                            title: "Errore",
+                            description: "Impossibile rimuovere l'amministratore",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
 
-                      fetchAdminUsers();
-                      toast({
-                        title: "Successo",
-                        description: "Amministratore rimosso con successo",
-                      });
-                    }}
-                  >
-                    Rimuovi
-                  </Button>
+                        fetchAdminUsers();
+                        toast({
+                          title: "Successo",
+                          description: "Amministratore rimosso con successo",
+                        });
+                      }}
+                    >
+                      Rimuovi
+                    </Button>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">Super Admin</span>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
