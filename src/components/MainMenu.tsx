@@ -58,7 +58,7 @@ export function MainMenu() {
   const toggleLanguage = () => {
     const newLanguage = language === 'it' ? 'en' : 'it';
     setLanguage(newLanguage);
-    i18n.changeLanguage(newLanguage); // Aggiungi questa riga
+    i18n.changeLanguage(newLanguage); // Cambia la lingua nel sistema i18n
   };
 
   return (
