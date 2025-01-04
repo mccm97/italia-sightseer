@@ -11,6 +11,7 @@ import { Route, DirectionsStep } from '@/data/routes';
 import { HomeHero } from '@/components/home/HomeHero';
 import { CityView } from '@/components/city/CityView';
 import { CitySearchSection } from '@/components/home/CitySearchSection';
+import { generateSummary } from '@/services/summarization';
 
 interface City {
   id?: string;
@@ -31,6 +32,7 @@ const Index = () => {
   const navigate = useNavigate();
   const [showDirections, setShowDirections] = useState(false);
   const [selectedRouteDirections, setSelectedRouteDirections] = useState<DirectionsStep[]>([]);
+  const [routeSummary, setRouteSummary] = useState<string>('');
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -132,13 +134,16 @@ const Index = () => {
     fetchCityRoutes();
   }, [selectedCity, toast]);
 
-  const handleRouteClick = (route: Route) => {
+  const handleRouteClick = async (route: Route) => {
     setSelectedRoute(route);
     setShowRoutePreview(true);
     
     if (route.directions) {
       setSelectedRouteDirections(route.directions);
     }
+
+    const summary = await generateSummary(route.attractions);
+    setRouteSummary(summary);
   };
 
   return (
@@ -214,6 +219,12 @@ const Index = () => {
               }}
               onBack={() => setShowRoutePreview(false)}
             />
+          )}
+          {routeSummary && (
+            <div className="mt-4">
+              <h3 className="text-xl font-bold">Riassunto del percorso:</h3>
+              <p>{routeSummary}</p>
+            </div>
           )}
         </DialogContent>
       </Dialog>
