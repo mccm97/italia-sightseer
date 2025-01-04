@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 import { Json } from '@/integrations/supabase/types';
 import { useDirections } from './useDirections';
 import * as htmlToImage from 'html-to-image';
-import { saveAs } from 'file-saver';
 
 export function useRouteCreation() {
   const [formData, setFormData] = useState<CreateRouteFormData | null>(null);
@@ -131,8 +130,11 @@ export function useRouteCreation() {
       const mapElement = document.getElementById('map-preview');
       if (mapElement) {
         const dataUrl = await htmlToImage.toPng(mapElement);
-        const imgBlob = await (await fetch(dataUrl)).blob();
-        saveAs(imgBlob, 'route-preview.png');
+        await supabase.storage
+          .from('screenshots')
+          .upload(`screenshots/${route.id}.png`, dataUrl, {
+            contentType: 'image/png',
+          });
       }
 
       toast({
