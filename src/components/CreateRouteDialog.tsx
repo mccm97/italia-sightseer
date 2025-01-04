@@ -80,7 +80,7 @@ export function CreateRouteDialog() {
 
   const handleCreateRoute = async () => {
     const success = await createRoute();
-    if (success) {
+    if (success !== undefined) {  // Controlla se success non è undefined
       setFormData(null);
       setOpen(false);
       setShowPreview(false);
