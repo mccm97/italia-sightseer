@@ -37,6 +37,7 @@ export function UserRoutes() {
                 <Route className="mb-2 h-5 w-5" />
                 <h3 className="font-medium">{route.name}</h3>
                 <p className="text-sm text-muted-foreground">{route.cities.name}</p>
+                <img src={`/path/to/screenshot/${route.id}.png`} alt={`Screenshot del percorso ${route.name}`} />
               </Link>
               <div className="absolute top-2 right-2">
                 <DeleteRouteButton routeId={route.id} onDelete={() => refetch()} />
