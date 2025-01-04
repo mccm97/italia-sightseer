@@ -26,6 +26,12 @@ export interface CreateRouteFormData {
   transportMode: 'walking' | 'public';
 }
 
+export interface DirectionsStep {
+  instruction: string;
+  distance: number;
+  duration: number;
+}
+
 export interface Route {
   id: string;
   cityName: string;
