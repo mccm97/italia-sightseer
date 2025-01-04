@@ -49,25 +49,12 @@ export function AdminUserManager() {
       // Then get their profile information
       const adminUsersWithProfiles = await Promise.all(
         adminUsersData.map(async (admin) => {
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('email')
-            .eq('id', admin.user_id)
-            .single();
-
-          if (profileError) {
-            console.error('Error fetching profile:', profileError);
-            return {
-              user_id: admin.user_id,
-              created_at: admin.created_at,
-              email: 'Error fetching email'
-            };
-          }
-
+          const { data: userData } = await supabase.auth.admin.getUserById(admin.user_id);
+          
           return {
             user_id: admin.user_id,
             created_at: admin.created_at,
-            email: profileData?.email
+            email: userData?.user?.email || 'Email not found'
           };
         })
       );
