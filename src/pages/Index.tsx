@@ -148,7 +148,7 @@ const Index = () => {
       <section className="bg-gray-100 p-4 rounded-lg shadow-md">
         <h2 className="text-2xl font-bold mb-4">Chi Siamo</h2>
         <p>
-          Italia Sightseer è una piattaforma che ti aiuta a esplorare le meraviglie dell'Italia
+          WayWonder è una piattaforma che ti aiuta a esplorare le meraviglie dell'Italia
           attraverso percorsi personalizzati. Scopri le attrazioni culturali, pianifica i tuoi
           itinerari e vivi un'esperienza indimenticabile.
         </p>
@@ -165,7 +165,9 @@ const Index = () => {
       </section>
 
       {!selectedCity ? (
-        <CitySearchSection setSelectedCity={setSelectedCity} />
+        <div className="flex justify-center">
+          <CitySearchSection setSelectedCity={setSelectedCity} />
+        </div>
       ) : (
         <CityView
           city={selectedCity}
