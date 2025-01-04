@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { CreateRouteFormData } from '@/types/route';
 import { useToast } from './use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import { Json } from '@/integrations/supabase/types';
 import { useDirections } from './useDirections';
-import * as htmlToImage from 'html-to-image';
+import { toPng } from 'html-to-image';
+import { Json } from '@/integrations/supabase/types';
+import { CreateRouteFormData } from '@/types/route';
 
 export function useRouteCreation() {
   const [formData, setFormData] = useState<CreateRouteFormData | null>(null);
@@ -129,7 +129,7 @@ export function useRouteCreation() {
       // Screenshot the map preview
       const mapElement = document.getElementById('map-preview');
       if (mapElement) {
-        const dataUrl = await htmlToImage.toPng(mapElement);
+        const dataUrl = await toPng(mapElement);
         const { data: screenshot, error: screenshotError } = await supabase
           .from('screenshots')
           .insert({

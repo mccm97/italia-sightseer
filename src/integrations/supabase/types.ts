@@ -373,6 +373,32 @@ export type Database = {
           },
         ]
       }
+      screenshots: {
+        Row: {
+          id: string
+          route_id: string | null
+          screenshot_url: string | null
+        }
+        Insert: {
+          id?: string
+          route_id?: string | null
+          screenshot_url?: string | null
+        }
+        Update: {
+          id?: string
+          route_id?: string | null
+          screenshot_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "screenshots_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscription_limits: {
         Row: {
           max_routes_per_month: number | null
