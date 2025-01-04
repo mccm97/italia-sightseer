@@ -1,11 +1,17 @@
 import { FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
-import { CreateRouteFormData, City } from '@/types/route';
+import { CreateRouteFormData } from '@/types/route';
 
 interface CitySelectorProps {
   form: UseFormReturn<CreateRouteFormData>;
-  cities: City[];
+  cities: Array<{
+    id: string;
+    name: string;
+    lat: number;
+    lng: number;
+    country: string;
+  }>;
   selectedCountry: string;
 }
 
