@@ -1,7 +1,7 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CityBanner } from "./CityBanner";
 import { RouteCard } from "../route/RouteCard";
-import { Attraction } from "@/types/route";
+import { Attraction, Route } from "@/types/route";
 
 interface CityViewProps {
   city: {
@@ -15,17 +15,6 @@ interface CityViewProps {
   onBackClick: () => void;
   onRouteClick: (route: Route) => void;
   onDirectionsClick: (directions: any[]) => void;
-}
-
-interface Route {
-  id: string;
-  name: string;
-  creator?: {
-    username: string;
-  };
-  total_duration: number;
-  attractions: Attraction[];
-  directions?: any[];
 }
 
 export const CityView = ({

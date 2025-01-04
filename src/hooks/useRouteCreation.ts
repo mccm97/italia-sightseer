@@ -29,7 +29,7 @@ export function useRouteCreation() {
           variant: "destructive"
         });
         navigate('/upgrade');
-        return;
+        return false;
       }
 
       setFormData(data);
@@ -126,7 +126,6 @@ export function useRouteCreation() {
 
       await Promise.all(attractionsPromises);
 
-      // Screenshot the map preview
       const mapElement = document.getElementById('map-preview');
       if (mapElement) {
         const dataUrl = await htmlToImage.toPng(mapElement);
@@ -147,8 +146,10 @@ export function useRouteCreation() {
       toast({
         title: "Percorso creato",
         description: "Il percorso è stato creato con successo.",
-        variant: "success"
+        variant: "default"
       });
+
+      return true;
     } catch (error) {
       console.error('Error creating route:', error);
       toast({
@@ -156,6 +157,7 @@ export function useRouteCreation() {
         description: "Si è verificato un errore. Riprova più tardi.",
         variant: "destructive"
       });
+      return false;
     }
   };
 
