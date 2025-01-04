@@ -73,7 +73,7 @@ export function CreateRouteDialog() {
   const onFormSubmit = async (data: CreateRouteFormData) => {
     if (!user) return;
     const success = await handleFormSubmit(data, user.id);
-    if (success === true) {
+    if (success === true) {  // Explicitly check for true
       setShowSummary(true);
     }
   };
