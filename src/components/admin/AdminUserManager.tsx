@@ -52,7 +52,7 @@ export function AdminUserManager() {
         adminUsersData.map(async (admin) => {
           const { data: profileData, error: profileError } = await supabase
             .from('profiles')
-            .select('id, email')
+            .select('id, username')
             .eq('id', admin.user_id)
             .single();
 
@@ -61,14 +61,14 @@ export function AdminUserManager() {
             return {
               user_id: admin.user_id,
               created_at: admin.created_at,
-              email: 'Email not found'
+              email: 'Username not found'
             };
           }
 
           return {
             user_id: admin.user_id,
             created_at: admin.created_at,
-            email: profileData?.email || 'Email not found'
+            email: profileData?.username || 'Username not found'
           };
         })
       );
@@ -86,7 +86,7 @@ export function AdminUserManager() {
       const { data: userData, error: userError } = await supabase
         .from('profiles')
         .select('id')
-        .eq('email', newAdminEmail)
+        .eq('username', newAdminEmail)
         .single();
 
       if (userError || !userData) {
@@ -129,7 +129,7 @@ export function AdminUserManager() {
       <CardContent className="space-y-6">
         <div className="flex gap-4">
           <Input
-            placeholder="Email del nuovo amministratore"
+            placeholder="Username del nuovo amministratore"
             value={newAdminEmail}
             onChange={(e) => setNewAdminEmail(e.target.value)}
           />
@@ -141,7 +141,7 @@ export function AdminUserManager() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Email</TableHead>
+              <TableHead>Username</TableHead>
               <TableHead>Data Aggiunta</TableHead>
               <TableHead>Azioni</TableHead>
             </TableRow>
