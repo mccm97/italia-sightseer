@@ -41,6 +41,7 @@ export const useDirections = () => {
       }
 
       const data = await response.json();
+      console.log('Directions data received:', data);
       
       if (!data.routes?.[0]?.legs) {
         throw new Error('No route found');
