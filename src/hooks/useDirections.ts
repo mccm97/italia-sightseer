@@ -1,4 +1,3 @@
-// src/hooks/useDirections.ts
 import { useState } from 'react';
 
 interface DirectionsStep {
