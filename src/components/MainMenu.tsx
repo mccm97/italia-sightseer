@@ -11,10 +11,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export function MainMenu() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { i18n } = useTranslation();
   const [isAdmin, setIsAdmin] = useState(false);
   const [language, setLanguage] = useState<'it' | 'en'>('it');
 
@@ -54,8 +56,9 @@ export function MainMenu() {
   };
 
   const toggleLanguage = () => {
-    setLanguage(prev => prev === 'it' ? 'en' : 'it');
-    // Here you would typically trigger a language change in your i18n system
+    const newLanguage = language === 'it' ? 'en' : 'it';
+    setLanguage(newLanguage);
+    i18n.changeLanguage(newLanguage); // Aggiungi questa riga
   };
 
   return (
