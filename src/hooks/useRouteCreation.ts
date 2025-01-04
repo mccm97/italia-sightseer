@@ -1,11 +1,11 @@
 import { useState } from 'react';
+import { CreateRouteFormData } from '@/types/route';
 import { useToast } from './use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import { useDirections } from './useDirections';
-import { toPng } from 'html-to-image';
 import { Json } from '@/integrations/supabase/types';
-import { CreateRouteFormData } from '@/types/route';
+import { useDirections } from './useDirections';
+import * as htmlToImage from 'html-to-image';
 
 export function useRouteCreation() {
   const [formData, setFormData] = useState<CreateRouteFormData | null>(null);
@@ -129,15 +129,14 @@ export function useRouteCreation() {
       // Screenshot the map preview
       const mapElement = document.getElementById('map-preview');
       if (mapElement) {
-        const dataUrl = await toPng(mapElement);
+        const dataUrl = await htmlToImage.toPng(mapElement);
+        const blob = await (await fetch(dataUrl)).blob();
         const { data: screenshot, error: screenshotError } = await supabase
+          .storage
           .from('screenshots')
-          .insert({
-            route_id: route.id,
-            screenshot_url: dataUrl
-          })
-          .select()
-          .single();
+          .upload(`screenshots/${route.id}.png`, blob, {
+            contentType: 'image/png',
+          });
 
         if (screenshotError) {
           console.error('Error saving screenshot:', screenshotError);
@@ -148,7 +147,7 @@ export function useRouteCreation() {
       toast({
         title: "Percorso creato",
         description: "Il percorso è stato creato con successo.",
-        variant: "default"
+        variant: "success"
       });
     } catch (error) {
       console.error('Error creating route:', error);
