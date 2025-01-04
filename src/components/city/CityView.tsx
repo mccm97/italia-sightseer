@@ -1,23 +1,12 @@
-import React from 'react';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { RouteCard } from '@/components/route/RouteCard';
-import { Route } from '@/data/routes';
-import { CityBanner } from './CityBanner';
-
-interface CityViewProps {
-  city: {
-    id?: string;
-    name: string;
-    lat: number;
-    lng: number;
-    country?: string;
+interface Route {
+  id: string;
+  name: string;
+  creator?: {
+    username: string;
   };
-  routes: Route[];
-  isLoadingRoutes: boolean;
-  selectedRoute: Route | null;
-  onBackClick: () => void;
-  onRouteClick: (route: Route) => void;
-  onDirectionsClick: (directions: any[]) => void;
+  total_duration: number;
+  attractions: Attraction[];
+  directions?: any[];
 }
 
 export const CityView = ({
