@@ -1,103 +1,44 @@
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Star, ThumbsUp, ListTree } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { useQuery } from '@tanstack/react-query';
+import { ThumbsUp, Star, ListTree, ChevronDown } from 'lucide-react';
 import { AttractionDetailsDialog } from './AttractionDetailsDialog';
+import { generateSummary } from '@/services/summarization';
+import { Attraction } from '@/types/route';
 
 interface RouteCardProps {
-  route: any;
+  route: {
+    id: string;
+    name: string;
+    creator?: {
+      username: string;
+    };
+    total_duration: number;
+    attractions: Attraction[];
+  };
+  routeStats?: {
+    likesCount: number;
+    averageRating: number;
+  };
   onRouteClick: () => void;
   onDirectionsClick: () => void;
 }
 
-export function RouteCard({ route, onRouteClick, onDirectionsClick }: RouteCardProps) {
-  const { toast } = useToast();
+export function RouteCard({
+  route,
+  routeStats,
+  onRouteClick,
+  onDirectionsClick
+}: RouteCardProps) {
   const [showAttractions, setShowAttractions] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
+  const [summary, setSummary] = useState('');
 
-  const { data: routeStats, refetch: refetchStats } = useQuery({
-    queryKey: ['routeStats', route.id],
-    queryFn: async () => {
-      const [likesResponse, ratingsResponse] = await Promise.all([
-        supabase
-          .from('route_likes')
-          .select('count')
-          .eq('route_id', route.id)
-          .single(),
-        supabase
-          .from('route_ratings')
-          .select('rating')
-          .eq('route_id', route.id)
-      ]);
-
-      const likesCount = likesResponse.data?.count || 0;
-      const ratings = ratingsResponse.data || [];
-      const averageRating = ratings.length > 0 
-        ? ratings.reduce((acc: number, curr: any) => acc + curr.rating, 0) / ratings.length 
-        : 0;
-
-      return { likesCount, averageRating };
-    }
-  });
-
-  const handleLike = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast({
-          title: "Errore",
-          description: "Devi essere autenticato per mettere like",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      const { data: existingLike } = await supabase
-        .from('route_likes')
-        .select('id')
-        .eq('route_id', route.id)
-        .eq('user_id', user.id)
-        .single();
-
-      if (existingLike) {
-        toast({
-          title: "Già messo like",
-          description: "Hai già messo like a questo percorso",
-          variant: "default"
-        });
-        return;
-      }
-
-      const { error } = await supabase
-        .from('route_likes')
-        .insert({ route_id: route.id, user_id: user.id });
-
-      if (error) {
-        console.error('Error liking route:', error);
-        toast({
-          title: "Errore",
-          description: "Impossibile mettere like al percorso",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      refetchStats();
-
-      toast({
-        title: "Like aggiunto",
-        description: "Hai messo like al percorso",
-      });
-
-    } catch (error) {
-      console.error('Error in handleLike:', error);
-      toast({
-        title: "Errore",
-        description: "Si è verificato un errore durante l'operazione",
-        variant: "destructive"
-      });
+  const handleShowSummary = async () => {
+    setShowSummary(!showSummary);
+    if (!summary) {
+      const generatedSummary = await generateSummary(route.attractions);
+      setSummary(generatedSummary);
     }
   };
 
@@ -150,6 +91,16 @@ export function RouteCard({ route, onRouteClick, onDirectionsClick }: RouteCardP
                 <ListTree className="w-4 h-4 mr-2" />
                 Dettagli Attrazioni
               </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleShowSummary();
+                }}
+              >
+                <ChevronDown className="w-4 h-4" />
+              </Button>
             </div>
           </CardTitle>
         </CardHeader>
@@ -157,6 +108,12 @@ export function RouteCard({ route, onRouteClick, onDirectionsClick }: RouteCardP
           <p>Durata totale: {route.total_duration} minuti</p>
           <p>Attrazioni: {route.attractions?.length || 0}</p>
           <p>Costo totale: €{route.attractions?.reduce((sum: number, attr: any) => sum + (attr.price || 0), 0)}</p>
+          {showSummary && (
+            <div className="mt-4">
+              <h3 className="text-xl font-bold">Riassunto del percorso:</h3>
+              <p>{summary}</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
