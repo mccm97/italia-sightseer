@@ -1,3 +1,22 @@
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { CityBanner } from "./CityBanner";
+import { RouteCard } from "../route/RouteCard";
+import { Attraction } from "@/types/route";
+
+interface CityViewProps {
+  city: {
+    id?: string;
+    name: string;
+    country?: string;
+  };
+  routes: Route[];
+  isLoadingRoutes: boolean;
+  selectedRoute: Route | null;
+  onBackClick: () => void;
+  onRouteClick: (route: Route) => void;
+  onDirectionsClick: (directions: any[]) => void;
+}
+
 interface Route {
   id: string;
   name: string;
