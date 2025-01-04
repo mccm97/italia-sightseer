@@ -148,7 +148,7 @@ export function useRouteCreation() {
       toast({
         title: "Percorso creato",
         description: "Il percorso è stato creato con successo.",
-        variant: "success"
+        variant: "default"
       });
     } catch (error) {
       console.error('Error creating route:', error);

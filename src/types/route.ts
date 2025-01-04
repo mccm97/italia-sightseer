@@ -25,3 +25,17 @@ export interface CreateRouteFormData {
   attractionsCount: number;
   transportMode: 'walking' | 'public';
 }
+
+export interface Route {
+  id: string;
+  cityName: string;
+  name: string;
+  duration: number;
+  total_duration: number;
+  creator?: {
+    username: string;
+  };
+  attractions: Attraction[];
+  isPublic: boolean;
+  directions?: DirectionsStep[];
+}

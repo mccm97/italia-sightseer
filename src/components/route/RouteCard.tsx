@@ -54,18 +54,10 @@ export function RouteCard({
               </span>
             </div>
             <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="flex items-center gap-1"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleLike();
-                }}
-              >
+              <div className="flex items-center gap-1">
                 <ThumbsUp className="w-4 h-4" />
                 <span>{routeStats?.likesCount || 0}</span>
-              </Button>
+              </div>
               <div className="flex items-center gap-1">
                 <Star className="w-4 h-4 text-yellow-400" />
                 <span>{routeStats?.averageRating?.toFixed(1) || '0.0'}</span>
