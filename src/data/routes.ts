@@ -9,6 +9,7 @@ export interface Route {
   cityName: string;
   name: string;
   duration: number;
+  total_duration: number;
   creator?: {
     username: string;
   };
@@ -28,6 +29,7 @@ export const sampleRoutes: Route[] = [
     cityName: 'Roma',
     name: 'Tour Classico di Roma',
     duration: 240,
+    total_duration: 240,
     attractions: [
       {
         name: 'Colosseo',
@@ -55,6 +57,7 @@ export const sampleRoutes: Route[] = [
     cityName: 'Firenze',
     name: 'Firenze Rinascimentale',
     duration: 180,
+    total_duration: 180,
     attractions: [
       {
         name: 'Duomo',
