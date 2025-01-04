@@ -33,7 +33,7 @@ export const useDirections = () => {
       console.log('Fetching directions with coordinates:', coordinates);
       
       const response = await fetch(
-        `https://router.project-osrm.org/route/v1/walking/${coordinates}?overview=false&steps=true&annotations=true`
+        `http://router.project-osrm.org/route/v1/driving/${coordinates}?steps=true&geometries=geojson`
       );
       
       if (!response.ok) {
@@ -41,27 +41,18 @@ export const useDirections = () => {
       }
 
       const data = await response.json();
-      console.log('Directions data received:', data);
-      
-      if (!data.routes?.[0]?.legs) {
-        throw new Error('No route found');
-      }
-
-      const steps: DirectionsStep[] = [];
-      
-      data.routes[0].legs.forEach((leg: any) => {
-        leg.steps.forEach((step: any) => {
-          if (step.maneuver?.instruction) {
-            steps.push({
-              instruction: step.maneuver.instruction,
-              distance: Math.round(step.distance),
-              duration: Math.round(step.duration)
-            });
-          }
-        });
+      const steps = data.routes[0].legs[0].steps;
+      steps.forEach(step => {
+        console.log(step.maneuver.instruction);
       });
 
-      return steps;
+      const directionsSteps: DirectionsStep[] = steps.map((step: any) => ({
+        instruction: step.maneuver.instruction,
+        distance: Math.round(step.distance),
+        duration: Math.round(step.duration)
+      }));
+
+      return directionsSteps;
     } catch (err) {
       console.error('Error getting directions:', err);
       setError(err instanceof Error ? err.message : 'Failed to get directions');
