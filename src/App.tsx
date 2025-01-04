@@ -6,6 +6,7 @@ import Profile from '@/pages/Profile';
 import Login from '@/pages/Login';
 import Index from '@/pages/Index';
 import Upgrade from '@/pages/Upgrade';
+import Admin from '@/pages/Admin';
 import { MainMenu } from '@/components/MainMenu';
 
 const queryClient = new QueryClient();
@@ -20,6 +21,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/upgrade" element={<Upgrade />} />
+          <Route path="/admin" element={<Admin />} />
         </Routes>
         <Toaster />
       </BrowserRouter>

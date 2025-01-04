@@ -9,7 +9,7 @@ export function CitySearchSection({ onCitySelect }: CitySearchSectionProps) {
   return (
     <div className="relative w-full h-[400px] rounded-xl overflow-hidden mb-12">
       <img 
-        src="/lovable-uploads/fe6abce4-c0cb-4aac-bab4-f583bb0cd471.png" 
+        src="/lovable-uploads/73898f81-a447-4e14-8004-593893fda762.png" 
         alt="City background" 
         className="absolute inset-0 w-full h-full object-cover"
       />

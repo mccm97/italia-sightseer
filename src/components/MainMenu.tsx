@@ -1,4 +1,4 @@
-import { Menu, LogOut } from 'lucide-react';
+import { Menu, LogOut, Globe } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -10,10 +10,30 @@ import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect } from 'react';
 
 export function MainMenu() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [language, setLanguage] = useState<'it' | 'en'>('it');
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: adminUser } = await supabase
+        .from('admin_users')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      setIsAdmin(!!adminUser);
+    };
+
+    checkAdminStatus();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -33,6 +53,11 @@ export function MainMenu() {
     }
   };
 
+  const toggleLanguage = () => {
+    setLanguage(prev => prev === 'it' ? 'en' : 'it');
+    // Here you would typically trigger a language change in your i18n system
+  };
+
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -48,6 +73,19 @@ export function MainMenu() {
           <Link to="/" className="text-lg hover:underline">Home</Link>
           <Link to="/profile" className="text-lg hover:underline">Profilo</Link>
           <Link to="/upgrade" className="text-lg hover:underline">Abbonamenti</Link>
+          {isAdmin && (
+            <Link to="/admin" className="text-lg hover:underline text-blue-600">
+              Amministrazione
+            </Link>
+          )}
+          <Button
+            variant="ghost"
+            className="flex items-center justify-start gap-2 text-lg px-0"
+            onClick={toggleLanguage}
+          >
+            <Globe className="h-4 w-4" />
+            {language === 'it' ? 'English' : 'Italiano'}
+          </Button>
           <Button 
             variant="ghost" 
             className="flex items-center justify-start gap-2 text-lg text-red-600 hover:text-red-700 px-0"
