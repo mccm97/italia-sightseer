@@ -36,6 +36,7 @@ export function AdminUserManager() {
 
   const fetchAdminUsers = async () => {
     try {
+      console.log('Fetching admin users...');
       // First get all admin users
       const { data: adminUsersData, error: adminError } = await supabase
         .from('admin_users')
@@ -49,16 +50,30 @@ export function AdminUserManager() {
       // Then get their profile information
       const adminUsersWithProfiles = await Promise.all(
         adminUsersData.map(async (admin) => {
-          const { data: userData } = await supabase.auth.admin.getUserById(admin.user_id);
-          
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('id, email')
+            .eq('id', admin.user_id)
+            .single();
+
+          if (profileError) {
+            console.error('Error fetching profile:', profileError);
+            return {
+              user_id: admin.user_id,
+              created_at: admin.created_at,
+              email: 'Email not found'
+            };
+          }
+
           return {
             user_id: admin.user_id,
             created_at: admin.created_at,
-            email: userData?.user?.email || 'Email not found'
+            email: profileData?.email || 'Email not found'
           };
         })
       );
 
+      console.log('Admin users with profiles:', adminUsersWithProfiles);
       setAdminUsers(adminUsersWithProfiles);
     } catch (error) {
       console.error('Error in fetchAdminUsers:', error);
