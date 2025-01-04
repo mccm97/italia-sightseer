@@ -1,11 +1,19 @@
 import React from 'react';
 import { CitySearchButton } from './CitySearchButton';
 
-interface CitySearchSectionProps {
-  onCitySelect: (city: any) => void;
+interface City {
+  id?: string;
+  name: string;
+  lat: number;
+  lng: number;
+  country?: string;
 }
 
-export function CitySearchSection({ onCitySelect }: CitySearchSectionProps) {
+interface CitySearchSectionProps {
+  setSelectedCity: (city: City | null) => void;
+}
+
+export function CitySearchSection({ setSelectedCity }: CitySearchSectionProps) {
   return (
     <div className="relative w-full h-[400px] rounded-xl overflow-hidden mb-12">
       <img 
@@ -15,7 +23,7 @@ export function CitySearchSection({ onCitySelect }: CitySearchSectionProps) {
       />
       <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center p-6">
         <div className="max-w-xl w-full">
-          <CitySearchButton onCitySelect={onCitySelect} />
+          <CitySearchButton onCitySelect={setSelectedCity} />
         </div>
       </div>
     </div>

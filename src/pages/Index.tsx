@@ -12,15 +12,16 @@ import { HomeHero } from '@/components/home/HomeHero';
 import { CityView } from '@/components/city/CityView';
 import { CitySearchSection } from '@/components/home/CitySearchSection';
 
-const Index = () => {
-  const [selectedCity, setSelectedCity] = useState<{
-    id?: string;
-    name: string;
-    lat: number;
-    lng: number;
-    country?: string;
-  } | null>(null);
+interface City {
+  id?: string;
+  name: string;
+  lat: number;
+  lng: number;
+  country?: string;
+}
 
+const Index = () => {
+  const [selectedCity, setSelectedCity] = useState<City | null>(null);
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
   const [showRoutePreview, setShowRoutePreview] = useState(false);
   const [cityRoutes, setCityRoutes] = useState<Route[]>([]);
@@ -145,10 +146,7 @@ const Index = () => {
       <Header user={user} />
 
       {!selectedCity ? (
-        <>
-          <HomeHero onCitySelect={setSelectedCity} />
-          <CitySearchSection onCitySelect={setSelectedCity} />
-        </>
+        <CitySearchSection setSelectedCity={setSelectedCity} />
       ) : (
         <CityView
           city={selectedCity}
