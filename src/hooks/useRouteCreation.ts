@@ -5,6 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Json } from '@/integrations/supabase/types';
 import { useDirections } from './useDirections';
+import * as htmlToImage from 'html-to-image';
+import { saveAs } from 'file-saver';
 
 export function useRouteCreation() {
   const [formData, setFormData] = useState<CreateRouteFormData | null>(null);
@@ -125,20 +127,26 @@ export function useRouteCreation() {
 
       await Promise.all(attractionsPromises);
 
-      toast({
-        title: "Percorso creato con successo!",
-        description: `Il percorso "${formData.name}" è stato creato.`,
-      });
+      // Screenshot the map preview
+      const mapElement = document.getElementById('map-preview');
+      if (mapElement) {
+        const dataUrl = await htmlToImage.toPng(mapElement);
+        const imgBlob = await (await fetch(dataUrl)).blob();
+        saveAs(imgBlob, 'route-preview.png');
+      }
 
-      return true;
+      toast({
+        title: "Percorso creato",
+        description: "Il percorso è stato creato con successo.",
+        variant: "success"
+      });
     } catch (error) {
-      console.error('Error in route creation:', error);
+      console.error('Error creating route:', error);
       toast({
         title: "Errore",
-        description: "Si è verificato un errore durante la creazione del percorso.",
+        description: "Si è verificato un errore. Riprova più tardi.",
         variant: "destructive"
       });
-      return false;
     }
   };
 
