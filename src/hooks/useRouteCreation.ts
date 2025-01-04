@@ -130,11 +130,19 @@ export function useRouteCreation() {
       const mapElement = document.getElementById('map-preview');
       if (mapElement) {
         const dataUrl = await htmlToImage.toPng(mapElement);
-        await supabase.storage
+        const { data: screenshot, error: screenshotError } = await supabase
           .from('screenshots')
-          .upload(`screenshots/${route.id}.png`, dataUrl, {
-            contentType: 'image/png',
-          });
+          .insert({
+            route_id: route.id,
+            screenshot_url: dataUrl
+          })
+          .select()
+          .single();
+
+        if (screenshotError) {
+          console.error('Error saving screenshot:', screenshotError);
+          throw new Error('Failed to save screenshot');
+        }
       }
 
       toast({
