@@ -10,6 +10,7 @@ import { Header } from '@/components/layout/Header';
 import { Route, DirectionsStep } from '@/data/routes';
 import { HomeHero } from '@/components/home/HomeHero';
 import { CityView } from '@/components/city/CityView';
+import { CitySearchSection } from '@/components/home/CitySearchSection';
 
 const Index = () => {
   const [selectedCity, setSelectedCity] = useState<{
@@ -144,7 +145,10 @@ const Index = () => {
       <Header user={user} />
 
       {!selectedCity ? (
-        <HomeHero onCitySelect={setSelectedCity} />
+        <>
+          <HomeHero onCitySelect={setSelectedCity} />
+          <CitySearchSection onCitySelect={setSelectedCity} />
+        </>
       ) : (
         <CityView
           city={selectedCity}

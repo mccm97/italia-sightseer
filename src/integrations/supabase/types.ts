@@ -9,6 +9,21 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_users: {
+        Row: {
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       attractions: {
         Row: {
           city_id: string | null
@@ -73,6 +88,35 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      city_images: {
+        Row: {
+          city_id: string | null
+          created_at: string
+          id: string
+          image_url: string
+        }
+        Insert: {
+          city_id?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+        }
+        Update: {
+          city_id?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "city_images_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
