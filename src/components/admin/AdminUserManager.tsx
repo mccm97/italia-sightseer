@@ -36,23 +36,43 @@ export function AdminUserManager() {
 
   const fetchAdminUsers = async () => {
     try {
-      const { data: adminUsersData, error } = await supabase
+      // First get all admin users
+      const { data: adminUsersData, error: adminError } = await supabase
         .from('admin_users')
-        .select(`
-          *,
-          profiles!inner(email)
-        `);
+        .select('*');
 
-      if (error) {
-        console.error('Error fetching admin users:', error);
+      if (adminError) {
+        console.error('Error fetching admin users:', adminError);
         return;
       }
 
-      setAdminUsers(adminUsersData.map(user => ({
-        user_id: user.user_id,
-        email: user.profiles?.email,
-        created_at: user.created_at
-      })));
+      // Then get their profile information
+      const adminUsersWithProfiles = await Promise.all(
+        adminUsersData.map(async (admin) => {
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('id', admin.user_id)
+            .single();
+
+          if (profileError) {
+            console.error('Error fetching profile:', profileError);
+            return {
+              user_id: admin.user_id,
+              created_at: admin.created_at,
+              email: 'Error fetching email'
+            };
+          }
+
+          return {
+            user_id: admin.user_id,
+            created_at: admin.created_at,
+            email: profileData?.email
+          };
+        })
+      );
+
+      setAdminUsers(adminUsersWithProfiles);
     } catch (error) {
       console.error('Error in fetchAdminUsers:', error);
     }
