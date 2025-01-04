@@ -18,11 +18,15 @@ export function CityBanner({ city, onBackClick }: CityBannerProps) {
     queryKey: ['cityImage', city.id],
     queryFn: async () => {
       if (!city.id) return null;
+      
+      // Using maybeSingle() instead of single() to handle no results case
       const { data } = await supabase
         .from('city_images')
         .select('image_url')
         .eq('city_id', city.id)
-        .single();
+        .maybeSingle();
+      
+      console.log('City image query result:', data);
       return data?.image_url;
     }
   });
