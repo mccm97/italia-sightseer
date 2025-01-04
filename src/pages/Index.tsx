@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { DirectionsDialog } from '@/components/route/DirectionsDialog';
 import { Header } from '@/components/layout/Header';
-import { Route, DirectionsStep } from '@/data/routes';
+import { Route, DirectionsStep } from '@/types/route';
 import { HomeHero } from '@/components/home/HomeHero';
 import { CityView } from '@/components/city/CityView';
 import { CitySearchSection } from '@/components/home/CitySearchSection';
@@ -93,6 +93,7 @@ const Index = () => {
           cityName: selectedCity.name,
           name: route.name,
           duration: route.total_duration,
+          total_duration: route.total_duration, // Added this line to fix the type error
           creator: route.creator,
           attractions: route.route_attractions
             .filter((ra: any) => ra.attraction)
