@@ -71,7 +71,7 @@ export function useRouteCreation() {
         return;
       }
 
-      console.log('Creating route in database...');
+      // Create route without ON CONFLICT clause
       const { data: route, error: routeError } = await supabase
         .from('routes')
         .insert({
@@ -93,10 +93,8 @@ export function useRouteCreation() {
         throw new Error('Failed to create route');
       }
 
-      console.log('Route created successfully, creating attractions...');
+      // Create attractions sequentially
       for (const [index, attr] of formData.attractions.entries()) {
-        console.log(`Creating attraction ${index + 1}/${formData.attractions.length}...`);
-        
         const { data: attraction, error: attractionError } = await supabase
           .from('attractions')
           .insert({
@@ -115,7 +113,6 @@ export function useRouteCreation() {
           throw new Error('Failed to create attraction');
         }
 
-        console.log(`Linking attraction ${index + 1} to route...`);
         const { error: linkError } = await supabase
           .from('route_attractions')
           .insert({
@@ -134,7 +131,6 @@ export function useRouteCreation() {
       }
 
       if (screenshotBlob) {
-        console.log('Uploading screenshot...');
         const { error: screenshotError } = await supabase
           .storage
           .from('screenshots')
