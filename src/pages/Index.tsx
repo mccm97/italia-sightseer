@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { DirectionsDialog } from '@/components/route/DirectionsDialog';
 import { Header } from '@/components/layout/Header';
-import { Route, DirectionsStep } from '@/types/route';
+import { Route, DirectionsStep, Attraction } from '@/types/route';
 import { HomeHero } from '@/components/home/HomeHero';
 import { CityView } from '@/components/city/CityView';
 import { CitySearchSection } from '@/components/home/CitySearchSection';
@@ -99,31 +99,42 @@ const Index = () => {
           return;
         }
 
-        const transformedRoutes: Route[] = routes.map(route => ({
-          id: route.id,
-          cityName: selectedCity.name,
-          name: route.name,
-          duration: route.total_duration,
-          total_duration: route.total_duration,
-          creator: route.creator,
-          attractions: route.route_attractions
+        const transformedRoutes: Route[] = routes.map(route => {
+          const attractions: Attraction[] = route.route_attractions
             .filter((ra: any) => ra.attraction)
-            .map((ra: any) => ({
-              name: ra.attraction.name,
-              position: ra.attraction.lat != null && ra.attraction.lng != null
-                ? [ra.attraction.lat, ra.attraction.lng]
-                : undefined,
-              visitDuration: ra.attraction.visit_duration,
-              price: ra.attraction.price || undefined
-            }))
-            .filter(attr => attr.position),
-          isPublic: route.is_public,
-          directions: route.directions ? (route.directions as any[]).map((dir: any) => ({
-            instruction: dir.instruction,
-            distance: dir.distance,
-            duration: dir.duration
-          })) : undefined
-        }));
+            .map((ra: any) => {
+              const position: [number, number] | undefined = 
+                ra.attraction.lat != null && ra.attraction.lng != null
+                  ? [ra.attraction.lat, ra.attraction.lng] as [number, number]
+                  : undefined;
+              
+              return {
+                name: ra.attraction.name,
+                position,
+                visitDuration: ra.attraction.visit_duration,
+                price: ra.attraction.price || undefined
+              };
+            })
+            .filter((attr): attr is Attraction => Boolean(attr.position));
+
+          return {
+            id: route.id,
+            cityName: selectedCity.name,
+            name: route.name,
+            duration: route.total_duration,
+            total_duration: route.total_duration,
+            creator: route.creator,
+            attractions,
+            isPublic: route.is_public,
+            directions: route.directions 
+              ? (route.directions as any[]).map((dir): DirectionsStep => ({
+                  instruction: dir.instruction,
+                  distance: dir.distance,
+                  duration: dir.duration
+                }))
+              : undefined
+          };
+        });
 
         setCityRoutes(transformedRoutes);
       } catch (error) {
