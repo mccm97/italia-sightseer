@@ -68,6 +68,7 @@ export function useRouteCreation() {
         return;
       }
 
+      // Simple insert without ON CONFLICT
       const { data: route, error: routeError } = await supabase
         .from('routes')
         .insert({
@@ -89,7 +90,9 @@ export function useRouteCreation() {
         throw new Error('Failed to create route');
       }
 
-      const attractionsPromises = formData.attractions.map(async (attr, index) => {
+      // Create attractions
+      for (let i = 0; i < formData.attractions.length; i++) {
+        const attr = formData.attractions[i];
         const { data: attraction, error: attractionError } = await supabase
           .from('attractions')
           .insert({
@@ -112,7 +115,7 @@ export function useRouteCreation() {
           .insert({
             route_id: route.id,
             attraction_id: attraction.id,
-            order_index: index,
+            order_index: i,
             transport_mode: formData.transportMode || 'walking',
             travel_duration: 0,
             travel_distance: 0
@@ -122,18 +125,17 @@ export function useRouteCreation() {
           console.error('Error linking attraction to route:', linkError);
           throw new Error('Failed to link attraction to route');
         }
-      });
+      }
 
-      await Promise.all(attractionsPromises);
-
+      // Save map screenshot
       const mapElement = document.getElementById('map-preview');
       if (mapElement) {
         const dataUrl = await htmlToImage.toPng(mapElement);
         const blob = await (await fetch(dataUrl)).blob();
-        const { data: screenshot, error: screenshotError } = await supabase
+        const { error: screenshotError } = await supabase
           .storage
           .from('screenshots')
-          .upload(`screenshots/${route.id}.png`, blob, {
+          .upload(`${route.id}.png`, blob, {
             contentType: 'image/png',
           });
 
