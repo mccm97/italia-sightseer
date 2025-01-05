@@ -72,14 +72,19 @@ export function useRouteCreation() {
       }
 
       // Check if a route with this name already exists for the user
-      const { data: existingRoute } = await supabase
+      const { data: existingRoutes, error: checkError } = await supabase
         .from('routes')
         .select('id')
         .eq('user_id', user.id)
         .eq('name', formData.name)
-        .single();
+        .maybeSingle();
 
-      if (existingRoute) {
+      if (checkError) {
+        console.error('Error checking existing routes:', checkError);
+        throw new Error('Failed to check existing routes');
+      }
+
+      if (existingRoutes) {
         toast({
           title: "Nome duplicato",
           description: "Hai già un percorso con questo nome. Scegli un nome diverso.",
@@ -103,10 +108,15 @@ export function useRouteCreation() {
           directions: directions as unknown as Json
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (routeError) {
         console.error('Error creating route:', routeError);
+        throw new Error('Failed to create route');
+      }
+
+      if (!route) {
+        console.error('No route returned after creation');
         throw new Error('Failed to create route');
       }
 
@@ -123,9 +133,9 @@ export function useRouteCreation() {
             city_id: formData.city?.id
           })
           .select()
-          .single();
+          .maybeSingle();
 
-        if (attractionError) {
+        if (attractionError || !attraction) {
           console.error('Error creating attraction:', attractionError);
           throw new Error('Failed to create attraction');
         }
