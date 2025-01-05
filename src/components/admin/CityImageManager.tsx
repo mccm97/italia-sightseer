@@ -91,7 +91,7 @@ export function CityImageManager() {
           city_id: selectedCity,
           image_url: publicUrl
         }, {
-          onConflict: 'city_id'
+          onConflict: 'city_id'  // Assicurati che city_id abbia un constraint unico nel database
         });
 
       if (dbError) throw dbError;
