@@ -36,15 +36,24 @@ const Index = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('username, avatar_url')
-          .eq('id', user.id)
-          .single();
-        
-        setUser({ ...user, ...profile });
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('username, avatar_url')
+            .eq('id', user.id)
+            .single();
+          
+          if (error) {
+            console.error('Error fetching profile:', error);
+            return;
+          }
+          
+          setUser({ ...user, ...profile });
+        }
+      } catch (error) {
+        console.error('Error in fetchUser:', error);
       }
     };
     fetchUser();
@@ -58,7 +67,7 @@ const Index = () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         
-        const query = supabase
+        let query = supabase
           .from('routes')
           .select(`
             *,
@@ -71,9 +80,9 @@ const Index = () => {
           .eq('city_id', selectedCity.id);
 
         if (user) {
-          query.or(`is_public.eq.true,user_id.eq.${user.id}`);
+          query = query.or(`is_public.eq.true,user_id.eq.${user.id}`);
         } else {
-          query.eq('is_public', true);
+          query = query.eq('is_public', true);
         }
 
         const { data: routes, error } = await query;
@@ -88,12 +97,17 @@ const Index = () => {
           return;
         }
 
+        if (!routes) {
+          setCityRoutes([]);
+          return;
+        }
+
         const transformedRoutes: Route[] = routes.map(route => ({
           id: route.id,
           cityName: selectedCity.name,
           name: route.name,
           duration: route.total_duration,
-          total_duration: route.total_duration, // Added this line to fix the type error
+          total_duration: route.total_duration,
           creator: route.creator,
           attractions: route.route_attractions
             .filter((ra: any) => ra.attraction)
@@ -143,8 +157,12 @@ const Index = () => {
       setSelectedRouteDirections(route.directions);
     }
 
-    const summary = await generateSummary(route.attractions);
-    setRouteSummary(summary);
+    try {
+      const summary = await generateSummary(route.attractions);
+      setRouteSummary(summary);
+    } catch (error) {
+      console.error('Error generating summary:', error);
+    }
   };
 
   return (
