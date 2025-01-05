@@ -39,18 +39,15 @@ const Index = () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          const { data: profile, error } = await supabase
+          const { data: profile } = await supabase
             .from('profiles')
             .select('username, avatar_url')
             .eq('id', user.id)
-            .single();
+            .maybeSingle();
           
-          if (error) {
-            console.error('Error fetching profile:', error);
-            return;
+          if (profile) {
+            setUser({ ...user, ...profile });
           }
-          
-          setUser({ ...user, ...profile });
         }
       } catch (error) {
         console.error('Error in fetchUser:', error);
@@ -111,26 +108,21 @@ const Index = () => {
           creator: route.creator,
           attractions: route.route_attractions
             .filter((ra: any) => ra.attraction)
-            .map((ra: any) => {
-              const position: [number, number] | undefined = 
-                ra.attraction.lat != null && ra.attraction.lng != null
-                  ? [ra.attraction.lat, ra.attraction.lng]
-                  : undefined;
-              
-              return {
-                name: ra.attraction.name,
-                position,
-                visitDuration: ra.attraction.visit_duration,
-                price: ra.attraction.price || undefined
-              };
-            })
+            .map((ra: any) => ({
+              name: ra.attraction.name,
+              position: ra.attraction.lat != null && ra.attraction.lng != null
+                ? [ra.attraction.lat, ra.attraction.lng]
+                : undefined,
+              visitDuration: ra.attraction.visit_duration,
+              price: ra.attraction.price || undefined
+            }))
             .filter(attr => attr.position),
           isPublic: route.is_public,
           directions: route.directions ? (route.directions as any[]).map((dir: any) => ({
             instruction: dir.instruction,
             distance: dir.distance,
             duration: dir.duration
-          })) as DirectionsStep[] : undefined
+          })) : undefined
         }));
 
         setCityRoutes(transformedRoutes);
