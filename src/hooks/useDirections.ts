@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Json } from '@/integrations/supabase/types';
 
 interface DirectionsStep {
   instruction: string;
@@ -16,7 +17,7 @@ export const useDirections = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getDirections = async (points: [number, number][]) => {
+  const getDirections = async (points: [number, number][]): Promise<Json> => {
     setIsLoading(true);
     setError(null);
     
@@ -52,7 +53,7 @@ export const useDirections = () => {
         duration: Math.round(step.duration)
       }));
 
-      return directionsSteps;
+      return directionsSteps as unknown as Json;
     } catch (err) {
       console.error('Error getting directions:', err);
       setError(err instanceof Error ? err.message : 'Failed to get directions');

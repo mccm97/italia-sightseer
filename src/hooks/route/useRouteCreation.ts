@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useDirections } from '../useDirections';
 import { useRouteValidation } from './useRouteValidation';
+import { Json } from '@/integrations/supabase/types';
 
 export function useRouteCreation() {
   const [formData, setFormData] = useState<CreateRouteFormData | null>(null);
@@ -59,7 +60,7 @@ export function useRouteCreation() {
           total_distance: 0,
           country: formData.country,
           is_public: true,
-          directions: directions
+          directions: directions as unknown as Json
         })
         .select()
         .single();
