@@ -15,10 +15,12 @@ export function useRouteCreation() {
 
   const handleFormSubmit = async (data: CreateRouteFormData, userId: string) => {
     try {
+      console.log('Checking if user can create route...');
       const { data: canCreate, error: checkError } = await supabase
         .rpc('can_create_route', { input_user_id: userId });
 
       if (checkError) {
+        console.error('Error checking route creation permission:', checkError);
         throw new Error('Failed to check route creation permission');
       }
 
@@ -60,6 +62,7 @@ export function useRouteCreation() {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
+        console.error('No authenticated user found');
         toast({
           title: "Errore",
           description: "Devi essere autenticato per creare un percorso.",
@@ -68,7 +71,7 @@ export function useRouteCreation() {
         return;
       }
 
-      // Simple insert without ON CONFLICT
+      console.log('Creating route in database...');
       const { data: route, error: routeError } = await supabase
         .from('routes')
         .insert({
@@ -90,9 +93,11 @@ export function useRouteCreation() {
         throw new Error('Failed to create route');
       }
 
-      // Create attractions
+      console.log('Route created successfully, creating attractions...');
       for (let i = 0; i < formData.attractions.length; i++) {
         const attr = formData.attractions[i];
+        console.log(`Creating attraction ${i + 1}/${formData.attractions.length}...`);
+        
         const { data: attraction, error: attractionError } = await supabase
           .from('attractions')
           .insert({
@@ -100,7 +105,8 @@ export function useRouteCreation() {
             lat: 0,
             lng: 0,
             visit_duration: attr.visitDuration,
-            price: attr.price
+            price: attr.price,
+            city_id: formData.city?.id
           })
           .select()
           .single();
@@ -110,6 +116,7 @@ export function useRouteCreation() {
           throw new Error('Failed to create attraction');
         }
 
+        console.log(`Linking attraction ${i + 1} to route...`);
         const { error: linkError } = await supabase
           .from('route_attractions')
           .insert({
@@ -127,7 +134,7 @@ export function useRouteCreation() {
         }
       }
 
-      // Save map screenshot
+      console.log('Saving map screenshot...');
       const mapElement = document.getElementById('map-preview');
       if (mapElement) {
         const dataUrl = await htmlToImage.toPng(mapElement);
