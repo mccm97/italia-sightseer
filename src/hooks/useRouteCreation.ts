@@ -119,7 +119,7 @@ export function useRouteCreation() {
         throw new Error('Failed to create route');
       }
 
-      // Create attractions sequentially
+      // Create attractions sequentially 
       for (const [index, attr] of formData.attractions.entries()) {
         const { data: attraction, error: attractionError } = await supabase
           .from('attractions')
