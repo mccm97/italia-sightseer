@@ -76,15 +76,14 @@ export function useRouteCreation() {
         .from('routes')
         .select('id')
         .eq('user_id', user.id)
-        .eq('name', formData.name)
-        .maybeSingle();
+        .eq('name', formData.name);
 
       if (checkError) {
         console.error('Error checking existing routes:', checkError);
         throw new Error('Failed to check existing routes');
       }
 
-      if (existingRoutes) {
+      if (existingRoutes && existingRoutes.length > 0) {
         toast({
           title: "Nome duplicato",
           description: "Hai già un percorso con questo nome. Scegli un nome diverso.",
@@ -108,7 +107,7 @@ export function useRouteCreation() {
           directions: directions as unknown as Json
         })
         .select()
-        .maybeSingle();
+        .single();
 
       if (routeError) {
         console.error('Error creating route:', routeError);
@@ -133,7 +132,7 @@ export function useRouteCreation() {
             city_id: formData.city?.id
           })
           .select()
-          .maybeSingle();
+          .single();
 
         if (attractionError || !attraction) {
           console.error('Error creating attraction:', attractionError);
