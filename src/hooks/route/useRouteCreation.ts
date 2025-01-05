@@ -48,7 +48,7 @@ export function useRouteCreation() {
         return false;
       }
 
-      // Create route
+      // Create route without ON CONFLICT clause
       const { data: route, error: routeError } = await supabase
         .from('routes')
         .insert({
