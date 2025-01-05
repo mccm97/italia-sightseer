@@ -94,9 +94,8 @@ export function useRouteCreation() {
       }
 
       console.log('Route created successfully, creating attractions...');
-      for (let i = 0; i < formData.attractions.length; i++) {
-        const attr = formData.attractions[i];
-        console.log(`Creating attraction ${i + 1}/${formData.attractions.length}...`);
+      for (const [index, attr] of formData.attractions.entries()) {
+        console.log(`Creating attraction ${index + 1}/${formData.attractions.length}...`);
         
         const { data: attraction, error: attractionError } = await supabase
           .from('attractions')
@@ -116,13 +115,13 @@ export function useRouteCreation() {
           throw new Error('Failed to create attraction');
         }
 
-        console.log(`Linking attraction ${i + 1} to route...`);
+        console.log(`Linking attraction ${index + 1} to route...`);
         const { error: linkError } = await supabase
           .from('route_attractions')
           .insert({
             route_id: route.id,
             attraction_id: attraction.id,
-            order_index: i,
+            order_index: index,
             transport_mode: formData.transportMode || 'walking',
             travel_duration: 0,
             travel_distance: 0
@@ -137,18 +136,21 @@ export function useRouteCreation() {
       console.log('Saving map screenshot...');
       const mapElement = document.getElementById('map-preview');
       if (mapElement) {
-        const dataUrl = await htmlToImage.toPng(mapElement);
-        const blob = await (await fetch(dataUrl)).blob();
-        const { error: screenshotError } = await supabase
-          .storage
-          .from('screenshots')
-          .upload(`${route.id}.png`, blob, {
-            contentType: 'image/png',
-          });
+        try {
+          const dataUrl = await htmlToImage.toPng(mapElement);
+          const blob = await (await fetch(dataUrl)).blob();
+          const { error: screenshotError } = await supabase
+            .storage
+            .from('screenshots')
+            .upload(`${route.id}.png`, blob, {
+              contentType: 'image/png',
+            });
 
-        if (screenshotError) {
-          console.error('Error saving screenshot:', screenshotError);
-          throw new Error('Failed to save screenshot');
+          if (screenshotError) {
+            console.error('Error saving screenshot:', screenshotError);
+          }
+        } catch (error) {
+          console.error('Error capturing screenshot:', error);
         }
       }
 
