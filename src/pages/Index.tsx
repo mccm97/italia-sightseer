@@ -105,7 +105,7 @@ const Index = () => {
             .map((ra: any) => {
               const position: [number, number] | undefined = 
                 ra.attraction.lat != null && ra.attraction.lng != null
-                  ? [ra.attraction.lat, ra.attraction.lng] as [number, number]
+                  ? [ra.attraction.lat, ra.attraction.lng]
                   : undefined;
               
               return {
@@ -115,7 +115,16 @@ const Index = () => {
                 price: ra.attraction.price || undefined
               };
             })
-            .filter((attr): attr is Attraction => Boolean(attr.position));
+            .filter((attr: Partial<Attraction>): attr is Attraction => 
+              typeof attr.name === 'string' &&
+              typeof attr.visitDuration === 'number' &&
+              (attr.position === undefined || (
+                Array.isArray(attr.position) && 
+                attr.position.length === 2 &&
+                typeof attr.position[0] === 'number' &&
+                typeof attr.position[1] === 'number'
+              ))
+            );
 
           return {
             id: route.id,
