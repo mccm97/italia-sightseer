@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2, Upload } from 'lucide-react';
-import * as htmlToImage from 'html-to-image';
 import {
   Card,
   CardContent,
@@ -92,7 +91,7 @@ export function CityImageManager() {
           city_id: selectedCity,
           image_url: publicUrl
         }, {
-          onConflict: 'city_id'  // Assicurati che city_id abbia un constraint unico nel database
+          onConflict: 'city_id'
         });
 
       if (dbError) throw dbError;
@@ -113,37 +112,6 @@ export function CityImageManager() {
       });
     } finally {
       setUploading(false);
-    }
-  };
-
-  const handleScreenshotCapture = async () => {
-    const mapElement = document.getElementById('map-preview');
-    if (!mapElement) {
-      toast({
-        title: "Errore",
-        description: "Impossibile trovare l'elemento mappa",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      const dataUrl = await htmlToImage.toPng(mapElement);
-      const blob = await (await fetch(dataUrl)).blob();
-      await supabase.storage.from('screenshots').upload(`screenshot-${Date.now()}.png`, blob, {
-        contentType: 'image/png',
-      });
-      toast({
-        title: "Screenshot catturato",
-        description: "L'immagine del percorso è stata salvata con successo",
-      });
-    } catch (error) {
-      console.error('Error capturing screenshot:', error);
-      toast({
-        title: "Errore",
-        description: "Impossibile catturare lo screenshot",
-        variant: "destructive"
-      });
     }
   };
 
@@ -190,10 +158,6 @@ export function CityImageManager() {
                 {uploading && <Loader2 className="animate-spin" />}
               </div>
             </div>
-          </div>
-
-          <div>
-            <Button onClick={handleScreenshotCapture}>Screenshot</Button>
           </div>
 
           {selectedCity && images[selectedCity] && (

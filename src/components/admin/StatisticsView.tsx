@@ -26,17 +26,7 @@ export function StatisticsView() {
           .order('date', { ascending: true });
 
         if (error) throw error;
-        
-        // Ensure the data matches the Statistics interface
-        const typedData: Statistics[] = data.map(item => ({
-          date: item.date,
-          visits_count: item.visits_count || 0,
-          routes_created: item.routes_created || 0,
-          likes_count: item.likes_count || 0,
-          reviews_count: item.reviews_count || 0
-        }));
-        
-        setStatistics(typedData);
+        setStatistics(data || []);
       } catch (error) {
         console.error('Error fetching statistics:', error);
         toast({
