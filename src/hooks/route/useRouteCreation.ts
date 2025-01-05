@@ -48,6 +48,22 @@ export function useRouteCreation() {
         return false;
       }
 
+      // First check if a route with this name already exists for this user
+      const { data: existingRoutes } = await supabase
+        .from('routes')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('name', formData.name);
+
+      if (existingRoutes && existingRoutes.length > 0) {
+        toast({
+          title: "Nome duplicato",
+          description: "Hai già un percorso con questo nome. Scegli un nome diverso.",
+          variant: "destructive"
+        });
+        return false;
+      }
+
       // Create route without ON CONFLICT clause
       const { data: route, error: routeError } = await supabase
         .from('routes')
