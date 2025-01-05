@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { CreateRouteForm } from './route/CreateRouteForm';
 import { RouteCreationSummary } from './route/RouteCreationSummary';
-import { useRouteCreation } from '@/hooks/useRouteCreation';
+import { useRouteCreation } from '@/hooks/route/useRouteCreation';
 
 export function CreateRouteDialog() {
   const [open, setOpen] = useState(false);

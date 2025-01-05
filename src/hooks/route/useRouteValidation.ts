@@ -1,6 +1,6 @@
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '../use-toast';
 import { CreateRouteFormData } from '@/types/route';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 export function useRouteValidation() {
   const { toast } = useToast();

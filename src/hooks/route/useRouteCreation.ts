@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { CreateRouteFormData } from '@/types/route';
-import { useToast } from '../use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import { Json } from '@/integrations/supabase/types';
 import { useDirections } from '../useDirections';
 import { useRouteValidation } from './useRouteValidation';
 
@@ -60,7 +59,7 @@ export function useRouteCreation() {
           total_distance: 0,
           country: formData.country,
           is_public: true,
-          directions: directions as unknown as Json
+          directions: directions
         })
         .select()
         .single();
@@ -137,7 +136,7 @@ export function useRouteCreation() {
         .storage
         .from('screenshots')
         .upload(`${routeId}.png`, screenshotBlob, {
-          contentType: 'image/png',
+          contentType: 'image/png'
         });
 
       if (screenshotError) {
