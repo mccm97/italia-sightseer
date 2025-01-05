@@ -106,6 +106,7 @@ export function useRouteCreation() {
           is_public: true,
           directions: directions as unknown as Json
         })
+        .onConflict(['name', 'city_id', 'user_id']) // Specifica il vincolo unico
         .select()
         .single();
 
