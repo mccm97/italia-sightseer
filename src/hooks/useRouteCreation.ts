@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { CreateRouteFormData } from '@/types/route';
-import { useToast } from '../use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Json } from '@/integrations/supabase/types';
-import { useDirections } from '../useDirections';
+import { useDirections } from './useDirections';
 import { useRouteValidation } from './useRouteValidation';
 
 export function useRouteCreation() {
@@ -43,6 +43,22 @@ export function useRouteCreation() {
         toast({
           title: "Errore",
           description: "Devi essere autenticato per creare un percorso.",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      // First check if a route with this name already exists for this user
+      const { data: existingRoutes } = await supabase
+        .from('routes')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('name', formData.name);
+
+      if (existingRoutes && existingRoutes.length > 0) {
+        toast({
+          title: "Nome duplicato",
+          description: "Hai già un percorso con questo nome. Scegli un nome diverso.",
           variant: "destructive"
         });
         return false;
