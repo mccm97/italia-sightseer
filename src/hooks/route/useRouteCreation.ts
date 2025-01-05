@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { CreateRouteFormData } from '@/types/route';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '../use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useDirections } from '../useDirections';

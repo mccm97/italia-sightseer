@@ -1,6 +1,6 @@
 import { CreateRouteFormData } from '@/types/route';
+import { useToast } from '../use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 
 export function useRouteValidation() {
   const { toast } = useToast();
@@ -25,33 +25,12 @@ export function useRouteValidation() {
         return false;
       }
 
-      // Check for existing route with same name
-      const { data: existingRoutes, error: existingError } = await supabase
-        .from('routes')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('name', data.name);
-
-      if (existingError) {
-        console.error('Error checking existing routes:', existingError);
-        throw new Error('Failed to check existing routes');
-      }
-
-      if (existingRoutes && existingRoutes.length > 0) {
-        toast({
-          title: "Nome duplicato",
-          description: "Hai già un percorso con questo nome. Scegli un nome diverso.",
-          variant: "destructive"
-        });
-        return false;
-      }
-
       return true;
     } catch (error) {
-      console.error('Error in route validation:', error);
+      console.error('Error in validation:', error);
       toast({
         title: "Errore",
-        description: "Si è verificato un errore. Riprova più tardi.",
+        description: "Si è verificato un errore durante la validazione. Riprova più tardi.",
         variant: "destructive"
       });
       return false;
