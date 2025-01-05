@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CityImageManager } from '@/components/admin/CityImageManager';
 import { AdminUserManager } from '@/components/admin/AdminUserManager';
+import { StatisticsView } from '@/components/admin/StatisticsView';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
@@ -47,11 +48,16 @@ export default function Admin() {
 
       <h1 className="text-3xl font-bold mb-6">Pannello di Amministrazione</h1>
 
-      <Tabs defaultValue="cities" className="w-full">
+      <Tabs defaultValue="statistics" className="w-full">
         <TabsList>
+          <TabsTrigger value="statistics">Statistiche</TabsTrigger>
           <TabsTrigger value="cities">Gestione Città</TabsTrigger>
           <TabsTrigger value="users">Gestione Utenti</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="statistics" className="mt-6">
+          <StatisticsView />
+        </TabsContent>
 
         <TabsContent value="cities" className="mt-6">
           <CityImageManager />
