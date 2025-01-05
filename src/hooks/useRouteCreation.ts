@@ -5,10 +5,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Json } from '@/integrations/supabase/types';
 import { useDirections } from './useDirections';
-import * as htmlToImage from 'html-to-image';
 
 export function useRouteCreation() {
   const [formData, setFormData] = useState<CreateRouteFormData | null>(null);
+  const [screenshotBlob, setScreenshotBlob] = useState<Blob | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { getDirections } = useDirections();
@@ -133,24 +133,18 @@ export function useRouteCreation() {
         }
       }
 
-      console.log('Saving map screenshot...');
-      const mapElement = document.getElementById('map-preview');
-      if (mapElement) {
-        try {
-          const dataUrl = await htmlToImage.toPng(mapElement);
-          const blob = await (await fetch(dataUrl)).blob();
-          const { error: screenshotError } = await supabase
-            .storage
-            .from('screenshots')
-            .upload(`${route.id}.png`, blob, {
-              contentType: 'image/png',
-            });
+      if (screenshotBlob) {
+        console.log('Uploading screenshot...');
+        const { error: screenshotError } = await supabase
+          .storage
+          .from('screenshots')
+          .upload(`${route.id}.png`, screenshotBlob, {
+            contentType: 'image/png',
+          });
 
-          if (screenshotError) {
-            console.error('Error saving screenshot:', screenshotError);
-          }
-        } catch (error) {
-          console.error('Error capturing screenshot:', error);
+        if (screenshotError) {
+          console.error('Error uploading screenshot:', screenshotError);
+          // Don't throw error here, just log it
         }
       }
 
@@ -186,6 +180,7 @@ export function useRouteCreation() {
     handleFormSubmit,
     createRoute,
     calculateTotalDuration,
-    calculateTotalPrice
+    calculateTotalPrice,
+    setScreenshotBlob
   };
 }
