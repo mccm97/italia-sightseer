@@ -71,7 +71,24 @@ export function useRouteCreation() {
         return false;
       }
 
-      // Create route with upsert operation
+      // Check if a route with this name already exists for the user
+      const { data: existingRoute } = await supabase
+        .from('routes')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('name', formData.name)
+        .single();
+
+      if (existingRoute) {
+        toast({
+          title: "Nome duplicato",
+          description: "Hai già un percorso con questo nome. Scegli un nome diverso.",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      // Create route
       const { data: route, error: routeError } = await supabase
         .from('routes')
         .insert({
@@ -89,14 +106,6 @@ export function useRouteCreation() {
         .single();
 
       if (routeError) {
-        if (routeError.code === '23505') { // Unique violation error code
-          toast({
-            title: "Nome duplicato",
-            description: "Hai già un percorso con questo nome. Scegli un nome diverso.",
-            variant: "destructive"
-          });
-          return false;
-        }
         console.error('Error creating route:', routeError);
         throw new Error('Failed to create route');
       }
