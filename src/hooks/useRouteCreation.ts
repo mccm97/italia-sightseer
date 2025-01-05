@@ -48,7 +48,7 @@ export function useRouteCreation() {
   };
 
   const createRoute = async () => {
-    if (!formData) return;
+    if (!formData) return false;
 
     try {
       console.log('Creating route with data:', formData);
@@ -68,10 +68,10 @@ export function useRouteCreation() {
           description: "Devi essere autenticato per creare un percorso.",
           variant: "destructive"
         });
-        return;
+        return false;
       }
 
-      // Create route without ON CONFLICT clause
+      // Create route with upsert operation
       const { data: route, error: routeError } = await supabase
         .from('routes')
         .insert({
@@ -89,6 +89,14 @@ export function useRouteCreation() {
         .single();
 
       if (routeError) {
+        if (routeError.code === '23505') { // Unique violation error code
+          toast({
+            title: "Nome duplicato",
+            description: "Hai già un percorso con questo nome. Scegli un nome diverso.",
+            variant: "destructive"
+          });
+          return false;
+        }
         console.error('Error creating route:', routeError);
         throw new Error('Failed to create route');
       }
