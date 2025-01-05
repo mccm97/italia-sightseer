@@ -69,7 +69,7 @@ export function useRouteCreation() {
         return false;
       }
 
-      // Create route without ON CONFLICT clause
+      // Create route without onConflict clause
       const { data: route, error: routeError } = await supabase
         .from('routes')
         .insert({
@@ -81,7 +81,7 @@ export function useRouteCreation() {
           total_distance: 0,
           country: formData.country,
           is_public: true,
-          directions: directions as unknown as Json
+          directions: directions as Json
         })
         .select()
         .single();
