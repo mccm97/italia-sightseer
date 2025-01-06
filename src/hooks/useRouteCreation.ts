@@ -60,7 +60,7 @@ export function useRouteCreation() {
         return false;
       }
 
-      // Create route first
+      // Create route first - simplified insert without ON CONFLICT
       console.log('Creating route in database...');
       const { data: routeData, error: routeError } = await supabase
         .from('routes')
@@ -74,7 +74,7 @@ export function useRouteCreation() {
           country: formData.country,
           is_public: true
         })
-        .select('*')
+        .select()
         .single();
 
       if (routeError) {
@@ -94,7 +94,7 @@ export function useRouteCreation() {
         try {
           console.log(`Creating attraction ${index + 1}/${formData.attractions.length}...`);
           
-          // Create attraction
+          // Create attraction - simplified insert
           const { data: attractionData, error: attractionError } = await supabase
             .from('attractions')
             .insert({
@@ -105,7 +105,7 @@ export function useRouteCreation() {
               price: attr.price,
               city_id: formData.city?.id
             })
-            .select('*')
+            .select()
             .single();
 
           if (attractionError) {
@@ -118,7 +118,7 @@ export function useRouteCreation() {
             continue;
           }
 
-          // Link attraction to route
+          // Link attraction to route - simplified insert
           const { error: linkError } = await supabase
             .from('route_attractions')
             .insert({
