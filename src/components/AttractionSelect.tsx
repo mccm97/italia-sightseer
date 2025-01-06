@@ -8,33 +8,29 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { searchGeoapifyPlaces } from '../services/externalAttractions';
+import { getMonumentSuggestions } from '../services/attractions';
 
 interface AttractionSelectProps {
   value: string;
   onChange: (value: string) => void;
   inputType: 'name' | 'address';
   cityId?: string;
-  cityName?: string;
 }
 
-export function AttractionSelect({ value, onChange, inputType, cityId, cityName }: AttractionSelectProps) {
+export function AttractionSelect({ value, onChange, inputType, cityId }: AttractionSelectProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchSuggestions = async () => {
-      if (cityName && searchQuery) {
-        // First try to get attractions from Geoapify
-        const places = await searchGeoapifyPlaces(cityName, 'tourism.sights');
-        const placeNames = places.map(place => place.name);
-        setSuggestions(placeNames);
+      if (cityId) {
+        const monumentSuggestions = await getMonumentSuggestions(searchQuery, cityId);
+        setSuggestions(monumentSuggestions);
       }
     };
 
-    const timeoutId = setTimeout(fetchSuggestions, 300);
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery, cityName]);
+    fetchSuggestions();
+  }, [searchQuery, cityId]);
 
   if (inputType === 'address') {
     return (
