@@ -15,10 +15,12 @@ export function useRouteCreation() {
 
   const handleFormSubmit = async (data: CreateRouteFormData, userId: string) => {
     try {
+      console.log('Checking if user can create route...');
       const { data: canCreate, error: checkError } = await supabase
         .rpc('can_create_route', { input_user_id: userId });
 
       if (checkError) {
+        console.error('Error checking route creation permission:', checkError);
         throw new Error('Failed to check route creation permission');
       }
 
@@ -46,10 +48,10 @@ export function useRouteCreation() {
   };
 
   const createRoute = async () => {
-    if (!formData) return;
+    if (!formData) return false;
 
     try {
-      console.log('Creating route with data:', formData);
+      console.log('Starting route creation process...');
       
       const points = formData.attractions.map(attr => {
         return [0, 0] as [number, number];
@@ -65,9 +67,10 @@ export function useRouteCreation() {
           description: "Devi essere autenticato per creare un percorso.",
           variant: "destructive"
         });
-        return;
+        return false;
       }
 
+      console.log('Creating route in database...');
       const { data: route, error: routeError } = await supabase
         .from('routes')
         .insert({
@@ -89,7 +92,10 @@ export function useRouteCreation() {
         throw new Error('Failed to create route');
       }
 
-      const attractionsPromises = formData.attractions.map(async (attr, index) => {
+      console.log('Creating attractions...');
+      for (let i = 0; i < formData.attractions.length; i++) {
+        const attr = formData.attractions[i];
+        
         const { data: attraction, error: attractionError } = await supabase
           .from('attractions')
           .insert({
@@ -112,7 +118,7 @@ export function useRouteCreation() {
           .insert({
             route_id: route.id,
             attraction_id: attraction.id,
-            order_index: index,
+            order_index: i,
             transport_mode: formData.transportMode || 'walking',
             travel_duration: 0,
             travel_distance: 0
@@ -122,24 +128,28 @@ export function useRouteCreation() {
           console.error('Error linking attraction to route:', linkError);
           throw new Error('Failed to link attraction to route');
         }
-      });
+      }
 
-      await Promise.all(attractionsPromises);
-
+      console.log('Saving map screenshot...');
       const mapElement = document.getElementById('map-preview');
       if (mapElement) {
-        const dataUrl = await htmlToImage.toPng(mapElement);
-        const blob = await (await fetch(dataUrl)).blob();
-        const { data: screenshot, error: screenshotError } = await supabase
-          .storage
-          .from('screenshots')
-          .upload(`screenshots/${route.id}.png`, blob, {
-            contentType: 'image/png',
-          });
+        try {
+          const dataUrl = await htmlToImage.toPng(mapElement);
+          const blob = await (await fetch(dataUrl)).blob();
+          const { error: screenshotError } = await supabase
+            .storage
+            .from('screenshots')
+            .upload(`${route.id}.png`, blob, {
+              contentType: 'image/png',
+            });
 
-        if (screenshotError) {
-          console.error('Error saving screenshot:', screenshotError);
-          throw new Error('Failed to save screenshot');
+          if (screenshotError) {
+            console.error('Error saving screenshot:', screenshotError);
+            throw new Error('Failed to save screenshot');
+          }
+        } catch (screenshotError) {
+          console.error('Error capturing screenshot:', screenshotError);
+          // Continue even if screenshot fails
         }
       }
 
