@@ -69,9 +69,9 @@ export function useRouteCreation() {
         return false;
       }
 
-      // First create the route and wait for it to complete
+      // Create route first and ensure we have its ID
       console.log('Creating route in database...');
-      const { data: route, error: routeError } = await supabase
+      const { data: newRoute, error: routeError } = await supabase
         .from('routes')
         .insert({
           name: formData.name,
@@ -87,44 +87,39 @@ export function useRouteCreation() {
         .select()
         .single();
 
-      if (routeError) {
+      if (routeError || !newRoute) {
         console.error('Error creating route:', routeError);
         throw new Error('Failed to create route');
       }
 
-      if (!route) {
-        throw new Error('Route was not created properly');
-      }
+      console.log('Route created successfully:', newRoute);
 
-      console.log('Route created successfully:', route);
-
-      // Now create attractions one by one
-      console.log('Creating attractions...');
+      // Create attractions and link them to the route
       for (const attr of formData.attractions) {
-        const { data: attraction, error: attractionError } = await supabase
-          .from('attractions')
-          .insert({
-            name: attr.name || attr.address,
-            lat: 0,
-            lng: 0,
-            visit_duration: attr.visitDuration,
-            price: attr.price,
-            city_id: formData.city?.id
-          })
-          .select()
-          .single();
+        try {
+          const { data: attraction, error: attractionError } = await supabase
+            .from('attractions')
+            .insert({
+              name: attr.name || attr.address,
+              lat: 0,
+              lng: 0,
+              visit_duration: attr.visitDuration,
+              price: attr.price,
+              city_id: formData.city?.id
+            })
+            .select()
+            .single();
 
-        if (attractionError) {
-          console.error('Error creating attraction:', attractionError);
-          continue; // Continue with next attraction even if one fails
-        }
+          if (attractionError || !attraction) {
+            console.error('Error creating attraction:', attractionError);
+            continue;
+          }
 
-        if (attraction) {
-          console.log('Creating route-attraction link...');
+          // Link attraction to route
           const { error: linkError } = await supabase
             .from('route_attractions')
             .insert({
-              route_id: route.id,
+              route_id: newRoute.id,
               attraction_id: attraction.id,
               order_index: formData.attractions.indexOf(attr),
               transport_mode: formData.transportMode || 'walking',
@@ -135,6 +130,8 @@ export function useRouteCreation() {
           if (linkError) {
             console.error('Error linking attraction to route:', linkError);
           }
+        } catch (error) {
+          console.error('Error in attraction creation process:', error);
         }
       }
 
