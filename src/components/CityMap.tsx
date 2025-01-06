@@ -33,9 +33,11 @@ const isValidCoordinate = (coord: [number, number]): boolean => {
 // Component to update walking path
 const WalkingPath = ({ points }: { points: [number, number][] }) => {
   const map = useMap();
-
+  
   useEffect(() => {
-    if (points.length < 2) return;
+    if (!map || points.length < 2) return;
+
+    const layers: L.Polyline[] = [];
 
     // Validate all points before making the API call
     const validPoints = points.filter(isValidCoordinate);
@@ -62,21 +64,15 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
           })
         );
 
-        // Remove old layers if present
-        map.eachLayer((layer) => {
-          if (layer instanceof L.Polyline && layer.options.className === 'walking-path') {
-            map.removeLayer(layer);
-          }
-        });
-
         // Add new paths
         paths.forEach(path => {
-          L.polyline(path, {
+          const layer = L.polyline(path, {
             color: 'blue',
             weight: 4,
             opacity: 0.7,
             className: 'walking-path'
           }).addTo(map);
+          layers.push(layer);
         });
       } catch (error) {
         console.error('Error fetching walking path:', error);
@@ -84,6 +80,15 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
     };
 
     fetchWalkingPath();
+
+    // Cleanup function
+    return () => {
+      layers.forEach(layer => {
+        if (layer && map) {
+          map.removeLayer(layer);
+        }
+      });
+    };
   }, [points, map]);
 
   return null;
