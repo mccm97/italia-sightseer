@@ -72,22 +72,22 @@ export function useRouteCreation() {
           total_duration: calculateTotalDuration(),
           total_distance: 0,
           country: formData.country,
-          is_public: true,
+          is_public: true
         })
-        .select();
+        .select('*')
+        .single();
 
       if (routeError) {
         console.error('Error creating route:', routeError);
         throw new Error('Failed to create route');
       }
 
-      if (!routeData || routeData.length === 0) {
+      if (!routeData) {
         console.error('No route data returned');
         throw new Error('Failed to create route');
       }
 
-      const newRoute = routeData[0];
-      console.log('Route created successfully:', newRoute);
+      console.log('Route created successfully:', routeData);
 
       // Create attractions and link them to the route
       for (const [index, attr] of formData.attractions.entries()) {
@@ -105,26 +105,25 @@ export function useRouteCreation() {
               price: attr.price,
               city_id: formData.city?.id
             })
-            .select();
+            .select('*')
+            .single();
 
           if (attractionError) {
             console.error('Error creating attraction:', attractionError);
             continue;
           }
 
-          if (!attractionData || attractionData.length === 0) {
+          if (!attractionData) {
             console.error('No attraction data returned');
             continue;
           }
-
-          const attraction = attractionData[0];
 
           // Link attraction to route
           const { error: linkError } = await supabase
             .from('route_attractions')
             .insert({
-              route_id: newRoute.id,
-              attraction_id: attraction.id,
+              route_id: routeData.id,
+              attraction_id: attractionData.id,
               order_index: index,
               transport_mode: formData.transportMode || 'walking',
               travel_duration: 0,
