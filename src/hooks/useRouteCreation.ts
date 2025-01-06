@@ -69,6 +69,7 @@ export function useRouteCreation() {
         return false;
       }
 
+      // First create the route and wait for it to complete
       console.log('Creating route in database...');
       const { data: route, error: routeError } = await supabase
         .from('routes')
@@ -91,6 +92,13 @@ export function useRouteCreation() {
         throw new Error('Failed to create route');
       }
 
+      if (!route) {
+        throw new Error('Route was not created properly');
+      }
+
+      console.log('Route created successfully:', route);
+
+      // Now create attractions one by one
       console.log('Creating attractions...');
       for (const attr of formData.attractions) {
         const { data: attraction, error: attractionError } = await supabase
@@ -100,30 +108,33 @@ export function useRouteCreation() {
             lat: 0,
             lng: 0,
             visit_duration: attr.visitDuration,
-            price: attr.price
+            price: attr.price,
+            city_id: formData.city?.id
           })
           .select()
           .single();
 
         if (attractionError) {
           console.error('Error creating attraction:', attractionError);
-          throw new Error('Failed to create attraction');
+          continue; // Continue with next attraction even if one fails
         }
 
-        const { error: linkError } = await supabase
-          .from('route_attractions')
-          .insert({
-            route_id: route.id,
-            attraction_id: attraction.id,
-            order_index: formData.attractions.indexOf(attr),
-            transport_mode: formData.transportMode || 'walking',
-            travel_duration: 0,
-            travel_distance: 0
-          });
+        if (attraction) {
+          console.log('Creating route-attraction link...');
+          const { error: linkError } = await supabase
+            .from('route_attractions')
+            .insert({
+              route_id: route.id,
+              attraction_id: attraction.id,
+              order_index: formData.attractions.indexOf(attr),
+              transport_mode: formData.transportMode || 'walking',
+              travel_duration: 0,
+              travel_distance: 0
+            });
 
-        if (linkError) {
-          console.error('Error linking attraction to route:', linkError);
-          throw new Error('Failed to link attraction to route');
+          if (linkError) {
+            console.error('Error linking attraction to route:', linkError);
+          }
         }
       }
 
