@@ -76,8 +76,13 @@ export function useRouteCreation() {
         })
         .select();
 
-      if (routeError || !routeData || routeData.length === 0) {
+      if (routeError) {
         console.error('Error creating route:', routeError);
+        throw new Error('Failed to create route');
+      }
+
+      if (!routeData || routeData.length === 0) {
+        console.error('No route data returned');
         throw new Error('Failed to create route');
       }
 
@@ -102,8 +107,13 @@ export function useRouteCreation() {
             })
             .select();
 
-          if (attractionError || !attractionData || attractionData.length === 0) {
+          if (attractionError) {
             console.error('Error creating attraction:', attractionError);
+            continue;
+          }
+
+          if (!attractionData || attractionData.length === 0) {
+            console.error('No attraction data returned');
             continue;
           }
 
