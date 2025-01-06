@@ -60,7 +60,6 @@ export function useRouteCreation() {
         return false;
       }
 
-      // Create route without ON CONFLICT
       console.log('Creating route in database...');
       const { data: routeData, error: routeError } = await supabase
         .from('routes')
@@ -89,12 +88,10 @@ export function useRouteCreation() {
 
       console.log('Route created successfully:', routeData);
 
-      // Create attractions and link them to the route
       for (const [index, attr] of formData.attractions.entries()) {
         try {
           console.log(`Creating attraction ${index + 1}/${formData.attractions.length}...`);
           
-          // Create attraction without ON CONFLICT
           const { data: attractionData, error: attractionError } = await supabase
             .from('attractions')
             .insert({
@@ -118,7 +115,6 @@ export function useRouteCreation() {
             continue;
           }
 
-          // Link attraction to route without ON CONFLICT
           const { error: linkError } = await supabase
             .from('route_attractions')
             .insert({
