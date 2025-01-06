@@ -76,58 +76,54 @@ export function useRouteCreation() {
           country: formData.country,
           is_public: true,
         })
-        .select()
-        .single();
+        .select();
 
       if (routeError) {
         console.error('Error creating route:', routeError);
         throw new Error('Failed to create route');
       }
 
-      console.log('Route created successfully:', newRoute);
+      if (!newRoute || newRoute.length === 0) {
+        throw new Error('No route was created');
+      }
+
+      const route = newRoute[0];
+      console.log('Route created successfully:', route);
 
       // Create attractions and link them to the route
       for (const [index, attr] of formData.attractions.entries()) {
         try {
           console.log(`Creating attraction ${index + 1}/${formData.attractions.length}...`);
           
-          // First check if attraction already exists
-          const { data: existingAttractions } = await supabase
+          // Create or get attraction
+          const { data: attraction, error: attractionError } = await supabase
             .from('attractions')
-            .select('*')
-            .eq('name', attr.name || attr.address)
-            .eq('city_id', formData.city?.id)
-            .maybeSingle();
+            .insert({
+              name: attr.name || attr.address,
+              lat: 0,
+              lng: 0,
+              visit_duration: attr.visitDuration,
+              price: attr.price,
+              city_id: formData.city?.id
+            })
+            .select()
+            .single();
 
-          let attraction;
-          if (existingAttractions) {
-            attraction = existingAttractions;
-          } else {
-            const { data: newAttraction, error: attractionError } = await supabase
-              .from('attractions')
-              .insert({
-                name: attr.name || attr.address,
-                lat: 0,
-                lng: 0,
-                visit_duration: attr.visitDuration,
-                price: attr.price,
-                city_id: formData.city?.id
-              })
-              .select()
-              .single();
+          if (attractionError) {
+            console.error('Error creating attraction:', attractionError);
+            continue;
+          }
 
-            if (attractionError) {
-              console.error('Error creating attraction:', attractionError);
-              continue;
-            }
-            attraction = newAttraction;
+          if (!attraction) {
+            console.error('No attraction was created');
+            continue;
           }
 
           // Link attraction to route
           const { error: linkError } = await supabase
             .from('route_attractions')
             .insert({
-              route_id: newRoute.id,
+              route_id: route.id,
               attraction_id: attraction.id,
               order_index: index,
               transport_mode: formData.transportMode || 'walking',
