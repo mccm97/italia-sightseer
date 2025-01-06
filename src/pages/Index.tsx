@@ -56,7 +56,7 @@ const Index = () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         
-        const query = supabase
+        let query = supabase
           .from('routes')
           .select(`
             *,
@@ -69,9 +69,9 @@ const Index = () => {
           .eq('city_id', selectedCity.id);
 
         if (user) {
-          query.or(`is_public.eq.true,user_id.eq.${user.id}`);
+          query = query.or(`is_public.eq.true,user_id.eq.${user.id}`);
         } else {
-          query.eq('is_public', true);
+          query = query.eq('is_public', true);
         }
 
         const { data: routes, error } = await query;
@@ -83,6 +83,12 @@ const Index = () => {
             description: "Impossibile caricare i percorsi per questa città",
             variant: "destructive"
           });
+          return;
+        }
+
+        if (!routes) {
+          console.log('No routes found');
+          setCityRoutes([]);
           return;
         }
 
@@ -141,8 +147,17 @@ const Index = () => {
       setSelectedRouteDirections(route.directions);
     }
 
-    const summary = await generateSummary(route.attractions);
-    setRouteSummary(summary);
+    try {
+      const summary = await generateSummary(route.attractions);
+      setRouteSummary(summary);
+    } catch (error) {
+      console.error('Error generating summary:', error);
+      toast({
+        title: "Errore",
+        description: "Impossibile generare il riassunto del percorso",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
