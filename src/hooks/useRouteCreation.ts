@@ -5,7 +5,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Json } from '@/integrations/supabase/types';
 import { useDirections } from './useDirections';
-import * as htmlToImage from 'html-to-image';
 
 export function useRouteCreation() {
   const [formData, setFormData] = useState<CreateRouteFormData | null>(null);
@@ -93,9 +92,7 @@ export function useRouteCreation() {
       }
 
       console.log('Creating attractions...');
-      for (let i = 0; i < formData.attractions.length; i++) {
-        const attr = formData.attractions[i];
-        
+      for (const attr of formData.attractions) {
         const { data: attraction, error: attractionError } = await supabase
           .from('attractions')
           .insert({
@@ -118,7 +115,7 @@ export function useRouteCreation() {
           .insert({
             route_id: route.id,
             attraction_id: attraction.id,
-            order_index: i,
+            order_index: formData.attractions.indexOf(attr),
             transport_mode: formData.transportMode || 'walking',
             travel_duration: 0,
             travel_distance: 0
@@ -130,32 +127,9 @@ export function useRouteCreation() {
         }
       }
 
-      console.log('Saving map screenshot...');
-      const mapElement = document.getElementById('map-preview');
-      if (mapElement) {
-        try {
-          const dataUrl = await htmlToImage.toPng(mapElement);
-          const blob = await (await fetch(dataUrl)).blob();
-          const { error: screenshotError } = await supabase
-            .storage
-            .from('screenshots')
-            .upload(`${route.id}.png`, blob, {
-              contentType: 'image/png',
-            });
-
-          if (screenshotError) {
-            console.error('Error saving screenshot:', screenshotError);
-            throw new Error('Failed to save screenshot');
-          }
-        } catch (screenshotError) {
-          console.error('Error capturing screenshot:', screenshotError);
-          // Continue even if screenshot fails
-        }
-      }
-
       toast({
         title: "Percorso creato",
-        description: "Il percorso è stato creato con successo.",
+        description: "Il percorso è stato creato con successo. Ricordati di aggiungere uno screenshot della mappa del percorso dalla pagina del profilo.",
         variant: "default"
       });
 
@@ -164,7 +138,7 @@ export function useRouteCreation() {
       console.error('Error creating route:', error);
       toast({
         title: "Errore",
-        description: "Si è verificato un errore. Riprova più tardi.",
+        description: "Si è verificato un errore durante la creazione del percorso. Riprova più tardi.",
         variant: "destructive"
       });
       return false;
