@@ -18,6 +18,12 @@ interface AmadeusAttraction {
   rank: number;
 }
 
+interface City {
+  name: string;
+  lat: number;
+  lng: number;
+}
+
 export const searchGeoapifyPlaces = async (city: string, category: string) => {
   try {
     const response = await axios.get(
@@ -47,7 +53,7 @@ export const searchGeoapifyPlaces = async (city: string, category: string) => {
   }
 };
 
-export const searchAmadeusAttractions = async (city: string) => {
+export const searchAmadeusAttractions = async (city: City) => {
   try {
     const response = await axios.get(
       `https://api.amadeus.com/v1/reference-data/locations/pois`,
