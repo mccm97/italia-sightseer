@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Camera } from 'lucide-react';
-import html2canvas from 'html2to-image';
+import * as htmlToImage from 'html-to-image';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -25,10 +25,8 @@ export function RouteScreenshotButton({ routeId, onScreenshotTaken }: RouteScree
         return;
       }
 
-      const canvas = await html2canvas(mapElement);
-      const blob = await new Promise<Blob>((resolve) => {
-        canvas.toBlob((blob) => resolve(blob!), 'image/png');
-      });
+      const dataUrl = await htmlToImage.toPng(mapElement);
+      const blob = await (await fetch(dataUrl)).blob();
 
       const fileName = `${routeId}.png`;
       const { error: uploadError } = await supabase.storage
