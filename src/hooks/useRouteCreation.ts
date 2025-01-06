@@ -95,7 +95,7 @@ export function useRouteCreation() {
         try {
           console.log(`Creating attraction ${index + 1}/${formData.attractions.length}...`);
           
-          // Create or get attraction
+          // Create attraction
           const { data: attraction, error: attractionError } = await supabase
             .from('attractions')
             .insert({
