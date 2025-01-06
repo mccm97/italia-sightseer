@@ -3,13 +3,11 @@ import { CreateRouteFormData } from '@/types/route';
 import { useToast } from './use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import { useDirections } from './useDirections';
 
 export function useRouteCreation() {
   const [formData, setFormData] = useState<CreateRouteFormData | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { getDirections } = useDirections();
 
   const handleFormSubmit = async (data: CreateRouteFormData, userId: string) => {
     try {
@@ -76,19 +74,19 @@ export function useRouteCreation() {
           country: formData.country,
           is_public: true,
         })
-        .select();
+        .select()
+        .single();
 
       if (routeError) {
         console.error('Error creating route:', routeError);
         throw new Error('Failed to create route');
       }
 
-      if (!newRoute || newRoute.length === 0) {
+      if (!newRoute) {
         throw new Error('No route was created');
       }
 
-      const route = newRoute[0];
-      console.log('Route created successfully:', route);
+      console.log('Route created successfully:', newRoute);
 
       // Create attractions and link them to the route
       for (const [index, attr] of formData.attractions.entries()) {
@@ -123,7 +121,7 @@ export function useRouteCreation() {
           const { error: linkError } = await supabase
             .from('route_attractions')
             .insert({
-              route_id: route.id,
+              route_id: newRoute.id,
               attraction_id: attraction.id,
               order_index: index,
               transport_mode: formData.transportMode || 'walking',
