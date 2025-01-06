@@ -96,15 +96,14 @@ export function useRouteCreation() {
 
       console.log('Route created successfully:', routeData);
 
+      // Create attractions sequentially
       for (const [index, attr] of formData.attractions.entries()) {
         try {
-          console.log(`Creating attraction ${index + 1}/${formData.attractions.length}...`);
-          
           const { data: attractionData, error: attractionError } = await supabase
             .from('attractions')
             .insert({
               name: attr.name || attr.address,
-              lat: 0,
+              lat: 0, // These will be updated later with geocoding
               lng: 0,
               visit_duration: attr.visitDuration,
               price: attr.price,
@@ -132,9 +131,7 @@ export function useRouteCreation() {
               transport_mode: formData.transportMode || 'walking',
               travel_duration: 0,
               travel_distance: 0
-            })
-            .select('*')
-            .single();
+            });
 
           if (linkError) {
             console.error('Error linking attraction to route:', linkError);
@@ -148,7 +145,6 @@ export function useRouteCreation() {
       toast({
         title: "Percorso creato",
         description: "Il percorso è stato creato con successo.",
-        variant: "default"
       });
 
       return true;
