@@ -62,7 +62,7 @@ export function useRouteCreation() {
 
       // Create route first
       console.log('Creating route in database...');
-      const { data: routes, error: routeError } = await supabase
+      const { data: routeData, error: routeError } = await supabase
         .from('routes')
         .insert([{
           name: formData.name,
@@ -76,16 +76,12 @@ export function useRouteCreation() {
         }])
         .select();
 
-      if (routeError) {
+      if (routeError || !routeData || routeData.length === 0) {
         console.error('Error creating route:', routeError);
         throw new Error('Failed to create route');
       }
 
-      if (!routes || routes.length === 0) {
-        throw new Error('No route was created');
-      }
-
-      const newRoute = routes[0];
+      const newRoute = routeData[0];
       console.log('Route created successfully:', newRoute);
 
       // Create attractions and link them to the route
@@ -94,7 +90,7 @@ export function useRouteCreation() {
           console.log(`Creating attraction ${index + 1}/${formData.attractions.length}...`);
           
           // Create attraction
-          const { data: attractions, error: attractionError } = await supabase
+          const { data: attractionData, error: attractionError } = await supabase
             .from('attractions')
             .insert([{
               name: attr.name || attr.address,
@@ -106,17 +102,12 @@ export function useRouteCreation() {
             }])
             .select();
 
-          if (attractionError) {
+          if (attractionError || !attractionData || attractionData.length === 0) {
             console.error('Error creating attraction:', attractionError);
             continue;
           }
 
-          if (!attractions || attractions.length === 0) {
-            console.error('No attraction was created');
-            continue;
-          }
-
-          const attraction = attractions[0];
+          const attraction = attractionData[0];
 
           // Link attraction to route
           const { error: linkError } = await supabase
