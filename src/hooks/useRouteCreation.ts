@@ -46,7 +46,7 @@ export function useRouteCreation() {
   };
 
   const createRoute = async () => {
-    if (!formData) return;
+    if (!formData) return false;
 
     try {
       console.log('Creating route with data:', formData);
@@ -65,9 +65,10 @@ export function useRouteCreation() {
           description: "Devi essere autenticato per creare un percorso.",
           variant: "destructive"
         });
-        return;
+        return false;
       }
 
+      // Create route without ON CONFLICT clause
       const { data: route, error: routeError } = await supabase
         .from('routes')
         .insert({
@@ -89,6 +90,7 @@ export function useRouteCreation() {
         throw new Error('Failed to create route');
       }
 
+      // Create attractions without ON CONFLICT clause
       const attractionsPromises = formData.attractions.map(async (attr, index) => {
         const { data: attraction, error: attractionError } = await supabase
           .from('attractions')
@@ -126,14 +128,14 @@ export function useRouteCreation() {
 
       await Promise.all(attractionsPromises);
 
-      const mapElement = document.getElementById('map-preview');
+      const mapElement = document.getElementById('route-map');
       if (mapElement) {
         const dataUrl = await htmlToImage.toPng(mapElement);
         const blob = await (await fetch(dataUrl)).blob();
-        const { data: screenshot, error: screenshotError } = await supabase
+        const { error: screenshotError } = await supabase
           .storage
           .from('screenshots')
-          .upload(`screenshots/${route.id}.png`, blob, {
+          .upload(`${route.id}.png`, blob, {
             contentType: 'image/png',
           });
 
