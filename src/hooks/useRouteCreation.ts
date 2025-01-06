@@ -9,6 +9,14 @@ export function useRouteCreation() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  const calculateTotalDuration = () => {
+    return formData?.attractions.reduce((total, attr) => total + (attr.visitDuration || 0), 0) || 0;
+  };
+
+  const calculateTotalPrice = () => {
+    return formData?.attractions.reduce((total, attr) => total + (attr.price || 0), 0) || 0;
+  };
+
   const handleFormSubmit = async (data: CreateRouteFormData, userId: string) => {
     try {
       console.log('Starting form submission process...', data);
@@ -153,14 +161,6 @@ export function useRouteCreation() {
       });
       return false;
     }
-  };
-
-  const calculateTotalDuration = () => {
-    return formData?.attractions.reduce((total, attr) => total + (attr.visitDuration || 0), 0) || 0;
-  };
-
-  const calculateTotalPrice = () => {
-    return formData?.attractions.reduce((total, attr) => total + (attr.price || 0), 0) || 0;
   };
 
   return {
