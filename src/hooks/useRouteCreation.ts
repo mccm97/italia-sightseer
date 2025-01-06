@@ -36,6 +36,22 @@ export function useRouteCreation() {
         return false;
       }
 
+      // Check for existing route with same name
+      const { data: existingRoutes } = await supabase
+        .from('routes')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('name', data.name);
+
+      if (existingRoutes && existingRoutes.length > 0) {
+        toast({
+          title: "Nome duplicato",
+          description: "Hai già un percorso con questo nome. Scegli un nome diverso.",
+          variant: "destructive"
+        });
+        return false;
+      }
+
       setFormData(data);
       return true;
     } catch (error) {

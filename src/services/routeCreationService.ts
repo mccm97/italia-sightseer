@@ -23,7 +23,7 @@ export async function createNewRoute(formData: CreateRouteFormData, userId: stri
 
   if (routeError) {
     console.error('Error creating route:', routeError);
-    throw new Error('Failed to create route');
+    throw new Error(routeError.message);
   }
 
   return route;
@@ -46,7 +46,7 @@ export async function createAttractions(formData: CreateRouteFormData, routeId: 
       .select()
       .single();
 
-    if (attractionError || !attraction) {
+    if (attractionError) {
       console.error('Error creating attraction:', attractionError);
       throw new Error('Failed to create attraction');
     }
