@@ -69,7 +69,7 @@ export function useRouteCreation() {
         return false;
       }
 
-      // Create route first and ensure we have its ID
+      // Create route first
       console.log('Creating route in database...');
       const { data: newRoute, error: routeError } = await supabase
         .from('routes')
@@ -87,9 +87,13 @@ export function useRouteCreation() {
         .select()
         .single();
 
-      if (routeError || !newRoute) {
+      if (routeError) {
         console.error('Error creating route:', routeError);
         throw new Error('Failed to create route');
+      }
+
+      if (!newRoute) {
+        throw new Error('No route returned after creation');
       }
 
       console.log('Route created successfully:', newRoute);

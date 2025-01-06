@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Header } from '@/components/layout/Header';
+import { HomeHero } from '@/components/home/HomeHero';
+import { AboutSection } from '@/components/home/AboutSection';
+import { CitySearchSection } from '@/components/home/CitySearchSection';
+import { CityView } from '@/components/city/CityView';
 import { CreateRouteDialog } from '@/components/CreateRouteDialog';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { RoutePreview } from '@/components/RoutePreview';
+import { DirectionsDialog } from '@/components/route/DirectionsDialog';
+import { RoutePreviewDialog } from '@/components/home/RoutePreviewDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { DirectionsDialog } from '@/components/route/DirectionsDialog';
-import { Header } from '@/components/layout/Header';
-import { Route, DirectionsStep } from '@/types/route';
-import { HomeHero } from '@/components/home/HomeHero';
-import { CityView } from '@/components/city/CityView';
-import { CitySearchSection } from '@/components/home/CitySearchSection';
 import { generateSummary } from '@/services/summarization';
+import { Route, DirectionsStep } from '@/types/route';
 
 interface City {
   id?: string;
@@ -28,11 +27,10 @@ const Index = () => {
   const [cityRoutes, setCityRoutes] = useState<Route[]>([]);
   const [isLoadingRoutes, setIsLoadingRoutes] = useState(false);
   const [user, setUser] = useState<any>(null);
-  const { toast } = useToast();
-  const navigate = useNavigate();
   const [showDirections, setShowDirections] = useState(false);
   const [selectedRouteDirections, setSelectedRouteDirections] = useState<DirectionsStep[]>([]);
   const [routeSummary, setRouteSummary] = useState<string>('');
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -93,7 +91,7 @@ const Index = () => {
           cityName: selectedCity.name,
           name: route.name,
           duration: route.total_duration,
-          total_duration: route.total_duration, // Added this line to fix the type error
+          total_duration: route.total_duration,
           creator: route.creator,
           attractions: route.route_attractions
             .filter((ra: any) => ra.attraction)
@@ -151,24 +149,7 @@ const Index = () => {
     <div className="container mx-auto p-4 space-y-6">
       <Header user={user} />
       <HomeHero />
-      <section className="bg-gray-100 p-4 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-4">Chi Siamo</h2>
-        <p>
-          WayWonder è una piattaforma che ti aiuta a esplorare le meraviglie dell'Italia
-          attraverso percorsi personalizzati. Scopri le attrazioni culturali, pianifica i tuoi
-          itinerari e vivi un'esperienza indimenticabile.
-        </p>
-      </section>
-      <section className="bg-gray-100 p-4 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-4">Cosa Offriamo</h2>
-        <ul className="list-disc pl-5">
-          <li>Pianificazione di percorsi personalizzati</li>
-          <li>Calcolo dei tempi e dei costi</li>
-          <li>Visualizzazione delle attrazioni principali</li>
-          <li>Consigli sugli itinerari migliori</li>
-          <li>Gestione delle tue preferenze di viaggio</li>
-        </ul>
-      </section>
+      <AboutSection />
 
       {!selectedCity ? (
         <div className="flex justify-center">
@@ -194,41 +175,13 @@ const Index = () => {
 
       <CreateRouteDialog />
 
-      <Dialog open={showRoutePreview} onOpenChange={setShowRoutePreview}>
-        <DialogContent className="sm:max-w-[800px]">
-          {selectedRoute && (
-            <RoutePreview
-              formData={{
-                name: selectedRoute.name,
-                city: {
-                  id: selectedCity?.id || 'temp-id',
-                  name: selectedRoute.cityName,
-                  lat: selectedRoute.attractions[0]?.position?.[0] || selectedCity?.lat || 0,
-                  lng: selectedRoute.attractions[0]?.position?.[1] || selectedCity?.lng || 0,
-                  country: selectedCity?.country
-                },
-                country: selectedCity?.country || 'Italy',
-                attractions: selectedRoute.attractions.map(attr => ({
-                  name: attr.name,
-                  address: '',
-                  inputType: 'name',
-                  visitDuration: attr.visitDuration,
-                  price: attr.price || 0
-                })),
-                attractionsCount: selectedRoute.attractions.length,
-                transportMode: 'walking'
-              }}
-              onBack={() => setShowRoutePreview(false)}
-            />
-          )}
-          {routeSummary && (
-            <div className="mt-4">
-              <h3 className="text-xl font-bold">Riassunto del percorso:</h3>
-              <p>{routeSummary}</p>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      <RoutePreviewDialog
+        showRoutePreview={showRoutePreview}
+        setShowRoutePreview={setShowRoutePreview}
+        selectedRoute={selectedRoute}
+        selectedCity={selectedCity}
+        routeSummary={routeSummary}
+      />
 
       <DirectionsDialog
         isOpen={showDirections}
