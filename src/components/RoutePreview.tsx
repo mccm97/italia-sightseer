@@ -5,14 +5,16 @@ import { CreateRouteFormData } from '@/types/route';
 import { ArrowLeft } from 'lucide-react';
 import { geocodeAddress } from '@/services/geocoding';
 import { useToast } from '@/hooks/use-toast';
+import { RouteScreenshotButton } from './route/RouteScreenshotButton';
 
 interface RoutePreviewProps {
   formData: CreateRouteFormData;
   onBack: () => void;
   onCreateRoute?: () => void;
+  routeId?: string;
 }
 
-export function RoutePreview({ formData, onBack, onCreateRoute }: RoutePreviewProps) {
+export function RoutePreview({ formData, onBack, onCreateRoute, routeId }: RoutePreviewProps) {
   const [attractions, setAttractions] = useState<Array<{ name: string; position: [number, number] }>>([]);
   const [totalTravelTime, setTotalTravelTime] = useState(0);
   const { toast } = useToast();
@@ -83,12 +85,17 @@ export function RoutePreview({ formData, onBack, onCreateRoute }: RoutePreviewPr
           <ArrowLeft className="w-4 h-4" />
           Torna alla creazione
         </Button>
-        <Button 
-          onClick={onCreateRoute}
-          className="bg-primary text-white"
-        >
-          Crea Percorso
-        </Button>
+        <div className="flex items-center gap-2">
+          {routeId && (
+            <RouteScreenshotButton routeId={routeId} />
+          )}
+          <Button 
+            onClick={onCreateRoute}
+            className="bg-primary text-white"
+          >
+            Crea Percorso
+          </Button>
+        </div>
       </div>
 
       <h2 className="text-2xl font-bold">Anteprima Percorso</h2>
@@ -101,7 +108,7 @@ export function RoutePreview({ formData, onBack, onCreateRoute }: RoutePreviewPr
         <p><strong>Modalità di trasporto:</strong> {formData.transportMode === 'walking' ? 'A piedi' : 'Mezzi pubblici'}</p>
       </div>
       
-      <div className="h-[400px] w-full">
+      <div id="route-map" className="h-[400px] w-full">
         <CityMap
           center={[formData.city?.lat || 0, formData.city?.lng || 0]}
           attractions={attractions}
