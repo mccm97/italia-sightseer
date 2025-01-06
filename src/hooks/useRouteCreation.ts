@@ -20,6 +20,7 @@ export function useRouteCreation() {
   const handleFormSubmit = async (data: CreateRouteFormData, userId: string) => {
     try {
       console.log('Starting form submission process...', data);
+      
       const { data: canCreate, error: checkError } = await supabase
         .rpc('can_create_route', { input_user_id: userId });
 
@@ -96,10 +97,9 @@ export function useRouteCreation() {
 
       console.log('Route created successfully:', routeData);
 
+      // Create attractions sequentially
       for (const [index, attr] of formData.attractions.entries()) {
         try {
-          console.log(`Creating attraction ${index + 1}/${formData.attractions.length}...`);
-          
           const { data: attractionData, error: attractionError } = await supabase
             .from('attractions')
             .insert({
@@ -132,14 +132,11 @@ export function useRouteCreation() {
               transport_mode: formData.transportMode || 'walking',
               travel_duration: 0,
               travel_distance: 0
-            })
-            .select('*')
-            .single();
+            });
 
           if (linkError) {
             console.error('Error linking attraction to route:', linkError);
           }
-
         } catch (error) {
           console.error('Error in attraction creation process:', error);
         }
@@ -148,7 +145,6 @@ export function useRouteCreation() {
       toast({
         title: "Percorso creato",
         description: "Il percorso è stato creato con successo.",
-        variant: "default"
       });
 
       return true;
