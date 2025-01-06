@@ -64,7 +64,7 @@ export function useRouteCreation() {
       console.log('Creating route in database...');
       const { data: routeData, error: routeError } = await supabase
         .from('routes')
-        .insert([{
+        .insert({
           name: formData.name,
           city_id: formData.city?.id,
           user_id: user.id,
@@ -73,7 +73,7 @@ export function useRouteCreation() {
           total_distance: 0,
           country: formData.country,
           is_public: true,
-        }])
+        })
         .select();
 
       if (routeError || !routeData || routeData.length === 0) {
@@ -92,14 +92,14 @@ export function useRouteCreation() {
           // Create attraction
           const { data: attractionData, error: attractionError } = await supabase
             .from('attractions')
-            .insert([{
+            .insert({
               name: attr.name || attr.address,
               lat: 0,
               lng: 0,
               visit_duration: attr.visitDuration,
               price: attr.price,
               city_id: formData.city?.id
-            }])
+            })
             .select();
 
           if (attractionError || !attractionData || attractionData.length === 0) {
@@ -112,14 +112,14 @@ export function useRouteCreation() {
           // Link attraction to route
           const { error: linkError } = await supabase
             .from('route_attractions')
-            .insert([{
+            .insert({
               route_id: newRoute.id,
               attraction_id: attraction.id,
               order_index: index,
               transport_mode: formData.transportMode || 'walking',
               travel_duration: 0,
               travel_distance: 0
-            }]);
+            });
 
           if (linkError) {
             console.error('Error linking attraction to route:', linkError);
