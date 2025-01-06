@@ -18,6 +18,8 @@ export async function checkExistingRoute(userId: string, routeName: string) {
 }
 
 export async function createNewRoute(formData: CreateRouteFormData, userId: string, directions: Json) {
+  console.log('Creating new route:', { formData, userId });
+  
   const { data: route, error: routeError } = await supabase
     .from('routes')
     .insert({
@@ -57,7 +59,7 @@ export async function createAttractions(formData: CreateRouteFormData, routeId: 
       .select()
       .single();
 
-    if (attractionError || !attraction) {
+    if (attractionError) {
       console.error('Error creating attraction:', attractionError);
       throw new Error('Failed to create attraction');
     }
