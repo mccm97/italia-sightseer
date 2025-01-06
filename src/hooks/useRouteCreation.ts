@@ -2,28 +2,23 @@ import { useState } from 'react';
 import { CreateRouteFormData } from '@/types/route';
 import { useToast } from './use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
+import { Json } from '@/integrations/supabase/types';
 import { useDirections } from './useDirections';
-import { 
-  createNewRoute, 
-  createAttractions, 
-  calculateTotalDuration, 
-  calculateTotalPrice 
-} from '@/services/routeCreationService';
+import * as htmlToImage from 'html-to-image';
 
 export function useRouteCreation() {
   const [formData, setFormData] = useState<CreateRouteFormData | null>(null);
-  const [screenshotBlob, setScreenshotBlob] = useState<Blob | null>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { getDirections } = useDirections();
 
   const handleFormSubmit = async (data: CreateRouteFormData, userId: string) => {
     try {
-      console.log('Checking if user can create route...');
       const { data: canCreate, error: checkError } = await supabase
         .rpc('can_create_route', { input_user_id: userId });
 
       if (checkError) {
-        console.error('Error checking route creation permission:', checkError);
         throw new Error('Failed to check route creation permission');
       }
 
@@ -33,22 +28,7 @@ export function useRouteCreation() {
           description: "Hai raggiunto il limite mensile di percorsi. Passa a un piano superiore per crearne altri.",
           variant: "destructive"
         });
-        return false;
-      }
-
-      // Check for existing route with same name
-      const { data: existingRoutes } = await supabase
-        .from('routes')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('name', data.name);
-
-      if (existingRoutes && existingRoutes.length > 0) {
-        toast({
-          title: "Nome duplicato",
-          description: "Hai già un percorso con questo nome. Scegli un nome diverso.",
-          variant: "destructive"
-        });
+        navigate('/upgrade');
         return false;
       }
 
@@ -66,37 +46,100 @@ export function useRouteCreation() {
   };
 
   const createRoute = async () => {
-    if (!formData) return false;
+    if (!formData) return;
 
     try {
+      console.log('Creating route with data:', formData);
+      
+      const points = formData.attractions.map(attr => {
+        return [0, 0] as [number, number];
+      });
+      
+      const directions = await getDirections(points);
+      
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        console.error('No authenticated user found');
         toast({
           title: "Errore",
           description: "Devi essere autenticato per creare un percorso.",
           variant: "destructive"
         });
-        return false;
+        return;
       }
 
-      const points = formData.attractions.map(attr => [0, 0] as [number, number]);
-      const directions = await getDirections(points);
-      
-      const route = await createNewRoute(formData, user.id, directions as any);
-      await createAttractions(formData, route.id, formData.city?.id);
+      const { data: route, error: routeError } = await supabase
+        .from('routes')
+        .insert({
+          name: formData.name,
+          city_id: formData.city?.id,
+          user_id: user.id,
+          transport_mode: formData.transportMode || 'walking',
+          total_duration: calculateTotalDuration(),
+          total_distance: 0,
+          country: formData.country,
+          is_public: true,
+          directions: directions as unknown as Json
+        })
+        .select()
+        .single();
 
-      if (screenshotBlob) {
-        const { error: screenshotError } = await supabase
+      if (routeError) {
+        console.error('Error creating route:', routeError);
+        throw new Error('Failed to create route');
+      }
+
+      const attractionsPromises = formData.attractions.map(async (attr, index) => {
+        const { data: attraction, error: attractionError } = await supabase
+          .from('attractions')
+          .insert({
+            name: attr.name || attr.address,
+            lat: 0,
+            lng: 0,
+            visit_duration: attr.visitDuration,
+            price: attr.price
+          })
+          .select()
+          .single();
+
+        if (attractionError) {
+          console.error('Error creating attraction:', attractionError);
+          throw new Error('Failed to create attraction');
+        }
+
+        const { error: linkError } = await supabase
+          .from('route_attractions')
+          .insert({
+            route_id: route.id,
+            attraction_id: attraction.id,
+            order_index: index,
+            transport_mode: formData.transportMode || 'walking',
+            travel_duration: 0,
+            travel_distance: 0
+          });
+
+        if (linkError) {
+          console.error('Error linking attraction to route:', linkError);
+          throw new Error('Failed to link attraction to route');
+        }
+      });
+
+      await Promise.all(attractionsPromises);
+
+      const mapElement = document.getElementById('map-preview');
+      if (mapElement) {
+        const dataUrl = await htmlToImage.toPng(mapElement);
+        const blob = await (await fetch(dataUrl)).blob();
+        const { data: screenshot, error: screenshotError } = await supabase
           .storage
           .from('screenshots')
-          .upload(`${route.id}.png`, screenshotBlob, {
+          .upload(`screenshots/${route.id}.png`, blob, {
             contentType: 'image/png',
           });
 
         if (screenshotError) {
-          console.error('Error uploading screenshot:', screenshotError);
+          console.error('Error saving screenshot:', screenshotError);
+          throw new Error('Failed to save screenshot');
         }
       }
 
@@ -118,13 +161,20 @@ export function useRouteCreation() {
     }
   };
 
+  const calculateTotalDuration = () => {
+    return formData?.attractions.reduce((total, attr) => total + (attr.visitDuration || 0), 0) || 0;
+  };
+
+  const calculateTotalPrice = () => {
+    return formData?.attractions.reduce((total, attr) => total + (attr.price || 0), 0) || 0;
+  };
+
   return {
     formData,
     setFormData,
     handleFormSubmit,
     createRoute,
     calculateTotalDuration,
-    calculateTotalPrice,
-    setScreenshotBlob
+    calculateTotalPrice
   };
 }

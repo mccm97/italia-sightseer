@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { DirectionsDialog } from '@/components/route/DirectionsDialog';
 import { Header } from '@/components/layout/Header';
-import { Route, DirectionsStep, Attraction } from '@/types/route';
+import { Route, DirectionsStep } from '@/types/route';
 import { HomeHero } from '@/components/home/HomeHero';
 import { CityView } from '@/components/city/CityView';
 import { CitySearchSection } from '@/components/home/CitySearchSection';
@@ -36,21 +36,15 @@ const Index = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('username, avatar_url')
-            .eq('id', user.id)
-            .maybeSingle();
-          
-          if (profile) {
-            setUser({ ...user, ...profile });
-          }
-        }
-      } catch (error) {
-        console.error('Error in fetchUser:', error);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('username, avatar_url')
+          .eq('id', user.id)
+          .single();
+        
+        setUser({ ...user, ...profile });
       }
     };
     fetchUser();
@@ -64,7 +58,7 @@ const Index = () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         
-        let query = supabase
+        const query = supabase
           .from('routes')
           .select(`
             *,
@@ -77,9 +71,9 @@ const Index = () => {
           .eq('city_id', selectedCity.id);
 
         if (user) {
-          query = query.or(`is_public.eq.true,user_id.eq.${user.id}`);
+          query.or(`is_public.eq.true,user_id.eq.${user.id}`);
         } else {
-          query = query.eq('is_public', true);
+          query.eq('is_public', true);
         }
 
         const { data: routes, error } = await query;
@@ -94,13 +88,14 @@ const Index = () => {
           return;
         }
 
-        if (!routes) {
-          setCityRoutes([]);
-          return;
-        }
-
-        const transformedRoutes: Route[] = routes.map(route => {
-          const attractions: Attraction[] = route.route_attractions
+        const transformedRoutes: Route[] = routes.map(route => ({
+          id: route.id,
+          cityName: selectedCity.name,
+          name: route.name,
+          duration: route.total_duration,
+          total_duration: route.total_duration, // Added this line to fix the type error
+          creator: route.creator,
+          attractions: route.route_attractions
             .filter((ra: any) => ra.attraction)
             .map((ra: any) => {
               const position: [number, number] | undefined = 
@@ -115,35 +110,14 @@ const Index = () => {
                 price: ra.attraction.price || undefined
               };
             })
-            .filter((attr: Partial<Attraction>): attr is Attraction => 
-              typeof attr.name === 'string' &&
-              typeof attr.visitDuration === 'number' &&
-              (attr.position === undefined || (
-                Array.isArray(attr.position) && 
-                attr.position.length === 2 &&
-                typeof attr.position[0] === 'number' &&
-                typeof attr.position[1] === 'number'
-              ))
-            );
-
-          return {
-            id: route.id,
-            cityName: selectedCity.name,
-            name: route.name,
-            duration: route.total_duration,
-            total_duration: route.total_duration,
-            creator: route.creator,
-            attractions,
-            isPublic: route.is_public,
-            directions: route.directions 
-              ? (route.directions as any[]).map((dir): DirectionsStep => ({
-                  instruction: dir.instruction,
-                  distance: dir.distance,
-                  duration: dir.duration
-                }))
-              : undefined
-          };
-        });
+            .filter(attr => attr.position),
+          isPublic: route.is_public,
+          directions: route.directions ? (route.directions as any[]).map((dir: any) => ({
+            instruction: dir.instruction,
+            distance: dir.distance,
+            duration: dir.duration
+          })) as DirectionsStep[] : undefined
+        }));
 
         setCityRoutes(transformedRoutes);
       } catch (error) {
@@ -169,12 +143,8 @@ const Index = () => {
       setSelectedRouteDirections(route.directions);
     }
 
-    try {
-      const summary = await generateSummary(route.attractions);
-      setRouteSummary(summary);
-    } catch (error) {
-      console.error('Error generating summary:', error);
-    }
+    const summary = await generateSummary(route.attractions);
+    setRouteSummary(summary);
   };
 
   return (
