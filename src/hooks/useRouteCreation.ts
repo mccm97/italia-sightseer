@@ -79,7 +79,7 @@ export function useRouteCreation() {
         .select()
         .single();
 
-      if (routeError || !newRoute) {
+      if (routeError) {
         console.error('Error creating route:', routeError);
         throw new Error('Failed to create route');
       }
@@ -91,22 +91,36 @@ export function useRouteCreation() {
         try {
           console.log(`Creating attraction ${index + 1}/${formData.attractions.length}...`);
           
-          const { data: attraction, error: attractionError } = await supabase
+          // First check if attraction already exists
+          const { data: existingAttractions } = await supabase
             .from('attractions')
-            .insert({
-              name: attr.name || attr.address,
-              lat: 0, // These will be updated later
-              lng: 0,
-              visit_duration: attr.visitDuration,
-              price: attr.price,
-              city_id: formData.city?.id
-            })
-            .select()
-            .single();
+            .select('*')
+            .eq('name', attr.name || attr.address)
+            .eq('city_id', formData.city?.id)
+            .maybeSingle();
 
-          if (attractionError || !attraction) {
-            console.error('Error creating attraction:', attractionError);
-            continue;
+          let attraction;
+          if (existingAttractions) {
+            attraction = existingAttractions;
+          } else {
+            const { data: newAttraction, error: attractionError } = await supabase
+              .from('attractions')
+              .insert({
+                name: attr.name || attr.address,
+                lat: 0,
+                lng: 0,
+                visit_duration: attr.visitDuration,
+                price: attr.price,
+                city_id: formData.city?.id
+              })
+              .select()
+              .single();
+
+            if (attractionError) {
+              console.error('Error creating attraction:', attractionError);
+              continue;
+            }
+            attraction = newAttraction;
           }
 
           // Link attraction to route
