@@ -20,6 +20,7 @@ export function useRouteCreation() {
   const handleFormSubmit = async (data: CreateRouteFormData, userId: string) => {
     try {
       console.log('Starting form submission process...', data);
+      
       const { data: canCreate, error: checkError } = await supabase
         .rpc('can_create_route', { input_user_id: userId });
 
@@ -103,7 +104,7 @@ export function useRouteCreation() {
             .from('attractions')
             .insert({
               name: attr.name || attr.address,
-              lat: 0, // These will be updated later with geocoding
+              lat: 0,
               lng: 0,
               visit_duration: attr.visitDuration,
               price: attr.price,
@@ -136,7 +137,6 @@ export function useRouteCreation() {
           if (linkError) {
             console.error('Error linking attraction to route:', linkError);
           }
-
         } catch (error) {
           console.error('Error in attraction creation process:', error);
         }
