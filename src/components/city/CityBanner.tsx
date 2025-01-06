@@ -19,6 +19,7 @@ export function CityBanner({ city, onBackClick }: CityBannerProps) {
     queryFn: async () => {
       if (!city.id) return null;
       
+      // Using maybeSingle() instead of single() to handle no results case
       const { data } = await supabase
         .from('city_images')
         .select('image_url')
@@ -32,15 +33,11 @@ export function CityBanner({ city, onBackClick }: CityBannerProps) {
 
   return (
     <div className="relative w-full h-[300px] rounded-xl overflow-hidden mb-8">
-      {cityImage ? (
-        <img 
-          src={cityImage}
-          alt={`${city.name} banner`}
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-      ) : (
-        <div className="absolute inset-0 bg-gray-200" />
-      )}
+      <img 
+        src={cityImage || "/lovable-uploads/fe6abce4-c0cb-4aac-bab4-f583bb0cd471.png"}
+        alt={`${city.name} banner`}
+        className="absolute inset-0 w-full h-full object-cover"
+      />
       <div className="absolute inset-0 bg-black/40">
         <div className="h-full container mx-auto px-4 flex flex-col justify-between py-6">
           <Button 

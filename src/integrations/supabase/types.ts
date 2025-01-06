@@ -399,36 +399,6 @@ export type Database = {
           },
         ]
       }
-      site_statistics: {
-        Row: {
-          created_at: string
-          date: string
-          id: string
-          likes_count: number | null
-          reviews_count: number | null
-          routes_created: number | null
-          visits_count: number | null
-        }
-        Insert: {
-          created_at?: string
-          date?: string
-          id?: string
-          likes_count?: number | null
-          reviews_count?: number | null
-          routes_created?: number | null
-          visits_count?: number | null
-        }
-        Update: {
-          created_at?: string
-          date?: string
-          id?: string
-          likes_count?: number | null
-          reviews_count?: number | null
-          routes_created?: number | null
-          visits_count?: number | null
-        }
-        Relationships: []
-      }
       subscription_limits: {
         Row: {
           max_routes_per_month: number | null
@@ -454,10 +424,6 @@ export type Database = {
           input_user_id: string
         }
         Returns: boolean
-      }
-      increment_daily_visits: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
       }
     }
     Enums: {
