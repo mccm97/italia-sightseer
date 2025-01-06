@@ -3,7 +3,6 @@ import { CreateRouteFormData } from '@/types/route';
 import { useToast } from './use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import { Json } from '@/integrations/supabase/types';
 import { useDirections } from './useDirections';
 
 export function useRouteCreation() {
@@ -14,7 +13,7 @@ export function useRouteCreation() {
 
   const handleFormSubmit = async (data: CreateRouteFormData, userId: string) => {
     try {
-      console.log('Checking if user can create route...');
+      console.log('Starting form submission process...', data);
       const { data: canCreate, error: checkError } = await supabase
         .rpc('can_create_route', { input_user_id: userId });
 
@@ -52,12 +51,6 @@ export function useRouteCreation() {
     try {
       console.log('Starting route creation process...');
       
-      const points = formData.attractions.map(attr => {
-        return [0, 0] as [number, number];
-      });
-      
-      const directions = await getDirections(points);
-      
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
@@ -82,30 +75,27 @@ export function useRouteCreation() {
           total_distance: 0,
           country: formData.country,
           is_public: true,
-          directions: directions as unknown as Json
         })
         .select()
         .single();
 
-      if (routeError) {
+      if (routeError || !newRoute) {
         console.error('Error creating route:', routeError);
         throw new Error('Failed to create route');
-      }
-
-      if (!newRoute) {
-        throw new Error('No route returned after creation');
       }
 
       console.log('Route created successfully:', newRoute);
 
       // Create attractions and link them to the route
-      for (const attr of formData.attractions) {
+      for (const [index, attr] of formData.attractions.entries()) {
         try {
+          console.log(`Creating attraction ${index + 1}/${formData.attractions.length}...`);
+          
           const { data: attraction, error: attractionError } = await supabase
             .from('attractions')
             .insert({
               name: attr.name || attr.address,
-              lat: 0,
+              lat: 0, // These will be updated later
               lng: 0,
               visit_duration: attr.visitDuration,
               price: attr.price,
@@ -125,7 +115,7 @@ export function useRouteCreation() {
             .insert({
               route_id: newRoute.id,
               attraction_id: attraction.id,
-              order_index: formData.attractions.indexOf(attr),
+              order_index: index,
               transport_mode: formData.transportMode || 'walking',
               travel_duration: 0,
               travel_distance: 0
@@ -141,13 +131,13 @@ export function useRouteCreation() {
 
       toast({
         title: "Percorso creato",
-        description: "Il percorso è stato creato con successo. Ricordati di aggiungere uno screenshot della mappa del percorso dalla pagina del profilo.",
+        description: "Il percorso è stato creato con successo.",
         variant: "default"
       });
 
       return true;
     } catch (error) {
-      console.error('Error creating route:', error);
+      console.error('Error in route creation process:', error);
       toast({
         title: "Errore",
         description: "Si è verificato un errore durante la creazione del percorso. Riprova più tardi.",
