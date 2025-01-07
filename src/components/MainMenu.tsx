@@ -1,4 +1,4 @@
-import { Menu, LogOut, Globe } from 'lucide-react';
+import { Menu, LogOut, Globe, BarChart } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -58,7 +58,7 @@ export function MainMenu() {
   const toggleLanguage = () => {
     const newLanguage = language === 'it' ? 'en' : 'it';
     setLanguage(newLanguage);
-    i18n.changeLanguage(newLanguage); // Cambia la lingua nel sistema i18n
+    i18n.changeLanguage(newLanguage);
   };
 
   return (
@@ -77,9 +77,17 @@ export function MainMenu() {
           <Link to="/profile" className="text-lg hover:underline">Profilo</Link>
           <Link to="/upgrade" className="text-lg hover:underline">Abbonamenti</Link>
           {isAdmin && (
-            <Link to="/admin" className="text-lg hover:underline text-blue-600">
-              Amministrazione
-            </Link>
+            <>
+              <Link to="/admin" className="text-lg hover:underline text-blue-600">
+                Amministrazione
+              </Link>
+              <Link to="/statistics" className="text-lg hover:underline text-blue-600">
+                <div className="flex items-center gap-2">
+                  <BarChart className="h-4 w-4" />
+                  Statistiche
+                </div>
+              </Link>
+            </>
           )}
           <Button
             variant="ghost"

@@ -11,6 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { searchGeoapifyPlaces } from '../services/externalAttractions';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { Loader2 } from 'lucide-react';
 
 interface AttractionSelectProps {
   value: string;
@@ -32,17 +33,54 @@ export function AttractionSelect({ value, onChange, inputType, cityId, cityName 
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  // Fetch attractions when city changes or on mount
   useEffect(() => {
-    const fetchSuggestions = async () => {
-      if (!searchQuery) {
-        setSuggestions([]);
-        return;
-      }
+    const fetchAttractions = async () => {
+      if (!cityId) return;
       
       setIsLoading(true);
       try {
-        // Fetch local attractions from the database
-        console.log('Fetching local attractions for city:', cityId);
+        // Fetch local attractions
+        console.log('Fetching initial attractions for city:', cityId);
+        const { data: localAttractions, error: localError } = await supabase
+          .from('attractions')
+          .select('name')
+          .eq('city_id', cityId);
+
+        if (localError) {
+          console.error('Error fetching local attractions:', localError);
+          throw localError;
+        }
+
+        const localResults = (localAttractions || []).map(attr => ({
+          name: attr.name,
+          source: 'local' as const
+        }));
+
+        setSuggestions(localResults);
+      } catch (error) {
+        console.error('Error fetching initial attractions:', error);
+        toast({
+          title: "Errore",
+          description: "Impossibile caricare i monumenti. Riprova più tardi.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAttractions();
+  }, [cityId, toast]);
+
+  // Update suggestions when user types
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (!cityId || !cityName) return;
+      
+      setIsLoading(true);
+      try {
+        // Fetch local attractions that match the search
         const { data: localAttractions, error: localError } = await supabase
           .from('attractions')
           .select('name')
@@ -54,14 +92,12 @@ export function AttractionSelect({ value, onChange, inputType, cityId, cityName 
           throw localError;
         }
 
-        console.log('Found local attractions:', localAttractions);
-
         // Fetch Geoapify attractions
-        console.log('Fetching Geoapify attractions for city:', cityName);
-        const geoapifyAttractions = cityName ? await searchGeoapifyPlaces(cityName, 'tourism') : [];
+        console.log('Fetching Geoapify attractions for:', cityName);
+        const geoapifyAttractions = await searchGeoapifyPlaces(cityName, searchQuery);
         console.log('Found Geoapify attractions:', geoapifyAttractions);
 
-        // Combine and deduplicate results
+        // Combine results
         const localResults = (localAttractions || []).map(attr => ({
           name: attr.name,
           source: 'local' as const
@@ -73,11 +109,8 @@ export function AttractionSelect({ value, onChange, inputType, cityId, cityName 
           source: 'geoapify' as const
         }));
 
-        // Combine and filter based on search query
-        const combined = [...localResults, ...geoapifyResults]
-          .filter(attr => attr.name.toLowerCase().includes(searchQuery.toLowerCase()));
-
-        // Remove duplicates based on name
+        // Combine and remove duplicates
+        const combined = [...localResults, ...geoapifyResults];
         const uniqueAttractions = Array.from(
           new Map(combined.map(item => [item.name, item])).values()
         );
@@ -85,10 +118,10 @@ export function AttractionSelect({ value, onChange, inputType, cityId, cityName 
         console.log('Combined unique attractions:', uniqueAttractions);
         setSuggestions(uniqueAttractions);
       } catch (error) {
-        console.error('Error fetching attractions:', error);
+        console.error('Error fetching suggestions:', error);
         toast({
           title: "Errore",
-          description: "Impossibile caricare i monumenti. Riprova più tardi.",
+          description: "Impossibile caricare i suggerimenti. Riprova più tardi.",
           variant: "destructive"
         });
       } finally {
@@ -129,23 +162,24 @@ export function AttractionSelect({ value, onChange, inputType, cityId, cityName 
         </div>
         <ScrollArea className="h-[200px]">
           {isLoading ? (
-            <div className="p-2 text-center text-gray-500">Caricamento...</div>
+            <div className="p-2 text-center text-gray-500">
+              <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
+              Caricamento...
+            </div>
           ) : suggestions.length > 0 ? (
             suggestions.map((suggestion) => (
               <SelectItem key={suggestion.name} value={suggestion.name}>
                 <div className="flex justify-between items-center">
                   <span>{suggestion.name}</span>
-                  {suggestion.distance && (
-                    <span className="text-sm text-gray-500">
-                      {suggestion.source === 'local' ? '(DB)' : suggestion.distance}
-                    </span>
-                  )}
+                  <span className="text-sm text-gray-500">
+                    {suggestion.source === 'local' ? '(DB)' : suggestion.distance}
+                  </span>
                 </div>
               </SelectItem>
             ))
           ) : (
             <div className="p-2 text-center text-gray-500">
-              {searchQuery ? "Nessun risultato trovato" : "Inizia a digitare per cercare"}
+              {searchQuery ? "Nessun risultato trovato" : "Nessun monumento disponibile"}
             </div>
           )}
         </ScrollArea>
