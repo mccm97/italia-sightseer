@@ -165,6 +165,7 @@ export function RouteCard({
       <Card className="cursor-pointer hover:bg-gray-50" onClick={onRouteClick}>
         <RouteCardHeader
           name={route.name}
+          routeId={route.id}
           creatorUsername={route.creator?.username}
           isLiked={isLiked}
           likesCount={likesCount}
