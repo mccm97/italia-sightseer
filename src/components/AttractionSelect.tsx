@@ -12,6 +12,7 @@ import { searchGeoapifyPlaces } from '../services/externalAttractions';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface AttractionSelectProps {
   value: string;
@@ -29,6 +30,7 @@ interface Attraction {
 
 export function AttractionSelect({ value, onChange, inputType, cityId, cityName }: AttractionSelectProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery, 300);
   const [suggestions, setSuggestions] = useState<Attraction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -40,7 +42,6 @@ export function AttractionSelect({ value, onChange, inputType, cityId, cityName 
       
       setIsLoading(true);
       try {
-        // Fetch local attractions
         console.log('Fetching initial attractions for city:', cityId);
         const { data: localAttractions, error: localError } = await supabase
           .from('attractions')
@@ -73,10 +74,10 @@ export function AttractionSelect({ value, onChange, inputType, cityId, cityName 
     fetchAttractions();
   }, [cityId, toast]);
 
-  // Update suggestions when user types
+  // Update suggestions when user types (using debounced search)
   useEffect(() => {
     const fetchSuggestions = async () => {
-      if (!cityId || !cityName) return;
+      if (!cityId || !cityName || !debouncedSearch) return;
       
       setIsLoading(true);
       try {
@@ -85,7 +86,7 @@ export function AttractionSelect({ value, onChange, inputType, cityId, cityName 
           .from('attractions')
           .select('name')
           .eq('city_id', cityId)
-          .ilike('name', `%${searchQuery}%`);
+          .ilike('name', `%${debouncedSearch}%`);
 
         if (localError) {
           console.error('Error fetching local attractions:', localError);
@@ -94,7 +95,7 @@ export function AttractionSelect({ value, onChange, inputType, cityId, cityName 
 
         // Fetch Geoapify attractions
         console.log('Fetching Geoapify attractions for:', cityName);
-        const geoapifyAttractions = await searchGeoapifyPlaces(cityName, searchQuery);
+        const geoapifyAttractions = await searchGeoapifyPlaces(cityName, debouncedSearch);
         console.log('Found Geoapify attractions:', geoapifyAttractions);
 
         // Combine results
@@ -129,9 +130,8 @@ export function AttractionSelect({ value, onChange, inputType, cityId, cityName 
       }
     };
 
-    const timeoutId = setTimeout(fetchSuggestions, 300);
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery, cityId, cityName, toast]);
+    fetchSuggestions();
+  }, [debouncedSearch, cityId, cityName, toast]);
 
   if (inputType === 'address') {
     return (
@@ -150,7 +150,7 @@ export function AttractionSelect({ value, onChange, inputType, cityId, cityName 
       <SelectTrigger className="w-full">
         <SelectValue placeholder="Seleziona monumento" />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="w-[300px]">
         <div className="p-2">
           <Input
             type="text"
