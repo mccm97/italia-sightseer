@@ -207,6 +207,7 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          reply_to_id: string | null
           route_id: string | null
           user_id: string | null
         }
@@ -214,6 +215,7 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          reply_to_id?: string | null
           route_id?: string | null
           user_id?: string | null
         }
@@ -221,10 +223,18 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          reply_to_id?: string | null
           route_id?: string | null
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "route_comments_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "route_comments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "route_comments_route_id_fkey"
             columns: ["route_id"]
