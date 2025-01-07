@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Button } from './ui/button';
 import CityMap from './CityMap';
 import { CreateRouteFormData } from '@/types/route';
-import { ArrowLeft, Camera } from 'lucide-react';
 import { geocodeAddress } from '@/services/geocoding';
 import { useToast } from '@/hooks/use-toast';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import html2canvas from 'html2canvas';
 import { supabase } from '@/integrations/supabase/client';
+import { RouteHeader } from './route/RouteHeader';
+import { RouteSummary } from './route/RouteSummary';
+import { ScreenshotDialog } from './route/ScreenshotDialog';
 
 interface RoutePreviewProps {
   formData: CreateRouteFormData;
@@ -134,7 +134,7 @@ export function RoutePreview({ formData, onBack, onCreateRoute }: RoutePreviewPr
       const { error: dbError } = await supabase
         .from('screenshots')
         .insert({
-          route_id: null, // This will be updated after route creation
+          route_id: null,
           screenshot_url: publicUrl
         });
 
@@ -162,43 +162,22 @@ export function RoutePreview({ formData, onBack, onCreateRoute }: RoutePreviewPr
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between mb-4">
-        <Button 
-          variant="outline" 
-          onClick={onBack}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Torna alla creazione
-        </Button>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline"
-            onClick={() => setShowScreenshotDialog(true)}
-            className="flex items-center gap-2"
-          >
-            <Camera className="w-4 h-4" />
-            {screenshotTaken ? 'Nuovo Screenshot' : 'Cattura Screenshot'}
-          </Button>
-          <Button 
-            onClick={handleCreateRoute}
-            className="bg-primary text-white"
-            disabled={!screenshotTaken}
-          >
-            Crea Percorso
-          </Button>
-        </div>
-      </div>
+      <RouteHeader
+        onBack={onBack}
+        onScreenshotClick={() => setShowScreenshotDialog(true)}
+        onCreateRoute={handleCreateRoute}
+        screenshotTaken={screenshotTaken}
+      />
 
       <h2 className="text-2xl font-bold">Anteprima Percorso</h2>
       
-      <div className="bg-muted p-4 rounded-lg space-y-2">
-        <p><strong>Durata totale:</strong> {totalDuration} minuti</p>
-        <p><strong>Tempo di visita:</strong> {totalVisitDuration} minuti</p>
-        <p><strong>Tempo di spostamento:</strong> {totalTravelTime} minuti</p>
-        <p><strong>Costo totale:</strong> €{totalPrice.toFixed(2)}</p>
-        <p><strong>Modalità di trasporto:</strong> {formData.transportMode === 'walking' ? 'A piedi' : 'Mezzi pubblici'}</p>
-      </div>
+      <RouteSummary
+        totalDuration={totalDuration}
+        totalVisitDuration={totalVisitDuration}
+        totalTravelTime={totalTravelTime}
+        totalPrice={totalPrice}
+        transportMode={formData.transportMode}
+      />
       
       <div ref={mapRef} className="h-[400px] w-full">
         <CityMap
@@ -208,30 +187,11 @@ export function RoutePreview({ formData, onBack, onCreateRoute }: RoutePreviewPr
         />
       </div>
 
-      <Dialog open={showScreenshotDialog} onOpenChange={setShowScreenshotDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Cattura Screenshot del Percorso</DialogTitle>
-            <DialogDescription>
-              Per favore, assicurati che il percorso sia completamente visibile sulla mappa prima di procedere.
-              Lo screenshot verrà mostrato agli altri utenti quando visualizzeranno i dettagli del percorso.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p>1. Usa i controlli della mappa per centrare e zoomare il percorso</p>
-            <p>2. Assicurati che tutti i punti di interesse siano visibili</p>
-            <p>3. Clicca il pulsante qui sotto per catturare lo screenshot</p>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setShowScreenshotDialog(false)}>
-                Annulla
-              </Button>
-              <Button onClick={handleTakeScreenshot}>
-                Cattura Screenshot
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ScreenshotDialog
+        open={showScreenshotDialog}
+        onOpenChange={setShowScreenshotDialog}
+        onTakeScreenshot={handleTakeScreenshot}
+      />
     </div>
   );
 }

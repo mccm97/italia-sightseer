@@ -8,7 +8,7 @@ import { AttractionDetailsDialog } from './AttractionDetailsDialog';
 import { RouteCardHeader } from './RouteCardHeader';
 import { RouteCardContent } from './RouteCardContent';
 import { RouteCardActions } from './RouteCardActions';
-import { Skeleton } from '@/components/ui/skeleton';
+import { RouteScreenshot } from './RouteScreenshot';
 
 interface RouteCardProps {
   route: {
@@ -155,8 +155,6 @@ export function RouteCard({
     }
   };
 
-  const totalCost = route.attractions?.reduce((sum: number, attr: any) => sum + (attr.price || 0), 0);
-
   return (
     <>
       <Card className="cursor-pointer hover:bg-gray-50" onClick={onRouteClick}>
@@ -169,29 +167,21 @@ export function RouteCard({
           onLikeClick={handleLikeClick}
         />
         
-        {isLoadingScreenshot ? (
-          <div className="w-full h-48">
-            <Skeleton className="w-full h-full" />
-          </div>
-        ) : screenshotUrl ? (
-          <div className="w-full h-48 relative">
-            <img 
-              src={screenshotUrl} 
-              alt={`Screenshot del percorso ${route.name}`}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        ) : null}
+        <RouteScreenshot
+          isLoading={isLoadingScreenshot}
+          url={screenshotUrl}
+          routeName={route.name}
+        />
 
         <RouteCardActions
           onDirectionsClick={onDirectionsClick}
           onAttractionsClick={() => setShowAttractions(true)}
           onSummaryClick={handleShowSummary}
         />
+        
         <RouteCardContent
           duration={route.total_duration}
           attractionsCount={route.attractions?.length || 0}
-          totalCost={totalCost}
           showSummary={showSummary}
           summary={summary}
         />
