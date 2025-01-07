@@ -96,6 +96,8 @@ export default function Profile() {
                 avatarUrl={profile?.avatar_url}
                 bio={profile?.bio}
                 onEditClick={() => setIsEditing(true)}
+                userId={profile?.id}
+                subscriptionLevel={profile?.subscription_level || 'bronze'}
               />
               <UserRoutes />
             </>
