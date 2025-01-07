@@ -24,9 +24,9 @@ export const supabase = createClient<Database>(
 // Add error logging for auth state changes
 supabase.auth.onAuthStateChange((event, session) => {
   console.log('Auth state changed:', event, session ? 'User authenticated' : 'No session');
-});
-
-// Add error handling for auth errors
-supabase.auth.onError((error) => {
-  console.error('Supabase auth error:', error);
+  
+  // Handle any errors during auth state changes
+  if (event === 'ERROR') {
+    console.error('Auth error occurred:', session);
+  }
 });
