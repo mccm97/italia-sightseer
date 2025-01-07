@@ -31,29 +31,34 @@ export function ProfileHeader({ username, avatarUrl, bio, onEditClick, userId, s
     queryFn: async () => {
       console.log('Fetching profile stats for user:', userId);
       
+      // First, get all routes for this user
+      const { data: userRoutes, error: routesError } = await supabase
+        .from('routes')
+        .select('id')
+        .eq('user_id', userId);
+
+      if (routesError) throw routesError;
+      
+      if (!userRoutes?.length) {
+        console.log('No routes found for user');
+        return { totalLikes: 0, averageRating: '0.0' };
+      }
+
+      const routeIds = userRoutes.map(route => route.id);
+
       // Fetch total likes
       const { data: likes, error: likesError } = await supabase
         .from('route_likes')
-        .select('id, route_id')
-        .in('route_id', 
-          supabase
-            .from('routes')
-            .select('id')
-            .eq('user_id', userId)
-        );
+        .select('id')
+        .in('route_id', routeIds);
 
       if (likesError) throw likesError;
 
       // Fetch average ratings
       const { data: ratings, error: ratingsError } = await supabase
         .from('route_ratings')
-        .select('rating, route_id')
-        .in('route_id',
-          supabase
-            .from('routes')
-            .select('id')
-            .eq('user_id', userId)
-        );
+        .select('rating')
+        .in('route_id', routeIds);
 
       if (ratingsError) throw ratingsError;
 
