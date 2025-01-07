@@ -8,10 +8,13 @@ import { StatCard } from '@/components/statistics/StatCard';
 import { StatisticsChart } from '@/components/statistics/StatisticsChart';
 import { DailyStats } from '@/types/statistics';
 
+type StatKey = 'visits_count' | 'routes_created' | 'likes_count' | 'reviews_count';
+
 export default function Statistics() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [stats, setStats] = useState<DailyStats[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedStat, setSelectedStat] = useState<StatKey | undefined>();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -93,6 +96,15 @@ export default function Statistics() {
     }
   };
 
+  const totalVisits = stats.reduce((sum, day) => sum + (day.visits_count || 0), 0);
+  const totalRoutes = stats.reduce((sum, day) => sum + (day.routes_created || 0), 0);
+  const totalLikes = stats.reduce((sum, day) => sum + (day.likes_count || 0), 0);
+  const totalReviews = stats.reduce((sum, day) => sum + (day.reviews_count || 0), 0);
+
+  const handleStatClick = (stat: StatKey) => {
+    setSelectedStat(selectedStat === stat ? undefined : stat);
+  };
+
   if (!isAdmin || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -100,11 +112,6 @@ export default function Statistics() {
       </div>
     );
   }
-
-  const totalVisits = stats.reduce((sum, day) => sum + (day.visits_count || 0), 0);
-  const totalRoutes = stats.reduce((sum, day) => sum + (day.routes_created || 0), 0);
-  const totalLikes = stats.reduce((sum, day) => sum + (day.likes_count || 0), 0);
-  const totalReviews = stats.reduce((sum, day) => sum + (day.reviews_count || 0), 0);
 
   return (
     <div className="container mx-auto p-4 space-y-6">
@@ -116,13 +123,37 @@ export default function Statistics() {
       <h1 className="text-3xl font-bold mb-6">Statistiche del Sito</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard title="Visite Totali" value={totalVisits} Icon={Users} />
-        <StatCard title="Percorsi Creati" value={totalRoutes} Icon={Map} />
-        <StatCard title="Mi Piace" value={totalLikes} Icon={Heart} />
-        <StatCard title="Recensioni" value={totalReviews} Icon={MessageSquare} />
+        <StatCard 
+          title="Visite Totali" 
+          value={totalVisits} 
+          Icon={Users}
+          isSelected={selectedStat === 'visits_count'}
+          onClick={() => handleStatClick('visits_count')}
+        />
+        <StatCard 
+          title="Percorsi Creati" 
+          value={totalRoutes} 
+          Icon={Map}
+          isSelected={selectedStat === 'routes_created'}
+          onClick={() => handleStatClick('routes_created')}
+        />
+        <StatCard 
+          title="Mi Piace" 
+          value={totalLikes} 
+          Icon={Heart}
+          isSelected={selectedStat === 'likes_count'}
+          onClick={() => handleStatClick('likes_count')}
+        />
+        <StatCard 
+          title="Recensioni" 
+          value={totalReviews} 
+          Icon={MessageSquare}
+          isSelected={selectedStat === 'reviews_count'}
+          onClick={() => handleStatClick('reviews_count')}
+        />
       </div>
 
-      <StatisticsChart data={stats} />
+      <StatisticsChart data={stats} selectedStat={selectedStat} />
     </div>
   );
 }

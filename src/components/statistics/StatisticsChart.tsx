@@ -4,28 +4,29 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 import { DailyStats } from "@/types/statistics";
 
 interface StatisticsChartProps {
   data: DailyStats[];
+  selectedStat?: keyof Pick<DailyStats, 'visits_count' | 'routes_created' | 'likes_count' | 'reviews_count'>;
 }
 
-export function StatisticsChart({ data }: StatisticsChartProps) {
+export function StatisticsChart({ data, selectedStat }: StatisticsChartProps) {
   const chartConfig = {
-    visits: {
+    visits_count: {
       label: 'Visite',
       color: '#8884d8',
     },
-    routes: {
+    routes_created: {
       label: 'Percorsi',
       color: '#82ca9d',
     },
-    likes: {
+    likes_count: {
       label: 'Mi Piace',
       color: '#ffc658',
     },
-    reviews: {
+    reviews_count: {
       label: 'Recensioni',
       color: '#ff7300',
     },
@@ -34,42 +35,41 @@ export function StatisticsChart({ data }: StatisticsChartProps) {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Andamento nel Tempo</CardTitle>
+        <CardTitle>
+          {selectedStat 
+            ? `Andamento ${chartConfig[selectedStat].label}`
+            : 'Andamento nel Tempo'}
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[400px]">
-          <ChartContainer config={chartConfig}>
+        <div className="h-[400px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Line
-                type="monotone"
-                dataKey="visits_count"
-                name="Visite"
-                stroke={chartConfig.visits.color}
-              />
-              <Line
-                type="monotone"
-                dataKey="routes_created"
-                name="Percorsi"
-                stroke={chartConfig.routes.color}
-              />
-              <Line
-                type="monotone"
-                dataKey="likes_count"
-                name="Mi Piace"
-                stroke={chartConfig.likes.color}
-              />
-              <Line
-                type="monotone"
-                dataKey="reviews_count"
-                name="Recensioni"
-                stroke={chartConfig.reviews.color}
-              />
+              {selectedStat ? (
+                <Line
+                  type="monotone"
+                  dataKey={selectedStat}
+                  name={chartConfig[selectedStat].label}
+                  stroke={chartConfig[selectedStat].color}
+                  strokeWidth={2}
+                />
+              ) : (
+                Object.entries(chartConfig).map(([key, config]) => (
+                  <Line
+                    key={key}
+                    type="monotone"
+                    dataKey={key}
+                    name={config.label}
+                    stroke={config.color}
+                  />
+                ))
+              )}
             </LineChart>
-          </ChartContainer>
+          </ResponsiveContainer>
         </div>
       </CardContent>
     </Card>
