@@ -5,18 +5,18 @@ const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Add error logging for auth state changes
+// Add auth state change listener for debugging
 supabase.auth.onAuthStateChange((event, session) => {
   console.log('Auth state changed:', event, session ? 'User authenticated' : 'No session');
   
-  if (event === 'SIGNED_OUT') {
-    console.log('User signed out');
-  } else if (event === 'SIGNED_IN') {
+  if (event === 'SIGNED_IN') {
     console.log('User signed in:', session?.user?.id);
-  } else if (event === 'USER_DELETED') {
-    console.log('User account deleted');
+  } else if (event === 'SIGNED_OUT') {
+    console.log('User signed out');
   } else if (event === 'USER_UPDATED') {
-    console.log('User account updated');
+    console.log('User updated:', session?.user?.id);
+  } else if (event === 'TOKEN_REFRESHED') {
+    console.log('Token refreshed');
   }
 });
 
