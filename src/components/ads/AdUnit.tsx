@@ -7,7 +7,7 @@ interface AdUnitProps {
 }
 
 export function AdUnit({ slot, format = 'auto', className = '' }: AdUnitProps) {
-  const adRef = useRef<HTMLElement>(null);
+  const adRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     try {
@@ -23,7 +23,7 @@ export function AdUnit({ slot, format = 'auto', className = '' }: AdUnitProps) {
   }, [slot]);
 
   return (
-    <div className={`ad-container ${className}`}>
+    <div className={`ad-container ${className}`} ref={adRef}>
       <ins
         className="adsbygoogle"
         style={{ display: 'block' }}
@@ -31,7 +31,6 @@ export function AdUnit({ slot, format = 'auto', className = '' }: AdUnitProps) {
         data-ad-slot={slot}
         data-ad-format={format}
         data-full-width-responsive="true"
-        ref={adRef}
       />
     </div>
   );
