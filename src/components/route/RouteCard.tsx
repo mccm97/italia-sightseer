@@ -9,6 +9,10 @@ import { RouteCardHeader } from './RouteCardHeader';
 import { RouteCardContent } from './RouteCardContent';
 import { RouteCardActions } from './RouteCardActions';
 import { RouteScreenshot } from './RouteScreenshot';
+import { RouteStats } from './RouteStats';
+import { RouteReviews } from './RouteReviews';
+import { Button } from '../ui/button';
+import { ChevronDown } from 'lucide-react';
 
 interface RouteCardProps {
   route: {
@@ -38,7 +42,6 @@ export function RouteCard({
   const [showSummary, setShowSummary] = useState(false);
   const [summary, setSummary] = useState('');
   const [isLiked, setIsLiked] = useState(false);
-  const [likesCount, setLikesCount] = useState(routeStats?.likesCount || 0);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
   const [isLoadingScreenshot, setIsLoadingScreenshot] = useState(true);
@@ -52,7 +55,6 @@ export function RouteCard({
   useEffect(() => {
     const fetchScreenshot = async () => {
       try {
-        console.log('Fetching screenshot for route:', route.id);
         const { data, error } = await supabase
           .from('screenshots')
           .select('screenshot_url')
@@ -65,7 +67,6 @@ export function RouteCard({
         }
 
         if (data?.screenshot_url) {
-          console.log('Found screenshot URL:', data.screenshot_url);
           setScreenshotUrl(data.screenshot_url);
         }
       } catch (error) {
@@ -129,7 +130,6 @@ export function RouteCard({
           .eq('user_id', currentUser.id);
 
         if (error) throw error;
-        setLikesCount(prev => prev - 1);
       } else {
         const { error } = await supabase
           .from('route_likes')
@@ -139,7 +139,6 @@ export function RouteCard({
           });
 
         if (error) throw error;
-        setLikesCount(prev => prev + 1);
       }
       setIsLiked(!isLiked);
     } catch (error) {
@@ -162,15 +161,11 @@ export function RouteCard({
 
   return (
     <>
-      <Card className="cursor-pointer hover:bg-gray-50" onClick={onRouteClick}>
+      <Card className="cursor-pointer hover:bg-gray-50 relative" onClick={onRouteClick}>
         <RouteCardHeader
           name={route.name}
           routeId={route.id}
           creatorUsername={route.creator?.username}
-          isLiked={isLiked}
-          likesCount={likesCount}
-          averageRating={routeStats?.averageRating}
-          onLikeClick={handleLikeClick}
         />
         
         <RouteScreenshot
@@ -179,19 +174,66 @@ export function RouteCard({
           routeName={route.name}
         />
 
-        <RouteCardActions
-          onDirectionsClick={onDirectionsClick}
-          onAttractionsClick={() => setShowAttractions(true)}
-          onSummaryClick={handleShowSummary}
-        />
-        
-        <RouteCardContent
-          duration={route.total_duration}
-          attractionsCount={route.attractions?.length || 0}
-          totalCost={totalCost}
-          showSummary={showSummary}
-          summary={summary}
-        />
+        <div className="p-4">
+          <RouteStats
+            routeId={route.id}
+            initialLikesCount={routeStats?.likesCount || 0}
+            initialAverageRating={routeStats?.averageRating}
+            isLiked={isLiked}
+            onLikeClick={handleLikeClick}
+          />
+          
+          <div className="mt-4 flex justify-center gap-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDirectionsClick();
+              }}
+            >
+              Visualizza Indicazioni
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowAttractions(true);
+              }}
+            >
+              Dettagli Attrazioni
+            </Button>
+          </div>
+          
+          <RouteCardContent
+            duration={route.total_duration}
+            attractionsCount={route.attractions?.length || 0}
+            totalCost={totalCost}
+            showSummary={showSummary}
+            summary={summary}
+          />
+
+          <div className="absolute bottom-4 right-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleShowSummary();
+              }}
+            >
+              <span className="mr-2">Dettagli percorso</span>
+              <ChevronDown className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+
+        {showSummary && (
+          <div className="p-4 border-t">
+            <RouteReviews routeId={route.id} />
+          </div>
+        )}
       </Card>
 
       <AttractionDetailsDialog
