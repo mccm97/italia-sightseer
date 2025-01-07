@@ -31,7 +31,7 @@ export function AdUnit({ slot, format = 'auto', className = '' }: AdUnitProps) {
         data-ad-slot={slot}
         data-ad-format={format}
         data-full-width-responsive="true"
-        ref={adRef as React.LegacyRef<HTMLElement>}
+        ref={adRef}
       />
     </div>
   );
