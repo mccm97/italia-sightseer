@@ -8,6 +8,7 @@ import { AttractionDetailsDialog } from './AttractionDetailsDialog';
 import { RouteCardHeader } from './RouteCardHeader';
 import { RouteCardContent } from './RouteCardContent';
 import { RouteCardActions } from './RouteCardActions';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface RouteCardProps {
   route: {
@@ -39,7 +40,38 @@ export function RouteCard({
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(routeStats?.likesCount || 0);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
+  const [isLoadingScreenshot, setIsLoadingScreenshot] = useState(true);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchScreenshot = async () => {
+      try {
+        console.log('Fetching screenshot for route:', route.id);
+        const { data, error } = await supabase
+          .from('screenshots')
+          .select('screenshot_url')
+          .eq('route_id', route.id)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error fetching screenshot:', error);
+          return;
+        }
+
+        if (data?.screenshot_url) {
+          console.log('Found screenshot URL:', data.screenshot_url);
+          setScreenshotUrl(data.screenshot_url);
+        }
+      } catch (error) {
+        console.error('Error in fetchScreenshot:', error);
+      } finally {
+        setIsLoadingScreenshot(false);
+      }
+    };
+
+    fetchScreenshot();
+  }, [route.id]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -136,6 +168,21 @@ export function RouteCard({
           averageRating={routeStats?.averageRating}
           onLikeClick={handleLikeClick}
         />
+        
+        {isLoadingScreenshot ? (
+          <div className="w-full h-48">
+            <Skeleton className="w-full h-full" />
+          </div>
+        ) : screenshotUrl ? (
+          <div className="w-full h-48 relative">
+            <img 
+              src={screenshotUrl} 
+              alt={`Screenshot del percorso ${route.name}`}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ) : null}
+
         <RouteCardActions
           onDirectionsClick={onDirectionsClick}
           onAttractionsClick={() => setShowAttractions(true)}

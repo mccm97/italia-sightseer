@@ -77,13 +77,14 @@ export function RoutePreview({ formData, onBack, onCreateRoute }: RoutePreviewPr
     if (!mapRef.current) return;
 
     try {
+      console.log('Taking screenshot...');
       const canvas = await html2canvas(mapRef.current);
       canvas.toBlob(async (blob) => {
         if (blob) {
           const file = new File([blob], 'route-screenshot.png', { type: 'image/png' });
           setScreenshotFile(file);
           setScreenshotTaken(true);
-          setShowScreenshotDialog(false); // Close dialog after successful capture
+          setShowScreenshotDialog(false);
           toast({
             title: "Screenshot catturato",
             description: "Lo screenshot è stato salvato correttamente",
@@ -111,10 +112,13 @@ export function RoutePreview({ formData, onBack, onCreateRoute }: RoutePreviewPr
     }
 
     try {
+      console.log('Creating route...');
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
       const screenshotPath = `${user.id}/${crypto.randomUUID()}.png`;
+      console.log('Uploading screenshot to:', screenshotPath);
+      
       const { error: uploadError } = await supabase.storage
         .from('screenshots')
         .upload(screenshotPath, screenshotFile);
@@ -124,6 +128,8 @@ export function RoutePreview({ formData, onBack, onCreateRoute }: RoutePreviewPr
       const { data: { publicUrl } } = supabase.storage
         .from('screenshots')
         .getPublicUrl(screenshotPath);
+
+      console.log('Screenshot public URL:', publicUrl);
 
       const { error: dbError } = await supabase
         .from('screenshots')
