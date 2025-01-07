@@ -8,6 +8,7 @@ import { CreateRouteDialog } from '@/components/CreateRouteDialog';
 import { DirectionsDialog } from '@/components/route/DirectionsDialog';
 import { RoutePreviewDialog } from '@/components/home/RoutePreviewDialog';
 import { MainMenu } from '@/components/MainMenu';
+import { AdUnit } from '@/components/ads/AdUnit';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Route, DirectionsStep } from '@/types/route';
@@ -64,17 +65,14 @@ export function HomeContainer() {
               return;
             }
             
-            // If profile exists, combine with auth user data
             if (profile) {
               setUser({ ...authUser, ...profile });
             } else {
-              // If no profile exists yet, just use auth user data
               setUser(authUser);
               console.log('No profile found for user, using auth data only');
             }
           } catch (profileFetchError) {
             console.error('Unexpected error fetching profile:', profileFetchError);
-            // Still set the auth user even if profile fetch fails
             setUser(authUser);
           }
         }
@@ -96,6 +94,7 @@ export function HomeContainer() {
       <MainMenu />
       <Header user={user} />
       <HomeHero />
+      <AdUnit slot="1234567890" className="my-6" />
       <AboutSection />
 
       {!selectedCity ? (
@@ -103,20 +102,23 @@ export function HomeContainer() {
           <CitySearchSection setSelectedCity={setSelectedCity} />
         </div>
       ) : (
-        <CityView
-          city={selectedCity}
-          routes={cityRoutes}
-          isLoadingRoutes={isLoadingRoutes}
-          selectedRoute={selectedRoute}
-          onBackClick={() => {
-            setSelectedCity(null);
-          }}
-          onRouteClick={handleRouteClick}
-          onDirectionsClick={(directions) => {
-            setSelectedRouteDirections(directions);
-            setShowDirections(true);
-          }}
-        />
+        <>
+          <CityView
+            city={selectedCity}
+            routes={cityRoutes}
+            isLoadingRoutes={isLoadingRoutes}
+            selectedRoute={selectedRoute}
+            onBackClick={() => {
+              setSelectedCity(null);
+            }}
+            onRouteClick={handleRouteClick}
+            onDirectionsClick={(directions) => {
+              setSelectedRouteDirections(directions);
+              setShowDirections(true);
+            }}
+          />
+          <AdUnit slot="9876543210" className="my-6" format="rectangle" />
+        </>
       )}
 
       <CreateRouteDialog />
