@@ -29,16 +29,17 @@ export const searchGeoapifyPlaces = async (city: string, category: string) => {
   try {
     console.log('Fetching Geoapify places for city:', city, 'category:', category);
     
-    const { data: { apikey }, error } = await supabase
-      .from('secrets')
-      .select('apikey')
-      .eq('name', 'GEOAPIFY_API_KEY')
-      .single();
+    const { data, error } = await supabase
+      .functions.invoke('get-geoapify-key', {
+        body: { type: 'places' }
+      });
       
     if (error) {
       console.error('Error fetching Geoapify API key:', error);
       return [];
     }
+
+    const apiKey = data.key;
 
     const response = await axios.get(
       `https://api.geoapify.com/v2/places`,
@@ -47,7 +48,7 @@ export const searchGeoapifyPlaces = async (city: string, category: string) => {
           categories: category,
           filter: `place:${city}`,
           limit: 20,
-          apiKey: apikey,
+          apiKey: apiKey,
           format: 'json'
         }
       }
