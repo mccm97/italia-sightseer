@@ -14,18 +14,32 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   }
 });
 
-// Add auth state change listener for debugging
+// Enhanced error logging for authentication issues
 supabase.auth.onAuthStateChange((event, session) => {
   console.log('Auth state changed:', event, session ? 'User authenticated' : 'No session');
   
   if (event === 'SIGNED_IN') {
-    console.log('User signed in:', session?.user?.id);
+    console.log('User signed in successfully:', session?.user?.id);
   } else if (event === 'SIGNED_OUT') {
     console.log('User signed out');
   } else if (event === 'USER_UPDATED') {
     console.log('User updated:', session?.user?.id);
   } else if (event === 'TOKEN_REFRESHED') {
-    console.log('Token refreshed');
+    console.log('Token refreshed successfully');
+  }
+
+  // Log any authentication errors
+  if (!session && event !== 'SIGNED_OUT') {
+    console.warn('Potential authentication issue - no session available');
+  }
+});
+
+// Test the connection immediately
+supabase.auth.getSession().then(({ data, error }) => {
+  if (error) {
+    console.error('Error getting session:', error.message);
+  } else {
+    console.log('Session check successful:', data.session ? 'Active session' : 'No active session');
   }
 });
 
