@@ -41,15 +41,29 @@ export function HomeContainer() {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('username, avatar_url')
-          .eq('id', user.id)
-          .maybeSingle();
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error) {
+          console.error('Error fetching user:', error);
+          return;
+        }
         
-        setUser({ ...user, ...profile });
+        if (user) {
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('username, avatar_url')
+            .eq('id', user.id)
+            .maybeSingle();
+          
+          if (profileError) {
+            console.error('Error fetching profile:', profileError);
+            return;
+          }
+          
+          setUser({ ...user, ...profile });
+        }
+      } catch (error) {
+        console.error('Unexpected error during user fetch:', error);
       }
     };
     fetchUser();

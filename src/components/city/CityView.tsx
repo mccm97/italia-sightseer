@@ -2,7 +2,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { CityBanner } from "./CityBanner";
 import { RouteCard } from "../route/RouteCard";
 import { Attraction, Route } from "@/types/route";
-import { Loader2 } from "lucide-react";
+import { Loader2, MapPin } from "lucide-react";
 
 interface CityViewProps {
   city: {
@@ -52,12 +52,13 @@ export const CityView = ({
                 />
               ))
             ) : (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">
-                  Nessun percorso disponibile per questa città
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <MapPin className="h-12 w-12 text-muted-foreground mb-4" />
+                <p className="text-lg font-medium text-muted-foreground">
+                  Nessun percorso disponibile per {city.name}
                 </p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Sii il primo a creare un percorso!
+                <p className="text-sm text-muted-foreground mt-2 max-w-md">
+                  Al momento non ci sono percorsi disponibili per questa città. Sii il primo a crearne uno!
                 </p>
               </div>
             )}

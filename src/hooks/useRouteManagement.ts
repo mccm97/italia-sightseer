@@ -1,23 +1,22 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Route } from '@/types/route';
 import { generateSummary } from '@/services/summarization';
+import { useQuery } from '@tanstack/react-query';
 
 export function useRouteManagement(selectedCity: any, toast: any) {
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
   const [showRoutePreview, setShowRoutePreview] = useState(false);
-  const [cityRoutes, setCityRoutes] = useState<Route[]>([]);
-  const [isLoadingRoutes, setIsLoadingRoutes] = useState(false);
   const [routeSummary, setRouteSummary] = useState<string>('');
 
-  const fetchCityRoutes = async () => {
-    if (!selectedCity?.id) return;
-    
-    setIsLoadingRoutes(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
+  const { data: cityRoutes = [], isLoading: isLoadingRoutes, error } = useQuery({
+    queryKey: ['cityRoutes', selectedCity?.id],
+    queryFn: async () => {
+      if (!selectedCity?.id) return [];
+
+      console.log('Fetching routes for city:', selectedCity.id);
       
-      let query = supabase
+      const { data: routes, error } = await supabase
         .from('routes')
         .select(`
           *,
@@ -29,14 +28,6 @@ export function useRouteManagement(selectedCity: any, toast: any) {
         `)
         .eq('city_id', selectedCity.id);
 
-      if (user) {
-        query = query.or(`is_public.eq.true,user_id.eq.${user.id}`);
-      } else {
-        query = query.eq('is_public', true);
-      }
-
-      const { data: routes, error } = await query;
-
       if (error) {
         console.error('Error fetching routes:', error);
         toast({
@@ -44,60 +35,19 @@ export function useRouteManagement(selectedCity: any, toast: any) {
           description: "Impossibile caricare i percorsi per questa città",
           variant: "destructive"
         });
-        return;
+        throw error;
       }
 
-      if (!routes) {
-        console.log('No routes found');
-        setCityRoutes([]);
-        return;
-      }
+      console.log('Routes fetched:', routes?.length || 0, 'routes found');
+      return routes || [];
+    },
+    enabled: !!selectedCity?.id,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 1
+  });
 
-      const transformedRoutes: Route[] = routes.map(route => ({
-        id: route.id,
-        cityName: selectedCity.name,
-        name: route.name,
-        duration: route.total_duration,
-        total_duration: route.total_duration,
-        creator: route.creator,
-        attractions: route.route_attractions
-          .filter((ra: any) => ra.attraction)
-          .map((ra: any) => {
-            const position: [number, number] | undefined = 
-              ra.attraction.lat != null && ra.attraction.lng != null
-                ? [ra.attraction.lat, ra.attraction.lng]
-                : undefined;
-            
-            return {
-              name: ra.attraction.name,
-              position,
-              visitDuration: ra.attraction.visit_duration,
-              price: ra.attraction.price || undefined
-            };
-          })
-          .filter(attr => attr.position),
-        isPublic: route.is_public,
-        directions: route.directions ? (route.directions as any[]).map((dir: any) => ({
-          instruction: dir.instruction,
-          distance: dir.distance,
-          duration: dir.duration
-        })) : undefined
-      }));
-
-      setCityRoutes(transformedRoutes);
-    } catch (error) {
-      console.error('Error in fetchCityRoutes:', error);
-      toast({
-        title: "Errore",
-        description: "Si è verificato un errore durante il caricamento dei percorsi",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoadingRoutes(false);
-    }
-  };
-
-  const handleRouteClick = async (route: Route) => {
+  const handleRouteClick = useCallback(async (route: Route) => {
+    console.log('Route clicked:', route.id);
     setSelectedRoute(route);
     setShowRoutePreview(true);
     
@@ -112,7 +62,7 @@ export function useRouteManagement(selectedCity: any, toast: any) {
         variant: "destructive"
       });
     }
-  };
+  }, [toast]);
 
   return {
     selectedRoute,
@@ -121,7 +71,6 @@ export function useRouteManagement(selectedCity: any, toast: any) {
     cityRoutes,
     isLoadingRoutes,
     routeSummary,
-    handleRouteClick,
-    fetchCityRoutes
+    handleRouteClick
   };
 }
