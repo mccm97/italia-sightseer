@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ThumbsUp, Star, ListTree, ChevronDown } from 'lucide-react';
 import { AttractionDetailsDialog } from './AttractionDetailsDialog';
 import { generateSummary } from '@/services/summarization';
 import { Attraction } from '@/types/route';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface RouteCardProps {
   route: {
@@ -33,6 +35,68 @@ export function RouteCard({
   const [showAttractions, setShowAttractions] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [summary, setSummary] = useState('');
+  const [isLiked, setIsLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(routeStats?.likesCount || 0);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const checkIfLiked = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from('route_likes')
+        .select('*')
+        .eq('route_id', route.id)
+        .eq('user_id', user.id)
+        .single();
+
+      setIsLiked(!!data);
+    };
+
+    checkIfLiked();
+  }, [route.id]);
+
+  const handleLikeClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({
+        title: "Accesso richiesto",
+        description: "Devi essere autenticato per mettere mi piace",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      if (isLiked) {
+        await supabase
+          .from('route_likes')
+          .delete()
+          .eq('route_id', route.id)
+          .eq('user_id', user.id);
+        setLikesCount(prev => prev - 1);
+      } else {
+        await supabase
+          .from('route_likes')
+          .insert({
+            route_id: route.id,
+            user_id: user.id
+          });
+        setLikesCount(prev => prev + 1);
+      }
+      setIsLiked(!isLiked);
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      toast({
+        title: "Errore",
+        description: "Impossibile aggiornare il mi piace",
+        variant: "destructive"
+      });
+    }
+  };
 
   const handleShowSummary = async () => {
     setShowSummary(!showSummary);
@@ -54,10 +118,15 @@ export function RouteCard({
               </span>
             </div>
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLikeClick}
+                className={`flex items-center gap-1 ${isLiked ? 'text-red-500' : ''}`}
+              >
                 <ThumbsUp className="w-4 h-4" />
-                <span>{routeStats?.likesCount || 0}</span>
-              </div>
+                <span>{likesCount}</span>
+              </Button>
               <div className="flex items-center gap-1">
                 <Star className="w-4 h-4 text-yellow-400" />
                 <span>{routeStats?.averageRating?.toFixed(1) || '0.0'}</span>
