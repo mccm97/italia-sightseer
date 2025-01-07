@@ -57,7 +57,7 @@ export function RouteCard({
         .select('id')
         .eq('route_id', route.id)
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle(); // Changed from .single() to .maybeSingle()
 
       return !!data;
     }
