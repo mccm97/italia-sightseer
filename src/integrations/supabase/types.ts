@@ -455,8 +455,10 @@ export type Database = {
         }
         Returns: boolean
       }
-      increment_daily_visits: {
-        Args: Record<PropertyKey, never>
+      create_route: {
+        Args: {
+          route_data: Json
+        }
         Returns: undefined
       }
     }
