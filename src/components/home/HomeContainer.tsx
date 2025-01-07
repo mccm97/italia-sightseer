@@ -10,7 +10,6 @@ import { RoutePreviewDialog } from '@/components/home/RoutePreviewDialog';
 import { MainMenu } from '@/components/MainMenu';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { generateSummary } from '@/services/summarization';
 import { Route, DirectionsStep } from '@/types/route';
 import { useRouteManagement } from '@/hooks/useRouteManagement';
 
@@ -35,8 +34,7 @@ export function HomeContainer() {
     cityRoutes,
     isLoadingRoutes,
     routeSummary,
-    handleRouteClick,
-    fetchCityRoutes
+    handleRouteClick
   } = useRouteManagement(selectedCity, toast);
 
   useEffect(() => {
@@ -68,13 +66,6 @@ export function HomeContainer() {
     };
     fetchUser();
   }, []);
-
-  useEffect(() => {
-    if (selectedCity?.id) {
-      console.log('Fetching routes for city:', selectedCity.id);
-      fetchCityRoutes();
-    }
-  }, [selectedCity, fetchCityRoutes]);
 
   return (
     <div className="container mx-auto p-4 space-y-6">
