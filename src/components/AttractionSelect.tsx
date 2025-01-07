@@ -34,7 +34,10 @@ export function AttractionSelect({ value, onChange, inputType, cityId, cityName 
 
   useEffect(() => {
     const fetchSuggestions = async () => {
-      if (!searchQuery) return;
+      if (!searchQuery) {
+        setSuggestions([]);
+        return;
+      }
       
       setIsLoading(true);
       try {
