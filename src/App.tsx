@@ -1,10 +1,10 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Index } from '@/pages/Index';
-import { Statistics } from '@/pages/Statistics';
-import { Login } from '@/pages/Login';
-import { Profile } from '@/pages/Profile';
-import { Admin } from '@/pages/Admin';
-import { Upgrade } from '@/pages/Upgrade';
+import Index from '@/pages/Index';
+import Statistics from '@/pages/Statistics';
+import Login from '@/pages/Login';
+import Profile from '@/pages/Profile';
+import Admin from '@/pages/Admin';
+import Upgrade from '@/pages/Upgrade';
 
 function App() {
   return (
