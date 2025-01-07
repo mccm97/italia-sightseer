@@ -9,7 +9,8 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    storageKey: 'waywonder-auth'
+    storageKey: 'waywonder-auth',
+    storage: localStorage
   }
 });
 
@@ -34,6 +35,11 @@ supabase.auth.onAuthStateChange((event, session) => {
     console.log('User updated:', session?.user?.id);
   } else if (event === 'TOKEN_REFRESHED') {
     console.log('Token refreshed successfully');
+  }
+
+  // Log any authentication errors
+  if (!session && event !== 'SIGNED_OUT') {
+    console.warn('Potential authentication issue - no session available');
   }
 });
 
