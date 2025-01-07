@@ -30,7 +30,8 @@ interface Attraction {
 
 export function AttractionSelect({ value, onChange, inputType, cityId, cityName }: AttractionSelectProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const debouncedSearch = useDebounce(searchQuery, 300);
+  // Increased debounce delay to 800ms to allow for more typing
+  const debouncedSearch = useDebounce(searchQuery, 800);
   const [suggestions, setSuggestions] = useState<Attraction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -77,11 +78,12 @@ export function AttractionSelect({ value, onChange, inputType, cityId, cityName 
   // Update suggestions when user types (using debounced search)
   useEffect(() => {
     const fetchSuggestions = async () => {
-      if (!cityId || !cityName || !debouncedSearch) return;
+      // Only fetch if we have at least 2 characters
+      if (!cityId || !cityName || !debouncedSearch || debouncedSearch.length < 2) return;
       
       setIsLoading(true);
       try {
-        // Fetch local attractions that match the search
+        console.log('Fetching suggestions for query:', debouncedSearch);
         const { data: localAttractions, error: localError } = await supabase
           .from('attractions')
           .select('name')
@@ -93,12 +95,8 @@ export function AttractionSelect({ value, onChange, inputType, cityId, cityName 
           throw localError;
         }
 
-        // Fetch Geoapify attractions
-        console.log('Fetching Geoapify attractions for:', cityName);
         const geoapifyAttractions = await searchGeoapifyPlaces(cityName, debouncedSearch);
-        console.log('Found Geoapify attractions:', geoapifyAttractions);
 
-        // Combine results
         const localResults = (localAttractions || []).map(attr => ({
           name: attr.name,
           source: 'local' as const
@@ -110,7 +108,6 @@ export function AttractionSelect({ value, onChange, inputType, cityId, cityName 
           source: 'geoapify' as const
         }));
 
-        // Combine and remove duplicates
         const combined = [...localResults, ...geoapifyResults];
         const uniqueAttractions = Array.from(
           new Map(combined.map(item => [item.name, item])).values()
@@ -179,7 +176,9 @@ export function AttractionSelect({ value, onChange, inputType, cityId, cityName 
             ))
           ) : (
             <div className="p-2 text-center text-gray-500">
-              {searchQuery ? "Nessun risultato trovato" : "Nessun monumento disponibile"}
+              {searchQuery.length < 2 ? 
+                "Digita almeno 2 caratteri per cercare" : 
+                searchQuery ? "Nessun risultato trovato" : "Nessun monumento disponibile"}
             </div>
           )}
         </ScrollArea>
