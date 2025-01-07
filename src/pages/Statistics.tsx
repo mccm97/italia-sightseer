@@ -5,14 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Users, Map, Heart, MessageSquare } from 'lucide-react';
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer
-} from 'recharts';
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { useToast } from '@/hooks/use-toast';
 
 interface DailyStats {
   date: string;
@@ -27,61 +25,113 @@ export default function Statistics() {
   const [stats, setStats] = useState<DailyStats[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     const checkAdminStatus = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate('/login');
-        return;
-      }
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          navigate('/login');
+          return;
+        }
 
-      const { data: adminUser } = await supabase
-        .from('admin_users')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
+        const { data: adminUser, error: adminError } = await supabase
+          .from('admin_users')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
 
-      if (!adminUser) {
+        if (adminError) {
+          console.error('Error checking admin status:', adminError);
+          toast({
+            title: "Errore",
+            description: "Errore nel controllo dei permessi di amministratore",
+            variant: "destructive",
+          });
+          navigate('/');
+          return;
+        }
+
+        if (!adminUser) {
+          toast({
+            title: "Accesso negato",
+            description: "Non hai i permessi per accedere a questa pagina",
+            variant: "destructive",
+          });
+          navigate('/');
+          return;
+        }
+
+        setIsAdmin(true);
+        fetchStats();
+      } catch (error) {
+        console.error('Error in checkAdminStatus:', error);
         navigate('/');
-        return;
       }
-
-      setIsAdmin(true);
     };
 
     checkAdminStatus();
-  }, [navigate]);
+  }, [navigate, toast]);
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      if (!isAdmin) return;
+  const fetchStats = async () => {
+    try {
+      console.log('Fetching statistics...');
+      const { data, error } = await supabase
+        .from('site_statistics')
+        .select('*')
+        .order('date', { ascending: true });
 
-      try {
-        const { data, error } = await supabase
-          .from('site_statistics')
-          .select('*')
-          .order('date', { ascending: true });
-
-        if (error) throw error;
-
-        setStats(data || []);
-      } catch (error) {
+      if (error) {
         console.error('Error fetching statistics:', error);
-      } finally {
-        setIsLoading(false);
+        toast({
+          title: "Errore",
+          description: "Errore nel caricamento delle statistiche",
+          variant: "destructive",
+        });
+        return;
       }
-    };
 
-    fetchStats();
-  }, [isAdmin]);
+      console.log('Statistics data:', data);
+      setStats(data || []);
+    } catch (error) {
+      console.error('Error in fetchStats:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  if (!isAdmin || isLoading) return null;
+  if (!isAdmin || isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
 
   const totalVisits = stats.reduce((sum, day) => sum + (day.visits_count || 0), 0);
   const totalRoutes = stats.reduce((sum, day) => sum + (day.routes_created || 0), 0);
   const totalLikes = stats.reduce((sum, day) => sum + (day.likes_count || 0), 0);
   const totalReviews = stats.reduce((sum, day) => sum + (day.reviews_count || 0), 0);
+
+  const chartConfig = {
+    visits: {
+      label: 'Visite',
+      color: '#8884d8',
+    },
+    routes: {
+      label: 'Percorsi',
+      color: '#82ca9d',
+    },
+    likes: {
+      label: 'Mi Piace',
+      color: '#ffc658',
+    },
+    reviews: {
+      label: 'Recensioni',
+      color: '#ff7300',
+    },
+  };
 
   return (
     <div className="container mx-auto p-4 space-y-6">
@@ -140,18 +190,18 @@ export default function Statistics() {
         </CardHeader>
         <CardContent>
           <div className="h-[400px]">
-            <ResponsiveContainer width="100%" height="100%">
+            <ChartContainer config={chartConfig}>
               <LineChart data={stats}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="visits_count" name="Visite" stroke="#8884d8" />
-                <Line type="monotone" dataKey="routes_created" name="Percorsi" stroke="#82ca9d" />
-                <Line type="monotone" dataKey="likes_count" name="Mi Piace" stroke="#ffc658" />
-                <Line type="monotone" dataKey="reviews_count" name="Recensioni" stroke="#ff7300" />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Line type="monotone" dataKey="visits_count" name="Visite" stroke={chartConfig.visits.color} />
+                <Line type="monotone" dataKey="routes_created" name="Percorsi" stroke={chartConfig.routes.color} />
+                <Line type="monotone" dataKey="likes_count" name="Mi Piace" stroke={chartConfig.likes.color} />
+                <Line type="monotone" dataKey="reviews_count" name="Recensioni" stroke={chartConfig.reviews.color} />
               </LineChart>
-            </ResponsiveContainer>
+            </ChartContainer>
           </div>
         </CardContent>
       </Card>
