@@ -2,6 +2,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { CityBanner } from "./CityBanner";
 import { RouteCard } from "../route/RouteCard";
 import { Attraction, Route } from "@/types/route";
+import { Loader2 } from "lucide-react";
 
 interface CityViewProps {
   city: {
@@ -35,9 +36,10 @@ export const CityView = ({
         <ScrollArea className="h-[500px] rounded-md border">
           <div className="p-4 space-y-4">
             {isLoadingRoutes ? (
-              <p className="text-center text-gray-500">
-                Caricamento percorsi...
-              </p>
+              <div className="flex flex-col items-center justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+                <p className="text-muted-foreground">Caricamento percorsi...</p>
+              </div>
             ) : routes.length > 0 ? (
               routes.map((route) => (
                 <RouteCard
@@ -50,9 +52,14 @@ export const CityView = ({
                 />
               ))
             ) : (
-              <p className="text-center text-gray-500">
-                Nessun percorso disponibile per questa città
-              </p>
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">
+                  Nessun percorso disponibile per questa città
+                </p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Sii il primo a creare un percorso!
+                </p>
+              </div>
             )}
           </div>
         </ScrollArea>

@@ -1,32 +1,23 @@
 import { createClient } from '@supabase/supabase-js';
-import type { Database } from './types';
 
-const SUPABASE_URL = "https://shcbdouqszburohgegcb.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoY2Jkb3Vxc3pidXJvaGdlZ2NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU2MzI4MTYsImV4cCI6MjA1MTIwODgxNn0.6Ch_Y9J-84NI4Eqd3wnw8nNv1EYpeYNX43KLtgBTTR0";
+const supabaseUrl = 'https://shcbdouqszburohgegcb.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoY2Jkb3Vxc3pidXJvaGdlZ2NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDI5MjIxNDUsImV4cCI6MjAxODQ5ODE0NX0.xpLqPHk-gV4VrMt0hgjbhNOUmHVLFGE4ENPBGUXOyXY';
 
-export const supabase = createClient<Database>(
-  SUPABASE_URL, 
-  SUPABASE_PUBLISHABLE_KEY,
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    },
-    global: {
-      headers: {
-        'X-Client-Info': 'waywonder-web'
-      }
-    }
-  }
-);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Add error logging for auth state changes
 supabase.auth.onAuthStateChange((event, session) => {
   console.log('Auth state changed:', event, session ? 'User authenticated' : 'No session');
   
-  // Handle any errors during auth state changes
-  if (event === 'ERROR') {
-    console.error('Auth error occurred:', session);
+  if (event === 'SIGNED_OUT') {
+    console.log('User signed out');
+  } else if (event === 'SIGNED_IN') {
+    console.log('User signed in:', session?.user?.id);
+  } else if (event === 'USER_DELETED') {
+    console.log('User account deleted');
+  } else if (event === 'USER_UPDATED') {
+    console.log('User account updated');
   }
 });
+
+export default supabase;
