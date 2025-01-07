@@ -36,12 +36,16 @@ export function RouteCardHeader({
     e.stopPropagation();
     
     try {
-      // Insert rating
+      console.log('Submitting rating for route:', routeId);
+      
+      // First, try to upsert the rating
       const { error: ratingError } = await supabase
         .from('route_ratings')
         .upsert({
           route_id: routeId,
           rating: selectedRating
+        }, {
+          onConflict: 'route_id,user_id'
         });
 
       if (ratingError) throw ratingError;
