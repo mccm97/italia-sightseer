@@ -6,6 +6,7 @@ import Profile from '@/pages/Profile';
 import Admin from '@/pages/Admin';
 import Upgrade from '@/pages/Upgrade';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Analytics } from '@vercel/analytics/react';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -30,6 +31,7 @@ function App() {
           <Route path="/upgrade" element={<Upgrade />} />
         </Routes>
       </Router>
+      <Analytics />
     </QueryClientProvider>
   );
 }
