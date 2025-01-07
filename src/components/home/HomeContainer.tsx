@@ -8,7 +8,6 @@ import { CreateRouteDialog } from '@/components/CreateRouteDialog';
 import { DirectionsDialog } from '@/components/route/DirectionsDialog';
 import { RoutePreviewDialog } from '@/components/home/RoutePreviewDialog';
 import { MainMenu } from '@/components/MainMenu';
-import { AdUnit } from '@/components/ads/AdUnit';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Route, DirectionsStep } from '@/types/route';
@@ -94,7 +93,6 @@ export function HomeContainer() {
       <MainMenu />
       <Header user={user} />
       <HomeHero />
-      <AdUnit slot="1234567890" className="my-6" />
       <AboutSection />
 
       {!selectedCity ? (
@@ -102,23 +100,20 @@ export function HomeContainer() {
           <CitySearchSection setSelectedCity={setSelectedCity} />
         </div>
       ) : (
-        <>
-          <CityView
-            city={selectedCity}
-            routes={cityRoutes}
-            isLoadingRoutes={isLoadingRoutes}
-            selectedRoute={selectedRoute}
-            onBackClick={() => {
-              setSelectedCity(null);
-            }}
-            onRouteClick={handleRouteClick}
-            onDirectionsClick={(directions) => {
-              setSelectedRouteDirections(directions);
-              setShowDirections(true);
-            }}
-          />
-          <AdUnit slot="9876543210" className="my-6" format="rectangle" />
-        </>
+        <CityView
+          city={selectedCity}
+          routes={cityRoutes}
+          isLoadingRoutes={isLoadingRoutes}
+          selectedRoute={selectedRoute}
+          onBackClick={() => {
+            setSelectedCity(null);
+          }}
+          onRouteClick={handleRouteClick}
+          onDirectionsClick={(directions) => {
+            setSelectedRouteDirections(directions);
+            setShowDirections(true);
+          }}
+        />
       )}
 
       <CreateRouteDialog />
