@@ -78,7 +78,6 @@ export function HomeContainer() {
           selectedRoute={selectedRoute}
           onBackClick={() => {
             setSelectedCity(null);
-            setSelectedRoute(null);
           }}
           onRouteClick={handleRouteClick}
           onDirectionsClick={(directions) => {
