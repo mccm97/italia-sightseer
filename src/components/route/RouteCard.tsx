@@ -37,31 +37,43 @@ export function RouteCard({
   const [summary, setSummary] = useState('');
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(routeStats?.likesCount || 0);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    const checkIfLiked = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+    const checkAuth = async () => {
+      try {
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError) throw authError;
+        setCurrentUser(user);
+        
+        if (user) {
+          const { data, error } = await supabase
+            .from('route_likes')
+            .select('*')
+            .eq('route_id', route.id)
+            .eq('user_id', user.id)
+            .maybeSingle();
 
-      const { data } = await supabase
-        .from('route_likes')
-        .select('*')
-        .eq('route_id', route.id)
-        .eq('user_id', user.id)
-        .maybeSingle(); // Changed from .single() to .maybeSingle()
+          if (error && error.code !== 'PGRST116') {
+            console.error('Error checking like status:', error);
+            return;
+          }
 
-      setIsLiked(!!data);
+          setIsLiked(!!data);
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+      }
     };
 
-    checkIfLiked();
+    checkAuth();
   }, [route.id]);
 
   const handleLikeClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    if (!currentUser) {
       toast({
         title: "Accesso richiesto",
         description: "Devi essere autenticato per mettere mi piace",
@@ -72,19 +84,23 @@ export function RouteCard({
 
     try {
       if (isLiked) {
-        await supabase
+        const { error } = await supabase
           .from('route_likes')
           .delete()
           .eq('route_id', route.id)
-          .eq('user_id', user.id);
+          .eq('user_id', currentUser.id);
+
+        if (error) throw error;
         setLikesCount(prev => prev - 1);
       } else {
-        await supabase
+        const { error } = await supabase
           .from('route_likes')
           .insert({
             route_id: route.id,
-            user_id: user.id
+            user_id: currentUser.id
           });
+
+        if (error) throw error;
         setLikesCount(prev => prev + 1);
       }
       setIsLiked(!isLiked);
