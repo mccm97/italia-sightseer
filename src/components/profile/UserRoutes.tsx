@@ -1,9 +1,9 @@
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { Route, RouteOff } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { Tables } from '@/integrations/supabase/types';
 import { DeleteRouteButton } from './DeleteRouteButton';
+import { RouteCard } from '../route/RouteCard';
 
 type DbRoute = Tables<'routes'>;
 
@@ -11,13 +11,28 @@ export function UserRoutes() {
   const { data: routes, isLoading, refetch } = useQuery({
     queryKey: ['userRoutes'],
     queryFn: async () => {
+      console.log('Fetching user routes...');
       const { data: routes, error } = await supabase
         .from('routes')
-        .select('*, cities(name)')
+        .select(`
+          *,
+          cities(name),
+          route_likes(count),
+          route_ratings(rating)
+        `)
         .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
 
-      if (error) throw error;
-      return routes as (DbRoute & { cities: { name: string } })[];
+      if (error) {
+        console.error('Error fetching user routes:', error);
+        throw error;
+      }
+
+      console.log('User routes fetched:', routes);
+      return routes as (DbRoute & { 
+        cities: { name: string },
+        route_likes: { count: number }[],
+        route_ratings: { rating: number }[]
+      })[];
     },
   });
 
@@ -27,23 +42,35 @@ export function UserRoutes() {
     <div className="mt-8">
       <h2 className="text-xl font-semibold mb-4">I miei percorsi</h2>
       {routes && routes.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {routes.map((route) => (
-            <div key={route.id} className="relative">
-              <Link
-                to={`/routes/${route.id}`}
-                className="p-4 border rounded-lg hover:bg-accent transition-colors block"
-              >
-                <Route className="mb-2 h-5 w-5" />
-                <h3 className="font-medium">{route.name}</h3>
-                <p className="text-sm text-muted-foreground">{route.cities.name}</p>
-                <img src={`https://your-supabase-url/storage/v1/object/public/screenshots/${route.id}.png`} alt={`Screenshot del percorso ${route.name}`} />
-              </Link>
-              <div className="absolute top-2 right-2">
-                <DeleteRouteButton routeId={route.id} onDelete={() => refetch()} />
+        <div className="grid grid-cols-1 gap-4">
+          {routes.map((route) => {
+            const likesCount = route.route_likes?.length || 0;
+            const ratings = route.route_ratings || [];
+            const averageRating = ratings.length > 0
+              ? ratings.reduce((acc, curr) => acc + curr.rating, 0) / ratings.length
+              : 0;
+
+            return (
+              <div key={route.id} className="relative">
+                <RouteCard
+                  route={{
+                    ...route,
+                    attractions: [],
+                    creator: { username: 'Tu' }
+                  }}
+                  routeStats={{
+                    likesCount,
+                    averageRating
+                  }}
+                  onRouteClick={() => {}}
+                  onDirectionsClick={() => {}}
+                />
+                <div className="absolute top-2 right-2">
+                  <DeleteRouteButton routeId={route.id} onDelete={() => refetch()} />
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="text-center py-8 text-muted-foreground">
