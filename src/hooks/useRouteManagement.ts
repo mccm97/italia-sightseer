@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Route, Attraction } from '@/types/route';
+import { Route, Attraction, DirectionsStep } from '@/types/route';
 import { generateSummary } from '@/services/summarization';
 import { useQuery } from '@tanstack/react-query';
 
@@ -55,6 +55,27 @@ export function useRouteManagement(selectedCity: any, toast: any) {
         };
       }) || [];
 
+      // Parse directions from JSON to DirectionsStep[]
+      let parsedDirections: DirectionsStep[] = [];
+      if (route.directions) {
+        try {
+          // If directions is a string, parse it, otherwise use it directly
+          const directionsData = typeof route.directions === 'string' 
+            ? JSON.parse(route.directions) 
+            : route.directions;
+            
+          if (Array.isArray(directionsData)) {
+            parsedDirections = directionsData.map(step => ({
+              instruction: String(step.instruction || ''),
+              distance: Number(step.distance || 0),
+              duration: Number(step.duration || 0)
+            }));
+          }
+        } catch (error) {
+          console.error('Error parsing directions:', error);
+        }
+      }
+
       return {
         id: route.id,
         cityName: selectedCity.name,
@@ -64,7 +85,7 @@ export function useRouteManagement(selectedCity: any, toast: any) {
         creator: route.creator,
         attractions: transformedAttractions,
         isPublic: Boolean(route.is_public),
-        directions: route.directions
+        directions: parsedDirections
       } satisfies Route;
     }) || [];
   }, [selectedCity, toast]);
