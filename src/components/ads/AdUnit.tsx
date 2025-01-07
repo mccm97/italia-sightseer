@@ -25,13 +25,13 @@ export function AdUnit({ slot, format = 'auto', className = '' }: AdUnitProps) {
   return (
     <div className={`ad-container ${className}`}>
       <ins
-        ref={adRef}
         className="adsbygoogle"
         style={{ display: 'block' }}
         data-ad-client="ca-pub-YOUR_PUBLISHER_ID"
         data-ad-slot={slot}
         data-ad-format={format}
         data-full-width-responsive="true"
+        ref={adRef as React.LegacyRef<HTMLElement>}
       />
     </div>
   );
