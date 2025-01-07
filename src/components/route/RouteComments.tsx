@@ -16,7 +16,7 @@ export function RouteComments({ routeId }: RouteCommentsProps) {
   const [replyContent, setReplyContent] = useState('');
   const { toast } = useToast();
 
-  const { data: comments, refetch } = useQuery({
+  const { data: comments = [], refetch } = useQuery({
     queryKey: ['routeComments', routeId],
     queryFn: async () => {
       console.log('Fetching comments for route:', routeId);
@@ -25,8 +25,8 @@ export function RouteComments({ routeId }: RouteCommentsProps) {
         .select(`
           *,
           profiles:user_id (username, avatar_url),
-          ratings:route_ratings!inner (rating),
-          replies:route_comments (
+          route_ratings!left (rating),
+          replies:route_comments!reply_to_id(
             *,
             profiles:user_id (username, avatar_url)
           )
@@ -36,7 +36,7 @@ export function RouteComments({ routeId }: RouteCommentsProps) {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data;
+      return data || [];
     }
   });
 
@@ -106,16 +106,18 @@ export function RouteComments({ routeId }: RouteCommentsProps) {
   return (
     <ScrollArea className="h-[300px]">
       <div className="space-y-4 p-4">
-        {comments?.map((comment) => (
+        {comments.map((comment: any) => (
           <div key={comment.id} className="border rounded-lg p-4 space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="font-medium">{comment.profiles?.username || 'Utente anonimo'}</span>
-                <div className="flex">
-                  {[...Array(comment.ratings[0]?.rating || 0)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 text-yellow-400" />
-                  ))}
-                </div>
+                {comment.route_ratings?.[0]?.rating && (
+                  <div className="flex">
+                    {[...Array(comment.route_ratings[0].rating)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 text-yellow-400" />
+                    ))}
+                  </div>
+                )}
               </div>
               {currentUser?.id === comment.user_id && (
                 <Button
@@ -170,7 +172,7 @@ export function RouteComments({ routeId }: RouteCommentsProps) {
 
             {comment.replies && comment.replies.length > 0 && (
               <div className="ml-8 mt-4 space-y-4">
-                {comment.replies.map((reply) => (
+                {comment.replies.map((reply: any) => (
                   <div key={reply.id} className="border-l-2 pl-4 space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="font-medium">{reply.profiles?.username || 'Utente anonimo'}</span>

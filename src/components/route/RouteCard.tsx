@@ -8,6 +8,8 @@ import { RouteCardContent } from './RouteCardContent';
 import { RouteStats } from './RouteStats';
 import { RouteComments } from './RouteComments';
 import { RouteScreenshot } from './RouteScreenshot';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface RouteCardProps {
   route: {
@@ -34,7 +36,7 @@ export function RouteCard({
   onDirectionsClick
 }: RouteCardProps) {
   const [showAttractions, setShowAttractions] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
   const [isLoadingScreenshot, setIsLoadingScreenshot] = useState(true);
   const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
 
@@ -42,6 +44,45 @@ export function RouteCard({
   const totalCost = route.attractions.reduce((sum, attraction) => {
     return sum + (attraction.price || 0);
   }, 0);
+
+  // Check if the current user has liked this route
+  const { data: isLiked = false } = useQuery({
+    queryKey: ['routeLike', route.id],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+
+      const { data } = await supabase
+        .from('route_likes')
+        .select('id')
+        .eq('route_id', route.id)
+        .eq('user_id', user.id)
+        .single();
+
+      return !!data;
+    }
+  });
+
+  const handleLikeClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    if (isLiked) {
+      await supabase
+        .from('route_likes')
+        .delete()
+        .eq('route_id', route.id)
+        .eq('user_id', user.id);
+    } else {
+      await supabase
+        .from('route_likes')
+        .insert({
+          route_id: route.id,
+          user_id: user.id
+        });
+    }
+  };
 
   return (
     <>
@@ -86,13 +127,16 @@ export function RouteCard({
             routeId={route.id}
             initialLikesCount={routeStats?.likesCount || 0}
             initialAverageRating={routeStats?.averageRating}
+            isLiked={isLiked}
+            onLikeClick={handleLikeClick}
           />
           
           <RouteCardContent
             duration={route.total_duration}
             attractionsCount={route.attractions?.length || 0}
             totalCost={totalCost}
-            showDetails={showDetails}
+            showSummary={showSummary}
+            summary=""
           />
 
           <div className="absolute bottom-4 right-4">
@@ -101,7 +145,7 @@ export function RouteCard({
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
-                setShowDetails(!showDetails);
+                setShowSummary(!showSummary);
               }}
             >
               <span className="mr-2">Dettagli percorso</span>
@@ -110,7 +154,7 @@ export function RouteCard({
           </div>
         </div>
 
-        {showDetails && (
+        {showSummary && (
           <div className="p-4 border-t">
             <RouteComments routeId={route.id} />
           </div>
