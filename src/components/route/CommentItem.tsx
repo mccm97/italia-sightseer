@@ -3,21 +3,24 @@ import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 import { Trash2, MessageCircle } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
+import { ImageUpload } from '../ImageUpload';
 
 interface CommentItemProps {
   comment: any;
   currentUserId?: string;
   onDelete: (commentId: string) => void;
-  onReply: (commentId: string, content: string) => void;
+  onReply: (commentId: string, content: string, imageUrl?: string) => void;
 }
 
 export function CommentItem({ comment, currentUserId, onDelete, onReply }: CommentItemProps) {
   const [replyContent, setReplyContent] = useState('');
   const [isReplying, setIsReplying] = useState(false);
+  const [replyImageUrl, setReplyImageUrl] = useState('');
 
   const handleReply = () => {
-    onReply(comment.id, replyContent);
+    onReply(comment.id, replyContent, replyImageUrl);
     setReplyContent('');
+    setReplyImageUrl('');
     setIsReplying(false);
   };
 
@@ -41,6 +44,14 @@ export function CommentItem({ comment, currentUserId, onDelete, onReply }: Comme
       </p>
       <p>{comment.content}</p>
       
+      {comment.image_url && (
+        <img 
+          src={comment.image_url} 
+          alt="Comment image" 
+          className="w-full max-h-48 object-cover rounded-lg mt-2"
+        />
+      )}
+      
       <div className="mt-2">
         <Button
           variant="ghost"
@@ -59,6 +70,12 @@ export function CommentItem({ comment, currentUserId, onDelete, onReply }: Comme
             onChange={(e) => setReplyContent(e.target.value)}
             placeholder="Scrivi una risposta..."
           />
+          <ImageUpload
+            bucketName="comment-images"
+            onImageUploaded={setReplyImageUrl}
+            currentImage={replyImageUrl}
+            className="mt-2"
+          />
           <div className="flex gap-2">
             <Button size="sm" onClick={handleReply}>
               Invia risposta
@@ -69,6 +86,7 @@ export function CommentItem({ comment, currentUserId, onDelete, onReply }: Comme
               onClick={() => {
                 setIsReplying(false);
                 setReplyContent('');
+                setReplyImageUrl('');
               }}
             >
               Annulla

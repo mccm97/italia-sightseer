@@ -207,6 +207,7 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          image_url: string | null
           reply_to_id: string | null
           route_id: string | null
           user_id: string | null
@@ -215,6 +216,7 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          image_url?: string | null
           reply_to_id?: string | null
           route_id?: string | null
           user_id?: string | null
@@ -223,6 +225,7 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          image_url?: string | null
           reply_to_id?: string | null
           route_id?: string | null
           user_id?: string | null
@@ -333,6 +336,7 @@ export type Database = {
           created_at: string
           directions: Json | null
           id: string
+          image_url: string | null
           is_public: boolean | null
           name: string
           total_distance: number
@@ -346,6 +350,7 @@ export type Database = {
           created_at?: string
           directions?: Json | null
           id?: string
+          image_url?: string | null
           is_public?: boolean | null
           name: string
           total_distance: number
@@ -359,6 +364,7 @@ export type Database = {
           created_at?: string
           directions?: Json | null
           id?: string
+          image_url?: string | null
           is_public?: boolean | null
           name?: string
           total_distance?: number

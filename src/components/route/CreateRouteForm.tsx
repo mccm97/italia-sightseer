@@ -8,6 +8,7 @@ import { FormField, FormItem, FormLabel, FormControl } from '@/components/ui/for
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useEffect } from 'react';
+import { ImageUpload } from '../ImageUpload';
 
 interface CreateRouteFormProps {
   onSubmit: (data: CreateRouteFormData) => void;
@@ -30,7 +31,8 @@ export function CreateRouteForm({
       attractionsCount: 1,
       city: null,
       country: '',
-      attractions: [{ name: '', address: '', inputType: 'name', visitDuration: 0, price: 0 }]
+      attractions: [{ name: '', address: '', inputType: 'name', visitDuration: 0, price: 0 }],
+      image_url: '',
     }
   });
 
@@ -38,9 +40,15 @@ export function CreateRouteForm({
 
   useEffect(() => {
     const currentAttractions = form.getValues('attractions');
-    const updatedAttractions = Array(attractionsCount).fill({ name: '', address: '', inputType: 'name', visitDuration: 0, price: 0 }).map((attr, index) => currentAttractions[index] || attr);
+    const updatedAttractions = Array(attractionsCount)
+      .fill({ name: '', address: '', inputType: 'name', visitDuration: 0, price: 0 })
+      .map((attr, index) => currentAttractions[index] || attr);
     form.setValue('attractions', updatedAttractions);
   }, [attractionsCount, form]);
+
+  const handleImageUploaded = (url: string) => {
+    form.setValue('image_url', url);
+  };
 
   return (
     <Form {...form}>
@@ -65,6 +73,23 @@ export function CreateRouteForm({
               <FormLabel>Nome del Percorso</FormLabel>
               <FormControl>
                 <Input placeholder="Inserisci il nome del percorso" {...field} />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="image_url"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Immagine del Percorso</FormLabel>
+              <FormControl>
+                <ImageUpload
+                  bucketName="route-images"
+                  onImageUploaded={handleImageUploaded}
+                  currentImage={field.value}
+                />
               </FormControl>
             </FormItem>
           )}
@@ -98,9 +123,7 @@ export function CreateRouteForm({
         ))}
 
         <div className="flex justify-end">
-          <Button 
-            type="submit"
-          >
+          <Button type="submit">
             Continua
           </Button>
         </div>

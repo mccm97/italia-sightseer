@@ -14,7 +14,7 @@ interface CityBannerProps {
 }
 
 export function CityBanner({ city, onBackClick }: CityBannerProps) {
-  const { data: cityImage, isError } = useQuery({
+  const { data: cityImage } = useQuery({
     queryKey: ['cityImage', city.id],
     queryFn: async () => {
       if (!city.id) return null;
@@ -40,16 +40,38 @@ export function CityBanner({ city, onBackClick }: CityBannerProps) {
         return null;
       }
     },
-    retry: false // Don't retry on failure
+    retry: false
   });
 
-  const fallbackImage = "/lovable-uploads/fe6abce4-c0cb-4aac-bab4-f583bb0cd471.png";
-  const imageUrl = cityImage || fallbackImage;
+  if (!cityImage) {
+    return (
+      <div className="relative w-full h-[300px] rounded-xl overflow-hidden mb-8 bg-gray-100">
+        <div className="absolute inset-0">
+          <div className="h-full container mx-auto px-4 flex flex-col justify-between py-6">
+            <Button 
+              variant="ghost" 
+              onClick={onBackClick}
+              className="flex items-center gap-2 text-gray-600 w-fit"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Indietro
+            </Button>
+            <div>
+              <h1 className="text-4xl font-bold text-gray-800 mb-2">{city.name}</h1>
+              {city.country && (
+                <p className="text-xl text-gray-600">{city.country}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-[300px] rounded-xl overflow-hidden mb-8">
       <img 
-        src={imageUrl}
+        src={cityImage}
         alt={`${city.name} banner`}
         className="absolute inset-0 w-full h-full object-cover"
       />

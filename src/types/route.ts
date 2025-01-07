@@ -24,6 +24,7 @@ export interface CreateRouteFormData {
   }>;
   attractionsCount: number;
   transportMode: 'walking' | 'public';
+  image_url?: string;
 }
 
 export interface DirectionsStep {
@@ -44,4 +45,5 @@ export interface Route {
   attractions: Attraction[];
   isPublic: boolean;
   directions?: DirectionsStep[];
+  image_url?: string;
 }
