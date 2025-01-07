@@ -7,13 +7,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: true
-  },
-  global: {
-    headers: {
-      'apikey': supabaseAnonKey,
-      'Authorization': `Bearer ${supabaseAnonKey}`
-    }
+    detectSessionInUrl: true,
+    storageKey: 'waywonder-auth',
+    storage: window.localStorage
   }
 });
 
