@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Route } from '@/types/route';
+import { Route, Attraction } from '@/types/route';
 import { generateSummary } from '@/services/summarization';
 import { useQuery } from '@tanstack/react-query';
 
@@ -38,23 +38,35 @@ export function useRouteManagement(selectedCity: any, toast: any) {
 
     console.log('Routes fetched:', routes?.length || 0, 'routes found');
 
-    // Transform the data to match the Route type
-    return routes?.map(route => ({
-      id: route.id,
-      cityName: selectedCity.name,
-      name: route.name,
-      duration: route.total_duration,
-      total_duration: route.total_duration,
-      creator: route.creator,
-      attractions: route.route_attractions?.map((ra: any) => ({
-        name: ra.attraction.name,
-        position: [ra.attraction.lat, ra.attraction.lng],
-        visitDuration: ra.attraction.visit_duration,
-        price: ra.attraction.price
-      })) || [],
-      isPublic: route.is_public,
-      directions: route.directions
-    })) || [];
+    // Transform the data to match the Route type with proper type checking
+    return routes?.map(route => {
+      const transformedAttractions: Attraction[] = route.route_attractions?.map((ra: any) => {
+        // Ensure position is always a tuple of [number, number]
+        const position: [number, number] = [
+          Number(ra.attraction.lat) || 0,
+          Number(ra.attraction.lng) || 0
+        ];
+
+        return {
+          name: String(ra.attraction.name),
+          position,
+          visitDuration: Number(ra.attraction.visit_duration),
+          price: Number(ra.attraction.price) || 0
+        };
+      }) || [];
+
+      return {
+        id: route.id,
+        cityName: selectedCity.name,
+        name: route.name,
+        duration: route.total_duration,
+        total_duration: route.total_duration,
+        creator: route.creator,
+        attractions: transformedAttractions,
+        isPublic: Boolean(route.is_public),
+        directions: route.directions
+      } satisfies Route;
+    }) || [];
   }, [selectedCity, toast]);
 
   const { data: cityRoutes = [], isLoading: isLoadingRoutes, error } = useQuery({
@@ -90,7 +102,6 @@ export function useRouteManagement(selectedCity: any, toast: any) {
     cityRoutes,
     isLoadingRoutes,
     routeSummary,
-    handleRouteClick,
-    fetchCityRoutes // Now we're returning this function
+    handleRouteClick
   };
 }
