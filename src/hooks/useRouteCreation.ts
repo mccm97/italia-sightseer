@@ -17,10 +17,36 @@ export function useRouteCreation() {
     return formData?.attractions.reduce((total, attr) => total + (attr.price || 0), 0) || 0;
   };
 
+  const checkDuplicateRouteName = async (userId: string, routeName: string) => {
+    const { data, error } = await supabase
+      .from('routes')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('name', routeName)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error checking for duplicate route name:', error);
+      return true; // Assume duplicate to be safe
+    }
+
+    return !!data;
+  };
+
   const handleFormSubmit = async (data: CreateRouteFormData, userId: string) => {
     try {
       console.log('Starting form submission process...', data);
       
+      const isDuplicate = await checkDuplicateRouteName(userId, data.name);
+      if (isDuplicate) {
+        toast({
+          title: "Nome percorso duplicato",
+          description: "Hai già un percorso con questo nome. Per favore, scegli un nome diverso.",
+          variant: "destructive"
+        });
+        return false;
+      }
+
       const { data: canCreate, error: checkError } = await supabase
         .rpc('can_create_route', { input_user_id: userId });
 
@@ -54,7 +80,6 @@ export function useRouteCreation() {
 
   const getOrCreateAttraction = async (attr: any, cityId: string) => {
     try {
-      // First, try to find an existing attraction
       const { data: existingAttr, error: findError } = await supabase
         .from('attractions')
         .select('*')
@@ -67,13 +92,11 @@ export function useRouteCreation() {
         throw findError;
       }
 
-      // If attraction exists, return it
       if (existingAttr) {
         console.log('Found existing attraction:', existingAttr);
         return existingAttr;
       }
 
-      // If not found, create new attraction
       const { data: newAttr, error: createError } = await supabase
         .from('attractions')
         .insert({
@@ -117,6 +140,17 @@ export function useRouteCreation() {
         return false;
       }
 
+      // Double-check for duplicate names right before creation
+      const isDuplicate = await checkDuplicateRouteName(user.id, formData.name);
+      if (isDuplicate) {
+        toast({
+          title: "Nome percorso duplicato",
+          description: "Hai già un percorso con questo nome. Per favore, scegli un nome diverso.",
+          variant: "destructive"
+        });
+        return false;
+      }
+
       console.log('Creating route in database...');
       const { data: routeData, error: routeError } = await supabase
         .from('routes')
@@ -135,12 +169,20 @@ export function useRouteCreation() {
 
       if (routeError) {
         console.error('Error creating route:', routeError);
-        throw routeError;
+        if (routeError.code === '23505') {
+          toast({
+            title: "Nome percorso duplicato",
+            description: "Hai già un percorso con questo nome. Per favore, scegli un nome diverso.",
+            variant: "destructive"
+          });
+        } else {
+          throw routeError;
+        }
+        return false;
       }
 
       console.log('Route created successfully:', routeData);
 
-      // Create or get attractions and link them sequentially
       for (const [index, attr] of formData.attractions.entries()) {
         try {
           const attractionData = await getOrCreateAttraction(attr, formData.city?.id || '');
