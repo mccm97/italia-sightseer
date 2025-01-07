@@ -14,27 +14,42 @@ interface CityBannerProps {
 }
 
 export function CityBanner({ city, onBackClick }: CityBannerProps) {
-  const { data: cityImage } = useQuery({
+  const { data: cityImage, isError } = useQuery({
     queryKey: ['cityImage', city.id],
     queryFn: async () => {
       if (!city.id) return null;
       
-      // Using maybeSingle() instead of single() to handle no results case
-      const { data } = await supabase
-        .from('city_images')
-        .select('image_url')
-        .eq('city_id', city.id)
-        .maybeSingle();
+      console.log('Fetching image for city:', city.id);
       
-      console.log('City image query result:', data);
-      return data?.image_url;
-    }
+      try {
+        const { data, error } = await supabase
+          .from('city_images')
+          .select('image_url')
+          .eq('city_id', city.id)
+          .maybeSingle();
+        
+        if (error) {
+          console.error('Error fetching city image:', error);
+          return null;
+        }
+        
+        console.log('City image query result:', data);
+        return data?.image_url;
+      } catch (error) {
+        console.error('Failed to fetch city image:', error);
+        return null;
+      }
+    },
+    retry: false // Don't retry on failure
   });
+
+  const fallbackImage = "/lovable-uploads/fe6abce4-c0cb-4aac-bab4-f583bb0cd471.png";
+  const imageUrl = cityImage || fallbackImage;
 
   return (
     <div className="relative w-full h-[300px] rounded-xl overflow-hidden mb-8">
       <img 
-        src={cityImage || "/lovable-uploads/fe6abce4-c0cb-4aac-bab4-f583bb0cd471.png"}
+        src={imageUrl}
         alt={`${city.name} banner`}
         className="absolute inset-0 w-full h-full object-cover"
       />
