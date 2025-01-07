@@ -7,7 +7,7 @@ interface AdUnitProps {
 }
 
 export function AdUnit({ slot, format = 'auto', className = '' }: AdUnitProps) {
-  const adRef = useRef<HTMLInsElement>(null);
+  const adRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     try {
