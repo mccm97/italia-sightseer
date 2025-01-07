@@ -6,11 +6,19 @@ const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
-    persistSession: true,
     autoRefreshToken: true,
+    persistSession: true,
     detectSessionInUrl: true,
-    storageKey: 'waywonder-auth',
-    storage: typeof window !== 'undefined' ? window.localStorage : undefined
+    storageKey: 'waywonder-auth'
+  }
+});
+
+// Test the connection and log any issues
+supabase.auth.getSession().then(({ data, error }) => {
+  if (error) {
+    console.error('Supabase connection error:', error.message);
+  } else {
+    console.log('Supabase connection successful:', data.session ? 'Active session' : 'No active session');
   }
 });
 
@@ -26,20 +34,6 @@ supabase.auth.onAuthStateChange((event, session) => {
     console.log('User updated:', session?.user?.id);
   } else if (event === 'TOKEN_REFRESHED') {
     console.log('Token refreshed successfully');
-  }
-
-  // Log any authentication errors
-  if (!session && event !== 'SIGNED_OUT') {
-    console.warn('Potential authentication issue - no session available');
-  }
-});
-
-// Test the connection immediately
-supabase.auth.getSession().then(({ data, error }) => {
-  if (error) {
-    console.error('Error getting session:', error.message);
-  } else {
-    console.log('Session check successful:', data.session ? 'Active session' : 'No active session');
   }
 });
 
