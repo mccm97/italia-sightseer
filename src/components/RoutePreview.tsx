@@ -34,6 +34,7 @@ export function RoutePreview({ formData, onBack, onCreateRoute }: RoutePreviewPr
               : `${attraction.name}, ${formData.city?.name}, Italia`;
               
             const position = await geocodeAddress(searchTerm);
+            console.log(`Geocoded position for ${searchTerm}:`, position);
             
             return {
               name: attraction.name || attraction.address,
@@ -82,6 +83,7 @@ export function RoutePreview({ formData, onBack, onCreateRoute }: RoutePreviewPr
           const file = new File([blob], 'route-screenshot.png', { type: 'image/png' });
           setScreenshotFile(file);
           setScreenshotTaken(true);
+          setShowScreenshotDialog(false); // Close dialog after successful capture
           toast({
             title: "Screenshot catturato",
             description: "Lo screenshot è stato salvato correttamente",
@@ -108,7 +110,6 @@ export function RoutePreview({ formData, onBack, onCreateRoute }: RoutePreviewPr
       return;
     }
 
-    // Upload screenshot and create route
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
@@ -120,12 +121,10 @@ export function RoutePreview({ formData, onBack, onCreateRoute }: RoutePreviewPr
 
       if (uploadError) throw uploadError;
 
-      // Get the public URL
       const { data: { publicUrl } } = supabase.storage
         .from('screenshots')
         .getPublicUrl(screenshotPath);
 
-      // Store screenshot metadata
       const { error: dbError } = await supabase
         .from('screenshots')
         .insert({
@@ -135,8 +134,12 @@ export function RoutePreview({ formData, onBack, onCreateRoute }: RoutePreviewPr
 
       if (dbError) throw dbError;
 
-      // Proceed with route creation
       onCreateRoute?.();
+      
+      toast({
+        title: "Percorso creato",
+        description: "Il percorso è stato creato con successo!",
+      });
     } catch (error) {
       console.error('Error saving screenshot:', error);
       toast({
