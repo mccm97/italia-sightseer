@@ -15,33 +15,70 @@ import { useToast } from '@/hooks/use-toast';
 export function AuthButton() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    const getInitialSession = async () => {
+      try {
+        setLoading(true);
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Error getting session:', sessionError);
+          setError(sessionError.message);
+          toast({
+            title: "Errore di autenticazione",
+            description: sessionError.message,
+            variant: "destructive",
+          });
+          return;
+        }
+
+        setUser(session?.user ?? null);
+      } catch (err) {
+        console.error('Error in getInitialSession:', err);
+        setError(err instanceof Error ? err.message : 'Unknown error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getInitialSession();
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      console.log('Auth state changed:', _event, session ? 'User authenticated' : 'No session');
       setUser(session?.user ?? null);
+      setError(null); // Clear any previous errors
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [toast]);
 
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut();
+      const { error: signOutError } = await supabase.auth.signOut();
+      if (signOutError) {
+        console.error('Error signing out:', signOutError);
+        toast({
+          title: "Errore",
+          description: "Si è verificato un errore durante il logout",
+          variant: "destructive",
+        });
+        return;
+      }
+
       toast({
         title: "Logout effettuato",
         description: "Hai effettuato il logout con successo",
       });
-    } catch (error) {
-      console.error('Error signing out:', error);
+    } catch (err) {
+      console.error('Error in handleSignOut:', err);
       toast({
         title: "Errore",
         description: "Si è verificato un errore durante il logout",
@@ -51,7 +88,19 @@ export function AuthButton() {
   };
 
   if (loading) {
-    return null;
+    return <Button variant="ghost" disabled>Caricamento...</Button>;
+  }
+
+  if (error) {
+    return (
+      <Button 
+        variant="ghost" 
+        onClick={() => navigate('/login')}
+        className="text-red-500"
+      >
+        Errore di autenticazione
+      </Button>
+    );
   }
 
   return (
