@@ -1,31 +1,17 @@
-import { BrowserRouter } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from '@/components/ui/toaster';
-import { Routes, Route } from 'react-router-dom';
-import Profile from '@/pages/Profile';
-import Login from '@/pages/Login';
-import Index from '@/pages/Index';
-import Upgrade from '@/pages/Upgrade';
-import Admin from '@/pages/Admin';
-import { MainMenu } from '@/components/MainMenu';
-
-const queryClient = new QueryClient();
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Home from '@/pages/Home';
+import About from '@/pages/About';
+import Statistics from "@/pages/Statistics";
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <MainMenu />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/upgrade" element={<Upgrade />} />
-          <Route path="/admin" element={<Admin />} />
-        </Routes>
-        <Toaster />
-      </BrowserRouter>
-    </QueryClientProvider>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/statistics" element={<Statistics />} />
+      </Routes>
+    </Router>
   );
 }
 
