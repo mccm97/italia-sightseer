@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Textarea } from '@/components/ui/textarea';
 
 interface RouteCardHeaderProps {
   name: string;
@@ -27,32 +28,57 @@ export function RouteCardHeader({
 }: RouteCardHeaderProps) {
   const [showRatingDialog, setShowRatingDialog] = useState(false);
   const [selectedRating, setSelectedRating] = useState(0);
+  const [comment, setComment] = useState('');
   const { toast } = useToast();
 
-  const handleRatingSubmit = async () => {
+  const handleRatingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     try {
-      const { error } = await supabase
+      // Insert rating
+      const { error: ratingError } = await supabase
         .from('route_ratings')
         .upsert({
           route_id: routeId,
           rating: selectedRating
         });
 
-      if (error) throw error;
+      if (ratingError) throw ratingError;
+
+      // If there's a comment, insert it
+      if (comment.trim()) {
+        const { error: commentError } = await supabase
+          .from('route_comments')
+          .insert({
+            route_id: routeId,
+            content: comment.trim()
+          });
+
+        if (commentError) throw commentError;
+      }
 
       toast({
         title: "Recensione salvata",
         description: "Grazie per aver recensito questo percorso!",
       });
       setShowRatingDialog(false);
+      setComment('');
+      setSelectedRating(0);
     } catch (error) {
-      console.error('Error submitting rating:', error);
+      console.error('Error submitting review:', error);
       toast({
         title: "Errore",
         description: "Impossibile salvare la recensione. Riprova più tardi.",
         variant: "destructive"
       });
     }
+  };
+
+  const handleRatingClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowRatingDialog(true);
   };
 
   return (
@@ -78,7 +104,7 @@ export function RouteCardHeader({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setShowRatingDialog(true)}
+              onClick={handleRatingClick}
               className="flex items-center gap-1"
             >
               <Star className="w-4 h-4 text-yellow-400" />
@@ -89,36 +115,63 @@ export function RouteCardHeader({
       </CardHeader>
 
       <Dialog open={showRatingDialog} onOpenChange={setShowRatingDialog}>
-        <DialogContent>
+        <DialogContent onClick={e => e.stopPropagation()}>
           <DialogHeader>
-            <DialogTitle>Valuta questo percorso</DialogTitle>
+            <DialogTitle>Recensisci questo percorso</DialogTitle>
             <DialogDescription>
-              Seleziona un punteggio da 1 a 5 stelle
+              Seleziona un punteggio e lascia un commento opzionale
             </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col gap-4">
+          <form onSubmit={handleRatingSubmit} className="space-y-4">
             <div className="flex justify-center gap-2">
               {[1, 2, 3, 4, 5].map((rating) => (
                 <Button
                   key={rating}
+                  type="button"
                   variant="ghost"
                   size="sm"
-                  onClick={() => setSelectedRating(rating)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedRating(rating);
+                  }}
                   className={`p-2 ${selectedRating >= rating ? 'text-yellow-400' : 'text-gray-300'}`}
                 >
                   <Star className="w-6 h-6" />
                 </Button>
               ))}
             </div>
+            <div className="space-y-2">
+              <label htmlFor="comment" className="text-sm font-medium">
+                Commento (opzionale)
+              </label>
+              <Textarea
+                id="comment"
+                placeholder="Scrivi qui il tuo commento..."
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                rows={4}
+                onClick={e => e.stopPropagation()}
+              />
+            </div>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setShowRatingDialog(false)}>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowRatingDialog(false);
+                }}
+              >
                 Annulla
               </Button>
-              <Button onClick={handleRatingSubmit} disabled={selectedRating === 0}>
+              <Button 
+                type="submit" 
+                disabled={selectedRating === 0}
+              >
                 Salva recensione
               </Button>
             </div>
-          </div>
+          </form>
         </DialogContent>
       </Dialog>
     </>

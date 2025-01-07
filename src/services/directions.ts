@@ -6,18 +6,29 @@ interface DirectionStep {
   duration: number;
 }
 
-export async function getDirections(start: [number, number], end: [number, number]): Promise<DirectionStep[]> {
+export async function getDirections(waypoints: [number, number][]): Promise<DirectionStep[]> {
   try {
+    console.log('Getting directions for waypoints:', waypoints);
+    
+    // Format waypoints for Geoapify
+    const waypointsString = waypoints
+      .map(point => `${point[0]},${point[1]}`)
+      .join('|');
+    
+    console.log('Formatted waypoints string:', waypointsString);
+
     const response = await axios.get(
       `https://api.geoapify.com/v1/routing`,
       {
         params: {
-          waypoints: `${start[0]},${start[1]}|${end[0]},${end[1]}`,
+          waypoints: waypointsString,
           mode: 'walk',
           apiKey: '4e26196999fd47879ca7b7fee264aa4d'
         }
       }
     );
+
+    console.log('Geoapify response:', response.data);
 
     if (!response.data || !response.data.features || !response.data.features[0]) {
       throw new Error('Invalid response from Geoapify');
