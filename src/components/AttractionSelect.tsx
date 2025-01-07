@@ -9,6 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { searchGeoapifyPlaces } from '../services/externalAttractions';
+import { useToast } from '@/hooks/use-toast';
 
 interface AttractionSelectProps {
   value: string;
@@ -20,21 +21,39 @@ interface AttractionSelectProps {
 
 export function AttractionSelect({ value, onChange, inputType, cityId, cityName }: AttractionSelectProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<Array<{name: string, distance?: string}>>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchSuggestions = async () => {
       if (cityName && searchQuery) {
-        // First try to get attractions from Geoapify
-        const places = await searchGeoapifyPlaces(cityName, 'tourism.sights');
-        const placeNames = places.map(place => place.name);
-        setSuggestions(placeNames);
+        setIsLoading(true);
+        try {
+          console.log('Fetching attractions for city:', cityName);
+          const places = await searchGeoapifyPlaces(cityName, 'tourism');
+          const placeNames = places.map(place => ({
+            name: place.name,
+            distance: place.distance ? `${Math.round(place.distance)}m` : undefined
+          }));
+          console.log('Found attractions:', placeNames);
+          setSuggestions(placeNames);
+        } catch (error) {
+          console.error('Error fetching attractions:', error);
+          toast({
+            title: "Errore",
+            description: "Impossibile caricare i monumenti. Riprova più tardi.",
+            variant: "destructive"
+          });
+        } finally {
+          setIsLoading(false);
+        }
       }
     };
 
     const timeoutId = setTimeout(fetchSuggestions, 300);
     return () => clearTimeout(timeoutId);
-  }, [searchQuery, cityName]);
+  }, [searchQuery, cityName, toast]);
 
   if (inputType === 'address') {
     return (
@@ -64,11 +83,24 @@ export function AttractionSelect({ value, onChange, inputType, cityId, cityName 
           />
         </div>
         <ScrollArea className="h-[200px]">
-          {suggestions.map((suggestion) => (
-            <SelectItem key={suggestion} value={suggestion}>
-              {suggestion}
-            </SelectItem>
-          ))}
+          {isLoading ? (
+            <div className="p-2 text-center text-gray-500">Caricamento...</div>
+          ) : suggestions.length > 0 ? (
+            suggestions.map((suggestion) => (
+              <SelectItem key={suggestion.name} value={suggestion.name}>
+                <div className="flex justify-between items-center">
+                  <span>{suggestion.name}</span>
+                  {suggestion.distance && (
+                    <span className="text-sm text-gray-500">{suggestion.distance}</span>
+                  )}
+                </div>
+              </SelectItem>
+            ))
+          ) : (
+            <div className="p-2 text-center text-gray-500">
+              {searchQuery ? "Nessun risultato trovato" : "Inizia a digitare per cercare"}
+            </div>
+          )}
         </ScrollArea>
       </SelectContent>
     </Select>

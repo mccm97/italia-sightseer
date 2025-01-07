@@ -8,6 +8,14 @@ interface GeoapifyPlace {
     lon: number;
     categories: string[];
     formatted: string;
+    distance?: number;
+    place_id: string;
+    city?: string;
+    country?: string;
+    state?: string;
+    postcode?: string;
+    street?: string;
+    housenumber?: string;
   };
 }
 
@@ -29,7 +37,7 @@ export const searchGeoapifyPlaces = async (city: string, category: string) => {
   try {
     console.log('Fetching Geoapify places for city:', city, 'category:', category);
     
-    const { data, error } = await supabase
+    const { data: { key }, error } = await supabase
       .functions.invoke('get-geoapify-key', {
         body: { type: 'places' }
       });
@@ -39,16 +47,39 @@ export const searchGeoapifyPlaces = async (city: string, category: string) => {
       return [];
     }
 
-    const apiKey = data.key;
+    // First get city coordinates
+    const cityResponse = await axios.get(
+      `https://api.geoapify.com/v1/geocode/search`,
+      {
+        params: {
+          text: city,
+          type: 'city',
+          format: 'json',
+          apiKey: key
+        }
+      }
+    );
 
+    if (!cityResponse.data.results?.length) {
+      console.error('City not found:', city);
+      return [];
+    }
+
+    const cityCoords = {
+      lat: cityResponse.data.results[0].lat,
+      lon: cityResponse.data.results[0].lon
+    };
+
+    // Then search for places around the city
     const response = await axios.get(
       `https://api.geoapify.com/v2/places`,
       {
         params: {
           categories: category,
-          filter: `place:${city}`,
+          filter: `circle:${cityCoords.lon},${cityCoords.lat},5000`,
+          bias: `proximity:${cityCoords.lon},${cityCoords.lat}`,
           limit: 20,
-          apiKey: apiKey,
+          apiKey: key,
           format: 'json'
         }
       }
@@ -60,7 +91,17 @@ export const searchGeoapifyPlaces = async (city: string, category: string) => {
       name: place.properties.name,
       position: [place.properties.lat, place.properties.lon] as [number, number],
       address: place.properties.formatted,
-      category: place.properties.categories[0]
+      category: place.properties.categories[0],
+      distance: place.properties.distance,
+      placeId: place.properties.place_id,
+      details: {
+        city: place.properties.city,
+        country: place.properties.country,
+        state: place.properties.state,
+        postcode: place.properties.postcode,
+        street: place.properties.street,
+        housenumber: place.properties.housenumber
+      }
     }));
   } catch (error) {
     console.error('Error fetching places from Geoapify:', error);
