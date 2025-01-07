@@ -1,14 +1,16 @@
 import React from 'react';
 import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
+import { Loader2 } from 'lucide-react';
 
 interface ScreenshotDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onTakeScreenshot: () => void;
+  isLoading?: boolean;
 }
 
-export function ScreenshotDialog({ open, onOpenChange, onTakeScreenshot }: ScreenshotDialogProps) {
+export function ScreenshotDialog({ open, onOpenChange, onTakeScreenshot, isLoading }: ScreenshotDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -27,8 +29,18 @@ export function ScreenshotDialog({ open, onOpenChange, onTakeScreenshot }: Scree
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Annulla
             </Button>
-            <Button onClick={onTakeScreenshot}>
-              Cattura Screenshot
+            <Button 
+              onClick={onTakeScreenshot}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Cattura in corso...
+                </>
+              ) : (
+                'Cattura Screenshot'
+              )}
             </Button>
           </div>
         </div>

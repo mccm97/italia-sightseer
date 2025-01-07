@@ -21,6 +21,7 @@ export function RoutePreview({ formData, onBack, onCreateRoute }: RoutePreviewPr
   const [showScreenshotDialog, setShowScreenshotDialog] = useState(false);
   const [screenshotTaken, setScreenshotTaken] = useState(false);
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
+  const [isCapturingScreenshot, setIsCapturingScreenshot] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -74,11 +75,24 @@ export function RoutePreview({ formData, onBack, onCreateRoute }: RoutePreviewPr
   }, [formData, toast]);
 
   const handleTakeScreenshot = async () => {
-    if (!mapRef.current) return;
+    if (!mapRef.current) {
+      toast({
+        title: "Errore",
+        description: "Impossibile catturare lo screenshot: mappa non trovata",
+        variant: "destructive"
+      });
+      return;
+    }
 
+    setIsCapturingScreenshot(true);
     try {
       console.log('Taking screenshot...');
-      const canvas = await html2canvas(mapRef.current);
+      const canvas = await html2canvas(mapRef.current, {
+        useCORS: true,
+        logging: true,
+        allowTaint: true,
+      });
+      
       canvas.toBlob(async (blob) => {
         if (blob) {
           const file = new File([blob], 'route-screenshot.png', { type: 'image/png' });
@@ -89,15 +103,19 @@ export function RoutePreview({ formData, onBack, onCreateRoute }: RoutePreviewPr
             title: "Screenshot catturato",
             description: "Lo screenshot è stato salvato correttamente",
           });
+        } else {
+          throw new Error('Failed to create blob from canvas');
         }
       });
     } catch (error) {
       console.error('Error taking screenshot:', error);
       toast({
         title: "Errore",
-        description: "Impossibile catturare lo screenshot",
+        description: "Impossibile catturare lo screenshot. Riprova più tardi.",
         variant: "destructive"
       });
+    } finally {
+      setIsCapturingScreenshot(false);
     }
   };
 
@@ -191,6 +209,7 @@ export function RoutePreview({ formData, onBack, onCreateRoute }: RoutePreviewPr
         open={showScreenshotDialog}
         onOpenChange={setShowScreenshotDialog}
         onTakeScreenshot={handleTakeScreenshot}
+        isLoading={isCapturingScreenshot}
       />
     </div>
   );
