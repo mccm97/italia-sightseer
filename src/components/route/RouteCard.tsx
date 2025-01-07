@@ -37,6 +37,7 @@ export function RouteCard({
 }: RouteCardProps) {
   const [showAttractions, setShowAttractions] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
+  const [showComments, setShowComments] = useState(false);
   const [isLoadingScreenshot, setIsLoadingScreenshot] = useState(true);
   const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
 
@@ -57,7 +58,7 @@ export function RouteCard({
         .select('id')
         .eq('route_id', route.id)
         .eq('user_id', user.id)
-        .maybeSingle(); // Changed from .single() to .maybeSingle()
+        .maybeSingle();
 
       return !!data;
     }
@@ -139,7 +140,7 @@ export function RouteCard({
             summary=""
           />
 
-          <div className="absolute bottom-4 right-4">
+          <div className="flex justify-end gap-2 mt-4">
             <Button
               variant="ghost"
               size="sm"
@@ -148,13 +149,24 @@ export function RouteCard({
                 setShowSummary(!showSummary);
               }}
             >
-              <span className="mr-2">Dettagli percorso</span>
+              <span className="mr-2">Riassunto percorso</span>
+              <ChevronDown className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowComments(!showComments);
+              }}
+            >
+              <span className="mr-2">Commenti</span>
               <ChevronDown className="w-4 h-4" />
             </Button>
           </div>
         </div>
 
-        {showSummary && (
+        {showComments && (
           <div className="p-4 border-t">
             <RouteComments routeId={route.id} />
           </div>

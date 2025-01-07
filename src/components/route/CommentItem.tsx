@@ -45,11 +45,13 @@ export function CommentItem({ comment, currentUserId, onDelete, onReply }: Comme
       <p>{comment.content}</p>
       
       {comment.image_url && (
-        <img 
-          src={comment.image_url} 
-          alt="Comment image" 
-          className="w-full max-h-48 object-cover rounded-lg mt-2"
-        />
+        <div className="mt-2">
+          <img 
+            src={comment.image_url} 
+            alt="Comment image" 
+            className="max-w-full h-auto rounded-lg"
+          />
+        </div>
       )}
       
       <div className="mt-2">
