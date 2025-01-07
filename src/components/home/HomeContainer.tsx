@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { HomeHero } from '@/components/home/HomeHero';
 import { AboutSection } from '@/components/home/AboutSection';
@@ -40,32 +40,56 @@ export function HomeContainer() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const { data: { user }, error } = await supabase.auth.getUser();
-        if (error) {
-          console.error('Error fetching user:', error);
+        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+        if (authError) {
+          console.error('Error fetching auth user:', authError);
           return;
         }
         
-        if (user) {
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('username, avatar_url')
-            .eq('id', user.id)
-            .maybeSingle();
-          
-          if (profileError) {
-            console.error('Error fetching profile:', profileError);
-            return;
+        if (authUser) {
+          try {
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .select('username, avatar_url')
+              .eq('id', authUser.id)
+              .maybeSingle();
+            
+            if (profileError) {
+              console.error('Error fetching profile:', profileError);
+              toast({
+                title: "Errore",
+                description: "Impossibile caricare il profilo utente",
+                variant: "destructive",
+              });
+              return;
+            }
+            
+            // If profile exists, combine with auth user data
+            if (profile) {
+              setUser({ ...authUser, ...profile });
+            } else {
+              // If no profile exists yet, just use auth user data
+              setUser(authUser);
+              console.log('No profile found for user, using auth data only');
+            }
+          } catch (profileFetchError) {
+            console.error('Unexpected error fetching profile:', profileFetchError);
+            // Still set the auth user even if profile fetch fails
+            setUser(authUser);
           }
-          
-          setUser({ ...user, ...profile });
         }
       } catch (error) {
         console.error('Unexpected error during user fetch:', error);
+        toast({
+          title: "Errore",
+          description: "Si è verificato un errore durante il caricamento dei dati utente",
+          variant: "destructive",
+        });
       }
     };
+
     fetchUser();
-  }, []);
+  }, [toast]);
 
   return (
     <div className="container mx-auto p-4 space-y-6">
