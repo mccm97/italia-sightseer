@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Header } from '@/components/layout/Header';
 import { HomeHero } from '@/components/home/HomeHero';
 import { AboutSection } from '@/components/home/AboutSection';
@@ -7,6 +7,7 @@ import { CityView } from '@/components/city/CityView';
 import { CreateRouteDialog } from '@/components/CreateRouteDialog';
 import { DirectionsDialog } from '@/components/route/DirectionsDialog';
 import { RoutePreviewDialog } from '@/components/home/RoutePreviewDialog';
+import { MainMenu } from '@/components/MainMenu';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { generateSummary } from '@/services/summarization';
@@ -46,7 +47,7 @@ export function HomeContainer() {
           .from('profiles')
           .select('username, avatar_url')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
         
         setUser({ ...user, ...profile });
       }
@@ -56,12 +57,14 @@ export function HomeContainer() {
 
   useEffect(() => {
     if (selectedCity?.id) {
+      console.log('Fetching routes for city:', selectedCity.id);
       fetchCityRoutes();
     }
   }, [selectedCity, fetchCityRoutes]);
 
   return (
     <div className="container mx-auto p-4 space-y-6">
+      <MainMenu />
       <Header user={user} />
       <HomeHero />
       <AboutSection />
