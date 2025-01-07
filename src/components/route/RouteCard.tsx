@@ -44,6 +44,11 @@ export function RouteCard({
   const [isLoadingScreenshot, setIsLoadingScreenshot] = useState(true);
   const { toast } = useToast();
 
+  // Calculate total cost from attractions
+  const totalCost = route.attractions.reduce((sum, attraction) => {
+    return sum + (attraction.price || 0);
+  }, 0);
+
   useEffect(() => {
     const fetchScreenshot = async () => {
       try {
@@ -182,6 +187,7 @@ export function RouteCard({
         <RouteCardContent
           duration={route.total_duration}
           attractionsCount={route.attractions?.length || 0}
+          totalCost={totalCost}
           showSummary={showSummary}
           summary={summary}
         />
