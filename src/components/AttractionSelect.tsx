@@ -52,6 +52,7 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
           source: 'local' as const
         }));
 
+        console.log('Setting initial suggestions:', localResults);
         setSuggestions(localResults);
       } catch (error) {
         console.error('Error fetching initial attractions:', error);
@@ -95,7 +96,7 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
           source: 'local' as const
         }));
 
-        console.log('Found local attractions:', localResults);
+        console.log('Setting filtered suggestions:', localResults);
         setSuggestions(localResults);
       } catch (error) {
         console.error('Error fetching suggestions:', error);
@@ -148,7 +149,10 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
             <CommandItem
               key={suggestion.name}
               value={suggestion.name}
-              onSelect={onChange}
+              onSelect={(currentValue) => {
+                console.log('Selected value:', currentValue);
+                onChange(currentValue);
+              }}
             >
               {suggestion.name}
             </CommandItem>
