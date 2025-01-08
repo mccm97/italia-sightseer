@@ -3,13 +3,13 @@ import { Card } from '@/components/ui/card';
 import { AttractionDetailsDialog } from './AttractionDetailsDialog';
 import { RouteCardHeader } from './RouteCardHeader';
 import { RouteCardContent } from './RouteCardContent';
-import { RouteStats } from './RouteStats';
+import { RouteRating } from './RouteRating';
 import { CommentSection } from './CommentSection';
 import { RouteDescription } from './RouteDescription';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '../ui/button';
 import { MessageSquare, ListTree } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface RouteCardProps {
   route: {
@@ -39,41 +39,6 @@ export function RouteCard({
   const [showAttractions, setShowAttractions] = useState(false);
   const [showDescription, setShowDescription] = useState(false);
   const [showComments, setShowComments] = useState(false);
-  const queryClient = useQueryClient();
-
-  // Calculate total cost from attractions
-  const totalCost = route.attractions.reduce((sum, attraction) => {
-    return sum + (attraction.price || 0);
-  }, 0);
-
-  const { data: isLiked = false } = useQuery({
-    queryKey: ['routeLike', route.id],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return false;
-
-      const { data } = await supabase
-        .from('route_likes')
-        .select('id')
-        .eq('route_id', route.id)
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      return !!data;
-    }
-  });
-
-  const { data: screenshot } = useQuery({
-    queryKey: ['routeScreenshot', route.id],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from('screenshots')
-        .select('screenshot_url')
-        .eq('route_id', route.id)
-        .maybeSingle();
-      return data?.screenshot_url;
-    }
-  });
 
   const { data: comments = [] } = useQuery({
     queryKey: ['routeComments', route.id],
@@ -92,55 +57,13 @@ export function RouteCard({
     }
   });
 
-  const handleLikeClick = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    try {
-      if (isLiked) {
-        await supabase
-          .from('route_likes')
-          .delete()
-          .eq('route_id', route.id)
-          .eq('user_id', user.id);
-      } else {
-        const { data: existingLike } = await supabase
-          .from('route_likes')
-          .select('id')
-          .eq('route_id', route.id)
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        if (!existingLike) {
-          await supabase
-            .from('route_likes')
-            .insert({
-              route_id: route.id,
-              user_id: user.id
-            });
-        }
-      }
-
-      await queryClient.invalidateQueries({ queryKey: ['routeLike', route.id] });
-      await queryClient.invalidateQueries({ queryKey: ['routeLikes', route.id] });
-    } catch (error) {
-      console.error('Error handling like:', error);
-    }
-  };
-
-  const handleCardClick = (e: React.MouseEvent) => {
-    if (route.screenshot_url) {
-      e.stopPropagation();
-      // TODO: Implement screenshot modal
-    } else {
-      onRouteClick();
-    }
-  };
+  const totalCost = route.attractions.reduce((sum, attraction) => {
+    return sum + (attraction.price || 0);
+  }, 0);
 
   return (
     <>
-      <Card className="cursor-pointer hover:bg-gray-50 relative" onClick={handleCardClick}>
+      <Card className="cursor-pointer hover:bg-gray-50 relative" onClick={onRouteClick}>
         <RouteCardHeader
           name={route.name}
           routeId={route.id}
@@ -158,13 +81,12 @@ export function RouteCard({
         )}
 
         <div className="p-4">
-          <RouteStats
-            routeId={route.id}
-            initialLikesCount={routeStats?.likesCount || 0}
-            initialAverageRating={routeStats?.averageRating}
-            isLiked={isLiked}
-            onLikeClick={handleLikeClick}
-          />
+          <div className="flex items-center gap-4 mb-4">
+            <RouteRating
+              routeId={route.id}
+              initialRating={routeStats?.averageRating}
+            />
+          </div>
           
           <RouteCardContent
             duration={route.total_duration}
