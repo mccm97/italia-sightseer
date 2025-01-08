@@ -110,14 +110,17 @@ export function CreateRouteDialog() {
           <RoutePreview
             formData={formData!}
             onBack={() => setShowPreview(false)}
-            onCreateRoute={handleCreateRoute}
+            onContinue={() => setShowSummary(true)}
             screenshotUrl={screenshotUrl}
           />
         ) : showSummary ? (
           <RouteCreationSummary
             formData={formData!}
-            onBack={() => setShowSummary(false)}
-            onPreview={() => setShowPreview(true)}
+            onBack={() => {
+              setShowSummary(false);
+              setShowPreview(true);
+            }}
+            onCreateRoute={handleCreateRoute}
             calculateTotalDuration={calculateTotalDuration}
             calculateTotalPrice={calculateTotalPrice}
             onScreenshotUpload={handleScreenshotUpload}

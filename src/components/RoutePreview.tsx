@@ -6,15 +6,18 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { RouteHeader } from './route/RouteHeader';
 import { RouteSummary } from './route/RouteSummary';
+import { Alert, AlertDescription } from './ui/alert';
+import { Info } from 'lucide-react';
+import { Button } from './ui/button';
 
 interface RoutePreviewProps {
   formData: CreateRouteFormData;
   onBack: () => void;
-  onCreateRoute?: () => void;
+  onContinue: () => void;
   screenshotUrl: string | null;
 }
 
-export function RoutePreview({ formData, onBack, onCreateRoute, screenshotUrl }: RoutePreviewProps) {
+export function RoutePreview({ formData, onBack, onContinue }: RoutePreviewProps) {
   const [attractions, setAttractions] = useState<Array<{ name: string; position: [number, number] }>>([]);
   const [totalTravelTime, setTotalTravelTime] = useState(0);
   const mapRef = useRef<HTMLDivElement>(null);
@@ -69,37 +72,6 @@ export function RoutePreview({ formData, onBack, onCreateRoute, screenshotUrl }:
     loadAttractionPositions();
   }, [formData, toast]);
 
-  const handleCreateRoute = async () => {
-    if (!screenshotUrl) {
-      toast({
-        title: "Screenshot richiesto",
-        description: "Per favore, carica uno screenshot del percorso prima di procedere",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      console.log('Creating route...');
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-
-      onCreateRoute?.();
-      
-      toast({
-        title: "Percorso creato",
-        description: "Il percorso è stato creato con successo!",
-      });
-    } catch (error) {
-      console.error('Error creating route:', error);
-      toast({
-        title: "Errore",
-        description: "Impossibile creare il percorso",
-        variant: "destructive"
-      });
-    }
-  };
-
   const totalVisitDuration = formData.attractions.reduce((sum, attr) => sum + (attr.visitDuration || 0), 0);
   const totalDuration = totalVisitDuration + totalTravelTime;
   const totalPrice = formData.attractions.reduce((sum, attr) => sum + (attr.price || 0), 0);
@@ -108,8 +80,6 @@ export function RoutePreview({ formData, onBack, onCreateRoute, screenshotUrl }:
     <div className="space-y-4">
       <RouteHeader
         onBack={onBack}
-        onCreateRoute={handleCreateRoute}
-        screenshotUrl={screenshotUrl}
       />
 
       <h2 className="text-2xl font-bold">Anteprima Percorso</h2>
@@ -128,6 +98,20 @@ export function RoutePreview({ formData, onBack, onCreateRoute, screenshotUrl }:
           attractions={attractions}
           showWalkingPath={true}
         />
+      </div>
+
+      <Alert>
+        <Info className="h-4 w-4" />
+        <AlertDescription>
+          Prima di continuare, crea uno screenshot della mappa che mostri chiaramente il percorso e i punti di interesse.
+          Questo aiuterà gli altri utenti a visualizzare meglio il tuo itinerario.
+        </AlertDescription>
+      </Alert>
+
+      <div className="flex justify-end">
+        <Button onClick={onContinue}>
+          Continua
+        </Button>
       </div>
     </div>
   );

@@ -8,17 +8,17 @@ import { Info } from 'lucide-react';
 interface RouteCreationSummaryProps {
   formData: CreateRouteFormData;
   onBack: () => void;
-  onPreview: () => void;
+  onCreateRoute: () => void;
   calculateTotalDuration: () => number;
   calculateTotalPrice: () => number;
   onScreenshotUpload: (url: string) => void;
-  screenshotUrl?: string;
+  screenshotUrl: string | null;
 }
 
 export function RouteCreationSummary({
   formData,
   onBack,
-  onPreview,
+  onCreateRoute,
   calculateTotalDuration,
   calculateTotalPrice,
   onScreenshotUpload,
@@ -49,9 +49,8 @@ export function RouteCreationSummary({
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription>
-                Per aiutare gli altri utenti a visualizzare meglio il tuo percorso, 
-                carica uno screenshot della mappa che mostri chiaramente il tragitto e i punti di interesse.
-                Puoi creare lo screenshot utilizzando gli strumenti del tuo sistema operativo.
+                Carica lo screenshot della mappa che hai appena creato. 
+                Questo aiuterà gli altri utenti a visualizzare meglio il tuo percorso.
               </AlertDescription>
             </Alert>
             <ImageUpload
@@ -69,13 +68,13 @@ export function RouteCreationSummary({
           variant="outline" 
           onClick={onBack}
         >
-          Modifica
+          Torna alla Mappa
         </Button>
         <Button 
-          onClick={onPreview}
+          onClick={onCreateRoute}
           disabled={!screenshotUrl}
         >
-          Visualizza su Mappa
+          Crea Percorso
         </Button>
       </div>
     </div>
