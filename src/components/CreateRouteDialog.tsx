@@ -69,10 +69,10 @@ export function CreateRouteDialog() {
       return;
     }
     if (!newOpen) {
-      // Reset all states when closing the dialog
       setShowPreview(false);
       setShowSummary(false);
       setScreenshotUrl(null);
+      setFormData(null);
     }
     setOpen(newOpen);
   };
@@ -109,6 +109,12 @@ export function CreateRouteDialog() {
     }
   };
 
+  const handleContinueToSummary = () => {
+    console.log("Continuing to summary...");
+    setShowPreview(false);
+    setShowSummary(true);
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
@@ -133,7 +139,7 @@ export function CreateRouteDialog() {
           <RoutePreview
             formData={formData!}
             onBack={handleBack}
-            onContinue={() => setShowSummary(true)}
+            onContinue={handleContinueToSummary}
             screenshotUrl={screenshotUrl}
           />
         ) : (
