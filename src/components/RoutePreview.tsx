@@ -3,21 +3,17 @@ import CityMap from './CityMap';
 import { CreateRouteFormData } from '@/types/route';
 import { geocodeAddress } from '@/services/geocoding';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { RouteHeader } from './route/RouteHeader';
 import { RouteSummary } from './route/RouteSummary';
-import { Alert, AlertDescription } from './ui/alert';
-import { Info } from 'lucide-react';
 import { Button } from './ui/button';
 
 interface RoutePreviewProps {
   formData: CreateRouteFormData;
   onBack: () => void;
   onContinue: () => void;
-  screenshotUrl: string | null;
 }
 
-export function RoutePreview({ formData, onBack, onContinue, screenshotUrl }: RoutePreviewProps) {
+export function RoutePreview({ formData, onBack, onContinue }: RoutePreviewProps) {
   const [attractions, setAttractions] = useState<Array<{ name: string; position: [number, number] }>>([]);
   const [totalTravelTime, setTotalTravelTime] = useState(0);
   const mapRef = useRef<HTMLDivElement>(null);
@@ -81,7 +77,6 @@ export function RoutePreview({ formData, onBack, onContinue, screenshotUrl }: Ro
       <RouteHeader
         onBack={onBack}
         onCreateRoute={() => {}}
-        screenshotUrl={null}
       />
 
       <h2 className="text-2xl font-bold">Anteprima Percorso</h2>
@@ -101,14 +96,6 @@ export function RoutePreview({ formData, onBack, onContinue, screenshotUrl }: Ro
           showWalkingPath={true}
         />
       </div>
-
-      <Alert>
-        <Info className="h-4 w-4" />
-        <AlertDescription>
-          Prima di continuare, crea uno screenshot della mappa che mostri chiaramente il percorso e i punti di interesse.
-          Questo aiuterà gli altri utenti a visualizzare meglio il tuo itinerario.
-        </AlertDescription>
-      </Alert>
 
       <div className="flex justify-end">
         <Button 

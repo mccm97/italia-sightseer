@@ -1,9 +1,6 @@
 import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { CreateRouteFormData } from '@/types/route';
-import { ImageUpload } from '../ImageUpload';
-import { Alert, AlertDescription } from '../ui/alert';
-import { Info } from 'lucide-react';
 
 interface RouteCreationSummaryProps {
   formData: CreateRouteFormData;
@@ -11,8 +8,6 @@ interface RouteCreationSummaryProps {
   onCreateRoute: () => void;
   calculateTotalDuration: () => number;
   calculateTotalPrice: () => number;
-  onScreenshotUpload: (url: string) => void;
-  screenshotUrl: string | null;
 }
 
 export function RouteCreationSummary({
@@ -21,8 +16,6 @@ export function RouteCreationSummary({
   onCreateRoute,
   calculateTotalDuration,
   calculateTotalPrice,
-  onScreenshotUpload,
-  screenshotUrl
 }: RouteCreationSummaryProps) {
   return (
     <div className="space-y-4">
@@ -43,23 +36,6 @@ export function RouteCreationSummary({
               ))}
             </ul>
           </div>
-
-          <div className="space-y-2">
-            <h4 className="font-medium">Screenshot del Percorso</h4>
-            <Alert>
-              <Info className="h-4 w-4" />
-              <AlertDescription>
-                Carica lo screenshot della mappa che hai appena creato. 
-                Questo aiuterà gli altri utenti a visualizzare meglio il tuo percorso.
-              </AlertDescription>
-            </Alert>
-            <ImageUpload
-              onImageUploaded={onScreenshotUpload}
-              bucketName="screenshots"
-              currentImage={screenshotUrl}
-              className="mt-2"
-            />
-          </div>
         </CardContent>
       </Card>
       
@@ -72,7 +48,6 @@ export function RouteCreationSummary({
         </Button>
         <Button 
           onClick={onCreateRoute}
-          disabled={!screenshotUrl}
         >
           Crea Percorso
         </Button>

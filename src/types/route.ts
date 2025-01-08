@@ -26,7 +26,6 @@ export interface CreateRouteFormData {
   transportMode: 'walking' | 'public';
   image_url?: string;
   description?: string;
-  screenshotUrl?: string;
 }
 
 export interface DirectionsStep {
@@ -49,5 +48,4 @@ export interface Route {
   directions?: DirectionsStep[];
   image_url?: string;
   description?: string;
-  screenshot_url?: string;
 }

@@ -19,7 +19,6 @@ export function CreateRouteDialog() {
   const [countries, setCountries] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState('');
   const [user, setUser] = useState<any>(null);
-  const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { 
@@ -71,7 +70,6 @@ export function CreateRouteDialog() {
     if (!newOpen) {
       setShowPreview(false);
       setShowSummary(false);
-      setScreenshotUrl(null);
       setFormData(null);
     }
     setOpen(newOpen);
@@ -91,13 +89,8 @@ export function CreateRouteDialog() {
       setOpen(false);
       setShowPreview(false);
       setShowSummary(false);
-      setScreenshotUrl(null);
       setFormData(null);
     }
-  };
-
-  const handleScreenshotUpload = (url: string) => {
-    setScreenshotUrl(url);
   };
 
   const handleBack = () => {
@@ -140,7 +133,6 @@ export function CreateRouteDialog() {
             formData={formData!}
             onBack={handleBack}
             onContinue={handleContinueToSummary}
-            screenshotUrl={screenshotUrl}
           />
         ) : (
           <RouteCreationSummary
@@ -149,8 +141,6 @@ export function CreateRouteDialog() {
             onCreateRoute={handleCreateRoute}
             calculateTotalDuration={calculateTotalDuration}
             calculateTotalPrice={calculateTotalPrice}
-            onScreenshotUpload={handleScreenshotUpload}
-            screenshotUrl={screenshotUrl}
           />
         )}
       </DialogContent>
