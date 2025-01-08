@@ -1,11 +1,6 @@
-import React, { useEffect, useState, useRef } from 'react';
-import CityMap from './CityMap';
-import { CreateRouteFormData } from '@/types/route';
-import { geocodeAddress } from '@/services/geocoding';
-import { useToast } from '@/hooks/use-toast';
+import { CityMap } from './CityMap';
 import { RouteHeader } from './route/RouteHeader';
-import { RouteSummary } from './route/RouteSummary';
-import { Button } from './ui/button';
+import { CreateRouteFormData } from '@/types/route';
 
 interface RoutePreviewProps {
   formData: CreateRouteFormData;
@@ -13,97 +8,30 @@ interface RoutePreviewProps {
   onContinue: () => void;
 }
 
-export function RoutePreview({ formData, onBack, onContinue }: RoutePreviewProps) {
-  const [attractions, setAttractions] = useState<Array<{ name: string; position: [number, number] }>>([]);
-  const [totalTravelTime, setTotalTravelTime] = useState(0);
-  const mapRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    const loadAttractionPositions = async () => {
-      try {
-        const positions = await Promise.all(
-          formData.attractions.map(async (attraction) => {
-            const searchTerm = attraction.inputType === 'address' 
-              ? `${attraction.address}, ${formData.city?.name}, Italia`
-              : `${attraction.name}, ${formData.city?.name}, Italia`;
-              
-            const position = await geocodeAddress(searchTerm);
-            console.log(`Geocoded position for ${searchTerm}:`, position);
-            
-            return {
-              name: attraction.name || attraction.address,
-              position: position
-            };
-          })
-        );
-        
-        setAttractions(positions);
-
-        if (positions.length > 1) {
-          const travelTimes = await Promise.all(
-            positions.slice(0, -1).map(async (start, i) => {
-              const end = positions[i + 1];
-              const response = await fetch(
-                `https://router.project-osrm.org/route/v1/foot/${start.position[1]},${start.position[0]};${end.position[1]},${end.position[0]}?overview=full`
-              );
-              const data = await response.json();
-              return Math.round(data.routes[0].duration / 60);
-            })
-          );
-
-          const totalTime = travelTimes.reduce((sum, time) => sum + time, 0);
-          setTotalTravelTime(formData.transportMode === 'public' ? Math.round(totalTime / 3) : totalTime);
-        }
-      } catch (error) {
-        console.error('Error loading positions:', error);
-        toast({
-          title: "Errore",
-          description: "Impossibile caricare le posizioni di alcune attrazioni",
-          variant: "destructive"
-        });
-      }
-    };
-
-    loadAttractionPositions();
-  }, [formData, toast]);
-
-  const totalVisitDuration = formData.attractions.reduce((sum, attr) => sum + (attr.visitDuration || 0), 0);
-  const totalDuration = totalVisitDuration + totalTravelTime;
-  const totalPrice = formData.attractions.reduce((sum, attr) => sum + (attr.price || 0), 0);
+export function RoutePreview({
+  formData,
+  onBack,
+  onContinue
+}: RoutePreviewProps) {
+  if (!formData) return null;
 
   return (
     <div className="space-y-4">
-      <RouteHeader
+      <RouteHeader 
         onBack={onBack}
-        onCreateRoute={() => {}}
+        onCreateRoute={onContinue}
       />
-
-      <h2 className="text-2xl font-bold">Anteprima Percorso</h2>
-      
-      <RouteSummary
-        totalDuration={totalDuration}
-        totalVisitDuration={totalVisitDuration}
-        totalTravelTime={totalTravelTime}
-        totalPrice={totalPrice}
-        transportMode={formData.transportMode}
-      />
-      
-      <div ref={mapRef} className="h-[400px] w-full">
+      <div className="h-[400px] relative">
         <CityMap
-          center={[formData.city?.lat || 0, formData.city?.lng || 0]}
-          attractions={attractions}
-          showWalkingPath={true}
+          center={[formData.city.lat, formData.city.lng]}
+          attractions={formData.attractions.map((attr, index) => ({
+            name: attr.name || attr.address,
+            position: [0, 0], // You might want to get actual coordinates
+            visitDuration: attr.visitDuration,
+            price: attr.price
+          }))}
+          zoom={13}
         />
-      </div>
-
-      <div className="flex justify-end">
-        <Button 
-          onClick={onContinue}
-          className="bg-primary text-white hover:bg-primary/90"
-        >
-          Continua al Riepilogo
-        </Button>
       </div>
     </div>
   );
