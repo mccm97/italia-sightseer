@@ -32,7 +32,8 @@ export function RouteRating({ routeId, initialRating = 0 }: RouteRatingProps) {
     }
   });
 
-  const handleRatingSubmit = async () => {
+  const handleRatingSubmit = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent event from bubbling up
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
@@ -60,7 +61,7 @@ export function RouteRating({ routeId, initialRating = 0 }: RouteRatingProps) {
         variant="ghost"
         size="sm"
         onClick={(e) => {
-          e.stopPropagation();
+          e.stopPropagation(); // Prevent event from bubbling up
           setIsRatingOpen(true);
         }}
         className="flex items-center gap-1"
@@ -69,8 +70,10 @@ export function RouteRating({ routeId, initialRating = 0 }: RouteRatingProps) {
         <span>{averageRating.toFixed(1)}</span>
       </Button>
 
-      <Dialog open={isRatingOpen} onOpenChange={setIsRatingOpen}>
-        <DialogContent>
+      <Dialog open={isRatingOpen} onOpenChange={(open) => {
+        setIsRatingOpen(open);
+      }}>
+        <DialogContent onClick={(e) => e.stopPropagation()}> {/* Prevent dialog clicks from bubbling */}
           <DialogHeader>
             <DialogTitle>Valuta questo percorso</DialogTitle>
           </DialogHeader>
@@ -82,7 +85,10 @@ export function RouteRating({ routeId, initialRating = 0 }: RouteRatingProps) {
                   className={`w-8 h-8 cursor-pointer ${
                     rating <= selectedRating ? 'text-yellow-400' : 'text-gray-300'
                   }`}
-                  onClick={() => setSelectedRating(rating)}
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent event from bubbling up
+                    setSelectedRating(rating);
+                  }}
                 />
               ))}
             </div>
