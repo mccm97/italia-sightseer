@@ -113,7 +113,6 @@ export function RouteCard({
         <RouteCardMedia
           routeId={route.id}
           routeName={route.name}
-          imageUrl={route.image_url}
         />
 
         <div className="p-4">

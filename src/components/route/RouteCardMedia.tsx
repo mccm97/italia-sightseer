@@ -1,4 +1,4 @@
-import { RouteScreenshot } from '../RouteScreenshot';
+import { RouteScreenshot } from '../route/RouteScreenshot';
 import { Card, CardContent } from '../ui/card';
 
 interface RouteCardMediaProps {
