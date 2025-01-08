@@ -14,6 +14,7 @@ L.Icon.Default.mergeOptions({
 
 interface CityMapProps {
   center: [number, number];
+  zoom?: number;
   attractions?: Array<{
     name: string;
     position?: [number, number];
@@ -94,7 +95,7 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
   return null;
 };
 
-const CityMap = ({ center, attractions = [], routes = [], onRouteClick, showWalkingPath = false }: CityMapProps) => {
+const CityMap = ({ center, zoom = 13, attractions = [], routes = [], onRouteClick, showWalkingPath = false }: CityMapProps) => {
   // Filter out attractions without positions and with invalid coordinates
   const validAttractions = attractions.filter((attr): attr is { name: string; position: [number, number] } => 
     !!attr.position && isValidCoordinate(attr.position)
@@ -103,7 +104,7 @@ const CityMap = ({ center, attractions = [], routes = [], onRouteClick, showWalk
   return (
     <MapContainer
       center={center}
-      zoom={13}
+      zoom={zoom}
       className="w-full h-[500px] rounded-lg"
     >
       <TileLayer
