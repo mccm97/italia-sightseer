@@ -3,25 +3,20 @@ import CityMap from './CityMap';
 import { CreateRouteFormData } from '@/types/route';
 import { geocodeAddress } from '@/services/geocoding';
 import { useToast } from '@/hooks/use-toast';
-import html2canvas from 'html2canvas';
 import { supabase } from '@/integrations/supabase/client';
 import { RouteHeader } from './route/RouteHeader';
 import { RouteSummary } from './route/RouteSummary';
-import { ScreenshotDialog } from './route/ScreenshotDialog';
 
 interface RoutePreviewProps {
   formData: CreateRouteFormData;
   onBack: () => void;
   onCreateRoute?: () => void;
+  screenshotUrl: string | null;
 }
 
-export function RoutePreview({ formData, onBack, onCreateRoute }: RoutePreviewProps) {
+export function RoutePreview({ formData, onBack, onCreateRoute, screenshotUrl }: RoutePreviewProps) {
   const [attractions, setAttractions] = useState<Array<{ name: string; position: [number, number] }>>([]);
   const [totalTravelTime, setTotalTravelTime] = useState(0);
-  const [showScreenshotDialog, setShowScreenshotDialog] = useState(false);
-  const [screenshotTaken, setScreenshotTaken] = useState(false);
-  const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
-  const [isCapturingScreenshot, setIsCapturingScreenshot] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -74,56 +69,11 @@ export function RoutePreview({ formData, onBack, onCreateRoute }: RoutePreviewPr
     loadAttractionPositions();
   }, [formData, toast]);
 
-  const handleTakeScreenshot = async () => {
-    if (!mapRef.current) {
-      toast({
-        title: "Errore",
-        description: "Impossibile catturare lo screenshot: mappa non trovata",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsCapturingScreenshot(true);
-    try {
-      console.log('Taking screenshot...');
-      const canvas = await html2canvas(mapRef.current, {
-        useCORS: true,
-        logging: true,
-        allowTaint: true,
-      });
-      
-      canvas.toBlob(async (blob) => {
-        if (blob) {
-          const file = new File([blob], 'route-screenshot.png', { type: 'image/png' });
-          setScreenshotFile(file);
-          setScreenshotTaken(true);
-          setShowScreenshotDialog(false);
-          toast({
-            title: "Screenshot catturato",
-            description: "Lo screenshot è stato salvato correttamente",
-          });
-        } else {
-          throw new Error('Failed to create blob from canvas');
-        }
-      });
-    } catch (error) {
-      console.error('Error taking screenshot:', error);
-      toast({
-        title: "Errore",
-        description: "Impossibile catturare lo screenshot. Riprova più tardi.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsCapturingScreenshot(false);
-    }
-  };
-
   const handleCreateRoute = async () => {
-    if (!screenshotFile) {
+    if (!screenshotUrl) {
       toast({
         title: "Screenshot richiesto",
-        description: "Per favore, cattura uno screenshot del percorso prima di procedere",
+        description: "Per favore, carica uno screenshot del percorso prima di procedere",
         variant: "destructive"
       });
       return;
@@ -134,30 +84,6 @@ export function RoutePreview({ formData, onBack, onCreateRoute }: RoutePreviewPr
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      const screenshotPath = `${user.id}/${crypto.randomUUID()}.png`;
-      console.log('Uploading screenshot to:', screenshotPath);
-      
-      const { error: uploadError } = await supabase.storage
-        .from('screenshots')
-        .upload(screenshotPath, screenshotFile);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('screenshots')
-        .getPublicUrl(screenshotPath);
-
-      console.log('Screenshot public URL:', publicUrl);
-
-      const { error: dbError } = await supabase
-        .from('screenshots')
-        .insert({
-          route_id: null,
-          screenshot_url: publicUrl
-        });
-
-      if (dbError) throw dbError;
-
       onCreateRoute?.();
       
       toast({
@@ -165,10 +91,10 @@ export function RoutePreview({ formData, onBack, onCreateRoute }: RoutePreviewPr
         description: "Il percorso è stato creato con successo!",
       });
     } catch (error) {
-      console.error('Error saving screenshot:', error);
+      console.error('Error creating route:', error);
       toast({
         title: "Errore",
-        description: "Impossibile salvare lo screenshot",
+        description: "Impossibile creare il percorso",
         variant: "destructive"
       });
     }
@@ -182,9 +108,8 @@ export function RoutePreview({ formData, onBack, onCreateRoute }: RoutePreviewPr
     <div className="space-y-4">
       <RouteHeader
         onBack={onBack}
-        onScreenshotClick={() => setShowScreenshotDialog(true)}
         onCreateRoute={handleCreateRoute}
-        screenshotTaken={screenshotTaken}
+        screenshotUrl={screenshotUrl}
       />
 
       <h2 className="text-2xl font-bold">Anteprima Percorso</h2>
@@ -204,13 +129,6 @@ export function RoutePreview({ formData, onBack, onCreateRoute }: RoutePreviewPr
           showWalkingPath={true}
         />
       </div>
-
-      <ScreenshotDialog
-        open={showScreenshotDialog}
-        onOpenChange={setShowScreenshotDialog}
-        onTakeScreenshot={handleTakeScreenshot}
-        isLoading={isCapturingScreenshot}
-      />
     </div>
   );
 }
