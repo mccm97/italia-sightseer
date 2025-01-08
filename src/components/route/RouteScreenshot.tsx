@@ -16,7 +16,7 @@ export function RouteScreenshot({ routeId, routeName }: RouteScreenshotProps) {
         .from('screenshots')
         .select('screenshot_url')
         .eq('route_id', routeId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching screenshot:', error);
