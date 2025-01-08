@@ -56,10 +56,10 @@ export function useRouteManagement(selectedCity: any, toast: any) {
 
       // Parse directions with proper type checking
       const parsedDirections: DirectionsStep[] = Array.isArray(route.directions) 
-        ? route.directions.map(step => ({
-            instruction: String(step.instruction || ''),
-            distance: Number(step.distance || 0),
-            duration: Number(step.duration || 0)
+        ? route.directions.map((step: any) => ({
+            instruction: typeof step === 'object' && step !== null ? String(step.instruction || '') : '',
+            distance: typeof step === 'object' && step !== null ? Number(step.distance || 0) : 0,
+            duration: typeof step === 'object' && step !== null ? Number(step.duration || 0) : 0
           }))
         : [];
 
