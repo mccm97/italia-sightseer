@@ -1,32 +1,52 @@
 import React from 'react';
-import { Skeleton } from '../ui/skeleton';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface RouteScreenshotProps {
-  isLoading: boolean;
-  url: string | null;
+  routeId: string;
   routeName: string;
 }
 
-export function RouteScreenshot({ isLoading, url, routeName }: RouteScreenshotProps) {
+export function RouteScreenshot({ routeId, routeName }: RouteScreenshotProps) {
+  const { data: screenshot, isLoading } = useQuery({
+    queryKey: ['routeScreenshot', routeId],
+    queryFn: async () => {
+      console.log('Fetching screenshot for route:', routeId);
+      const { data, error } = await supabase
+        .from('screenshots')
+        .select('screenshot_url')
+        .eq('route_id', routeId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching screenshot:', error);
+        throw error;
+      }
+
+      console.log('Screenshot data:', data);
+      return data?.screenshot_url;
+    }
+  });
+
   if (isLoading) {
     return (
-      <div className="w-full h-48">
-        <Skeleton className="w-full h-full" />
+      <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-500 mt-4">
+        Caricamento anteprima...
       </div>
     );
   }
 
-  if (!url) {
-    return null;
-  }
-
-  return (
-    <div className="w-full h-48 relative">
+  return screenshot ? (
+    <div className="w-full h-48 relative mt-4">
       <img 
-        src={url} 
+        src={screenshot} 
         alt={`Screenshot del percorso ${routeName}`}
         className="w-full h-full object-cover"
       />
+    </div>
+  ) : (
+    <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-500 mt-4">
+      Anteprima mappa non ancora disponibile
     </div>
   );
 }

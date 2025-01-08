@@ -6,6 +6,8 @@ import { RouteCardContent } from './RouteCardContent';
 import { RouteRating } from './RouteRating';
 import { CommentSection } from './CommentSection';
 import { RouteDescription } from './RouteDescription';
+import { RouteImage } from './RouteImage';
+import { RouteScreenshot } from './RouteScreenshot';
 import { Button } from '../ui/button';
 import { MessageSquare, ListTree, ThumbsUp } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -23,7 +25,6 @@ interface RouteCardProps {
     attractions: any[];
     image_url?: string;
     description?: string;
-    screenshot_url?: string;
   };
   routeStats?: {
     likesCount: number;
@@ -56,20 +57,6 @@ export function RouteCard({
 
       if (error) throw error;
       return data;
-    }
-  });
-
-  const { data: screenshot } = useQuery({
-    queryKey: ['routeScreenshot', route.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('screenshots')
-        .select('screenshot_url')
-        .eq('route_id', route.id)
-        .single();
-
-      if (error) throw error;
-      return data?.screenshot_url;
     }
   });
 
@@ -126,19 +113,7 @@ export function RouteCard({
           creatorUsername={route.creator?.username}
         />
 
-        {route.image_url ? (
-          <div className="w-full h-48 relative">
-            <img 
-              src={route.image_url} 
-              alt={`Immagine del percorso ${route.name}`}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        ) : (
-          <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-500">
-            Immagine percorso non disponibile
-          </div>
-        )}
+        <RouteImage imageUrl={route.image_url} routeName={route.name} />
 
         <div className="p-4">
           <div className="flex items-center justify-between gap-4 mb-4">
@@ -165,19 +140,7 @@ export function RouteCard({
             summary={route.description || ''}
           />
 
-          {screenshot ? (
-            <div className="w-full h-48 relative mt-4">
-              <img 
-                src={screenshot} 
-                alt={`Screenshot del percorso ${route.name}`}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ) : (
-            <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-500 mt-4">
-              Anteprima mappa non ancora disponibile
-            </div>
-          )}
+          <RouteScreenshot routeId={route.id} routeName={route.name} />
 
           <div className="flex justify-end gap-2 mt-4">
             <Button
