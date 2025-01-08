@@ -24,7 +24,7 @@ export function RouteScreenshot({ routeId, routeName }: RouteScreenshotProps) {
       }
 
       console.log('Screenshot data:', data);
-      return data?.screenshot_url;
+      return data?.screenshot_url || null;
     }
   });
 
