@@ -5,13 +5,11 @@ import { ArrowLeft } from 'lucide-react';
 interface RouteHeaderProps {
   onBack: () => void;
   onCreateRoute: () => void;
-  screenshotUrl: string | null;
 }
 
 export function RouteHeader({ 
   onBack, 
   onCreateRoute,
-  screenshotUrl
 }: RouteHeaderProps) {
   return (
     <div className="flex items-center justify-between mb-4">

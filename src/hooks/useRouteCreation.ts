@@ -81,7 +81,7 @@ export function useRouteCreation() {
         user_id: user.id,
         transport_mode: formData.transportMode || 'walking',
         total_duration: calculateTotalDuration(),
-        total_distance: 0, // Add this line
+        total_distance: 0,
         country: formData.country,
         is_public: true
       });
@@ -96,7 +96,7 @@ export function useRouteCreation() {
           user_id: user.id,
           transport_mode: formData.transportMode || 'walking',
           total_duration: calculateTotalDuration(),
-          total_distance: 0, // Add this line
+          total_distance: 0,
           country: formData.country,
           is_public: true
         })
@@ -109,20 +109,6 @@ export function useRouteCreation() {
       }
 
       console.log('Route created successfully:', routeData);
-
-      // Save the screenshot
-      if (formData.screenshotUrl) {
-        const { error: screenshotError } = await supabase
-          .from('screenshots')
-          .insert({
-            route_id: routeData.id,
-            screenshot_url: formData.screenshotUrl
-          });
-
-        if (screenshotError) {
-          console.error('Error saving screenshot:', screenshotError);
-        }
-      }
 
       // Create attractions
       for (const [index, attr] of formData.attractions.entries()) {
@@ -157,7 +143,7 @@ export function useRouteCreation() {
   };
 }
 
-// Helper functions moved to separate file for better organization
+// Helper functions
 async function checkDuplicateRouteName(userId: string, routeName: string) {
   const { data, error } = await supabase
     .from('routes')
