@@ -29,6 +29,7 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
   useEffect(() => {
     const fetchAttractions = async () => {
       if (!cityId) {
+        console.log('No cityId provided, clearing suggestions');
         setSuggestions([]);
         return;
       }
@@ -60,7 +61,7 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
           description: "Impossibile caricare i monumenti. Riprova più tardi.",
           variant: "destructive"
         });
-        setSuggestions([]); 
+        setSuggestions([]);
       } finally {
         setIsLoading(false);
       }
@@ -133,18 +134,18 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
         onValueChange={setSearchQuery}
       />
       <CommandEmpty>
-        {searchQuery.length < 2 ? 
-          "Digita almeno 2 caratteri per cercare" : 
-          "Nessun monumento trovato"}
-      </CommandEmpty>
-      <CommandGroup>
         {isLoading ? (
           <div className="p-2 text-center text-gray-500">
             <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
             Caricamento...
           </div>
-        ) : suggestions && suggestions.length > 0 ? (
-          suggestions.map((suggestion) => (
+        ) : searchQuery.length < 2 ? 
+          "Digita almeno 2 caratteri per cercare" : 
+          "Nessun monumento trovato"}
+      </CommandEmpty>
+      {suggestions && suggestions.length > 0 && (
+        <CommandGroup>
+          {suggestions.map((suggestion) => (
             <CommandItem
               key={suggestion.name}
               value={suggestion.name}
@@ -156,9 +157,9 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
             >
               {suggestion.name}
             </CommandItem>
-          ))
-        ) : null}
-      </CommandGroup>
+          ))}
+        </CommandGroup>
+      )}
     </Command>
   );
 }
