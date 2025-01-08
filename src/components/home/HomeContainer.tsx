@@ -1,28 +1,31 @@
 import { useState, useEffect } from 'react';
-import { CitySearch } from '../CitySearch';
+import CitySearch from '../CitySearch';
 import { CityView } from '../city/CityView';
 import { useRouteManagement } from '@/hooks/useRouteManagement';
 import { RoutePreviewDialog } from './RoutePreviewDialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { Route } from '@/types/route';
 
 export function HomeContainer() {
   const [selectedCity, setSelectedCity] = useState<any>(null);
-  const [selectedRoute, setSelectedRoute] = useState<any>(null);
+  const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
   const [showRoutePreview, setShowRoutePreview] = useState(false);
   const { toast } = useToast();
 
   const {
     cityRoutes,
     isLoadingRoutes,
+    routeSummary,
+    handleRouteClick,
     fetchRoutesForCity,
-    clearRoutes,
-  } = useRouteManagement();
+    clearRoutes
+  } = useRouteManagement(selectedCity, toast);
 
   useEffect(() => {
     if (selectedCity) {
       console.log('Fetching routes for city:', selectedCity.id);
-      fetchRoutesForCity(selectedCity.id);
+      fetchRoutesForCity();
     } else {
       clearRoutes();
     }
@@ -36,7 +39,6 @@ export function HomeContainer() {
     }
 
     try {
-      // Fetch city image
       console.log('Fetching image for city:', city.id);
       const { data: imageData, error: imageError } = await supabase
         .from('city_images')
@@ -66,11 +68,6 @@ export function HomeContainer() {
     }
   };
 
-  const handleRouteSelect = (route: any) => {
-    setSelectedRoute(route);
-    setShowRoutePreview(true);
-  };
-
   const handleCloseRoutePreview = () => {
     setShowRoutePreview(false);
     setSelectedRoute(null);
@@ -90,15 +87,16 @@ export function HomeContainer() {
             setSelectedCity(null);
             clearRoutes();
           }}
-          onRouteSelect={handleRouteSelect}
+          onRouteClick={handleRouteClick}
         />
       )}
 
       <RoutePreviewDialog
-        open={showRoutePreview}
-        onOpenChange={setShowRoutePreview}
-        route={selectedRoute}
-        onClose={handleCloseRoutePreview}
+        showRoutePreview={showRoutePreview}
+        setShowRoutePreview={setShowRoutePreview}
+        selectedRoute={selectedRoute}
+        selectedCity={selectedCity}
+        routeSummary={routeSummary}
       />
     </div>
   );

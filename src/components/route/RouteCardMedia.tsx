@@ -1,18 +1,19 @@
-import React from 'react';
-import { RouteImage } from './RouteImage';
-import { RouteScreenshot } from './RouteScreenshot';
+import { RouteScreenshot } from '../RouteScreenshot';
+import { Card, CardContent } from '../ui/card';
 
 interface RouteCardMediaProps {
   routeId: string;
-  routeName: string;
-  imageUrl?: string;
+  routeName?: string;
 }
 
-export function RouteCardMedia({ routeId, routeName, imageUrl }: RouteCardMediaProps) {
+export function RouteCardMedia({ routeId }: RouteCardMediaProps) {
   return (
-    <div className="space-y-4">
-      <RouteImage imageUrl={imageUrl} routeName={routeName} />
-      <RouteScreenshot routeId={routeId} routeName={routeName} />
-    </div>
+    <Card>
+      <CardContent className="p-0">
+        <div className="relative aspect-[16/9] overflow-hidden rounded-t-lg">
+          <RouteScreenshot routeId={routeId} />
+        </div>
+      </CardContent>
+    </Card>
   );
 }
