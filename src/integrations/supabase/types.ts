@@ -334,6 +334,7 @@ export type Database = {
           city_id: string
           country: string | null
           created_at: string
+          description: string | null
           directions: Json | null
           id: string
           image_url: string | null
@@ -348,6 +349,7 @@ export type Database = {
           city_id: string
           country?: string | null
           created_at?: string
+          description?: string | null
           directions?: Json | null
           id?: string
           image_url?: string | null
@@ -362,6 +364,7 @@ export type Database = {
           city_id?: string
           country?: string | null
           created_at?: string
+          description?: string | null
           directions?: Json | null
           id?: string
           image_url?: string | null
