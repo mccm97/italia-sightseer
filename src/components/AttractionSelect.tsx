@@ -60,7 +60,7 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
           description: "Impossibile caricare i monumenti. Riprova più tardi.",
           variant: "destructive"
         });
-        setSuggestions([]); // Ensure suggestions is always an array
+        setSuggestions([]); 
       } finally {
         setIsLoading(false);
       }
@@ -104,7 +104,7 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
           description: "Impossibile caricare i suggerimenti. Riprova più tardi.",
           variant: "destructive"
         });
-        setSuggestions([]); // Ensure suggestions is always an array
+        setSuggestions([]);
       } finally {
         setIsLoading(false);
       }
@@ -126,7 +126,7 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
   }
 
   return (
-    <Command className="rounded-lg border shadow-md" shouldFilter={false}>
+    <Command className="rounded-lg border shadow-md">
       <CommandInput
         placeholder="Cerca monumento..."
         value={searchQuery}
