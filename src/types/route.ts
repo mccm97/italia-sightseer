@@ -48,4 +48,5 @@ export interface Route {
   directions?: DirectionsStep[];
   image_url?: string;
   description?: string;
+  city_id?: string;
 }
