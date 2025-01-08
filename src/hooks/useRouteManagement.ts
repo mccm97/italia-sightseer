@@ -40,26 +40,20 @@ export function useRouteManagement(selectedCity: any, toast: any) {
 
     // Transform the data to match the Route type with proper type checking
     return routes?.map(route => {
-      const transformedAttractions: Attraction[] = route.route_attractions?.map((ra: any) => {
-        // Ensure position is always a tuple of [number, number]
-        const position: [number, number] = [
+      const transformedAttractions: Attraction[] = route.route_attractions?.map((ra: any) => ({
+        name: String(ra.attraction.name),
+        visitDuration: Number(ra.attraction.visit_duration),
+        price: Number(ra.attraction.price) || 0,
+        position: [
           Number(ra.attraction.lat) || 0,
           Number(ra.attraction.lng) || 0
-        ];
-
-        return {
-          name: String(ra.attraction.name),
-          position,
-          visitDuration: Number(ra.attraction.visit_duration),
-          price: Number(ra.attraction.price) || 0
-        };
-      }) || [];
+        ]
+      })) || [];
 
       // Parse directions from JSON to DirectionsStep[]
       let parsedDirections: DirectionsStep[] = [];
       if (route.directions) {
         try {
-          // If directions is a string, parse it, otherwise use it directly
           const directionsData = typeof route.directions === 'string' 
             ? JSON.parse(route.directions) 
             : route.directions;
@@ -85,7 +79,9 @@ export function useRouteManagement(selectedCity: any, toast: any) {
         creator: route.creator,
         attractions: transformedAttractions,
         isPublic: Boolean(route.is_public),
-        directions: parsedDirections
+        directions: parsedDirections,
+        description: route.description,
+        image_url: route.image_url
       } satisfies Route;
     }) || [];
   }, [selectedCity, toast]);

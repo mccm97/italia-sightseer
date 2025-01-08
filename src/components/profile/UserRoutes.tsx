@@ -18,7 +18,11 @@ export function UserRoutes() {
           *,
           cities(name),
           route_likes(count),
-          route_ratings(rating)
+          route_ratings(rating),
+          route_attractions(
+            *,
+            attraction:attractions(*)
+          )
         `)
         .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
 
@@ -31,7 +35,14 @@ export function UserRoutes() {
       return routes as (DbRoute & { 
         cities: { name: string },
         route_likes: { count: number }[],
-        route_ratings: { rating: number }[]
+        route_ratings: { rating: number }[],
+        route_attractions: {
+          attraction: {
+            name: string;
+            visit_duration: number;
+            price: number;
+          }
+        }[]
       })[];
     },
   });
@@ -50,12 +61,18 @@ export function UserRoutes() {
               ? ratings.reduce((acc, curr) => acc + curr.rating, 0) / ratings.length
               : 0;
 
+            const attractions = route.route_attractions?.map(ra => ({
+              name: ra.attraction.name,
+              visitDuration: ra.attraction.visit_duration,
+              price: ra.attraction.price
+            })) || [];
+
             return (
               <div key={route.id} className="relative">
                 <RouteCard
                   route={{
                     ...route,
-                    attractions: [],
+                    attractions,
                     creator: { username: 'Tu' }
                   }}
                   routeStats={{
