@@ -38,24 +38,45 @@ export function useRouteManagement(selectedCity: any, toast: any) {
 
     console.log('Routes fetched:', routes?.length || 0, 'routes found');
 
-    return routes?.map(route => ({
-      id: route.id,
-      cityName: selectedCity.name,
-      name: route.name,
-      duration: route.total_duration,
-      total_duration: route.total_duration,
-      creator: route.creator,
-      attractions: route.route_attractions?.map((ra: any) => ({
-        name: ra.attraction.name,
-        position: [ra.attraction.lat, ra.attraction.lng],
-        visitDuration: ra.attraction.visit_duration,
-        price: ra.attraction.price || 0
-      })) || [],
-      isPublic: route.is_public,
-      directions: route.directions || [],
-      image_url: route.image_url,
-      description: route.description
-    })) || [];
+    return routes?.map(route => {
+      // Transform attractions with proper type checking
+      const transformedAttractions: Attraction[] = route.route_attractions?.map((ra: any) => {
+        // Ensure position is always a tuple of [number, number]
+        const lat = Number(ra.attraction.lat) || 0;
+        const lng = Number(ra.attraction.lng) || 0;
+        const position: [number, number] = [lat, lng];
+
+        return {
+          name: String(ra.attraction.name),
+          position,
+          visitDuration: Number(ra.attraction.visit_duration),
+          price: Number(ra.attraction.price) || 0
+        };
+      }) || [];
+
+      // Parse directions with proper type checking
+      const parsedDirections: DirectionsStep[] = Array.isArray(route.directions) 
+        ? route.directions.map(step => ({
+            instruction: String(step.instruction || ''),
+            distance: Number(step.distance || 0),
+            duration: Number(step.duration || 0)
+          }))
+        : [];
+
+      return {
+        id: route.id,
+        cityName: selectedCity.name,
+        name: route.name,
+        duration: route.total_duration,
+        total_duration: route.total_duration,
+        creator: route.creator,
+        attractions: transformedAttractions,
+        isPublic: Boolean(route.is_public),
+        directions: parsedDirections,
+        image_url: route.image_url,
+        description: route.description
+      } satisfies Route;
+    }) || [];
   }, [selectedCity, toast]);
 
   const clearRoutes = useCallback(() => {
