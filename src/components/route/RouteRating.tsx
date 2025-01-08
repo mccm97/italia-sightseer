@@ -17,26 +17,63 @@ export function RouteRating({ routeId, initialRating = 0 }: RouteRatingProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
+  // First verify the route exists
+  const { data: routeExists } = useQuery({
+    queryKey: ['routeExists', routeId],
+    queryFn: async () => {
+      console.log('Checking if route exists:', routeId);
+      const { data, error } = await supabase
+        .from('routes')
+        .select('id')
+        .eq('id', routeId)
+        .maybeSingle();
+      
+      if (error) {
+        console.error('Error checking route:', error);
+        return false;
+      }
+      
+      return !!data;
+    }
+  });
+
   const { data: averageRating = initialRating } = useQuery({
     queryKey: ['routeRating', routeId],
     queryFn: async () => {
+      console.log('Fetching ratings for route:', routeId);
       const { data, error } = await supabase
         .from('route_ratings')
         .select('rating')
         .eq('route_id', routeId);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching ratings:', error);
+        throw error;
+      }
       
       if (!data?.length) return 0;
       
       const average = data.reduce((acc, curr) => acc + curr.rating, 0) / data.length;
       return Number(average.toFixed(1));
-    }
+    },
+    enabled: routeExists
   });
 
   const handleRatingSubmit = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent event from bubbling up
+    e.stopPropagation();
+    
     try {
+      // Check if route exists
+      if (!routeExists) {
+        console.error('Cannot rate non-existent route:', routeId);
+        toast({
+          title: "Errore",
+          description: "Questo percorso non esiste più",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast({
@@ -47,6 +84,12 @@ export function RouteRating({ routeId, initialRating = 0 }: RouteRatingProps) {
         return;
       }
 
+      console.log('Submitting rating:', {
+        route_id: routeId,
+        user_id: user.id,
+        rating: selectedRating
+      });
+
       const { error } = await supabase
         .from('route_ratings')
         .upsert(
@@ -56,8 +99,7 @@ export function RouteRating({ routeId, initialRating = 0 }: RouteRatingProps) {
             rating: selectedRating
           },
           {
-            onConflict: 'route_id,user_id',
-            ignoreDuplicates: false
+            onConflict: 'route_id,user_id'
           }
         );
 
@@ -93,7 +135,7 @@ export function RouteRating({ routeId, initialRating = 0 }: RouteRatingProps) {
         variant="ghost"
         size="sm"
         onClick={(e) => {
-          e.stopPropagation(); // Prevent event from bubbling up
+          e.stopPropagation();
           setIsRatingOpen(true);
         }}
         className="flex items-center gap-1"
@@ -105,7 +147,7 @@ export function RouteRating({ routeId, initialRating = 0 }: RouteRatingProps) {
       <Dialog open={isRatingOpen} onOpenChange={(open) => {
         setIsRatingOpen(open);
       }}>
-        <DialogContent onClick={(e) => e.stopPropagation()}> {/* Prevent dialog clicks from bubbling */}
+        <DialogContent onClick={(e) => e.stopPropagation()}>
           <DialogHeader>
             <DialogTitle>Valuta questo percorso</DialogTitle>
           </DialogHeader>
@@ -118,7 +160,7 @@ export function RouteRating({ routeId, initialRating = 0 }: RouteRatingProps) {
                     rating <= selectedRating ? 'text-yellow-400' : 'text-gray-300'
                   }`}
                   onClick={(e) => {
-                    e.stopPropagation(); // Prevent event from bubbling up
+                    e.stopPropagation();
                     setSelectedRating(rating);
                   }}
                 />
