@@ -1,104 +1,85 @@
-import React, { useState, useEffect } from 'react';
-import { Header } from '@/components/layout/Header';
-import { HomeHero } from '@/components/home/HomeHero';
-import { AboutSection } from '@/components/home/AboutSection';
-import { CitySearchSection } from '@/components/home/CitySearchSection';
-import { CityView } from '@/components/city/CityView';
-import { CreateRouteDialog } from '@/components/CreateRouteDialog';
-import { DirectionsDialog } from '@/components/route/DirectionsDialog';
-import { RoutePreviewDialog } from '@/components/home/RoutePreviewDialog';
-import { MainMenu } from '@/components/MainMenu';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { Route, DirectionsStep } from '@/types/route';
+import { useState, useEffect } from 'react';
+import { CitySearch } from '../CitySearch';
+import { CityView } from '../city/CityView';
 import { useRouteManagement } from '@/hooks/useRouteManagement';
-
-interface City {
-  id?: string;
-  name: string;
-  lat: number;
-  lng: number;
-  country?: string;
-}
+import { RoutePreviewDialog } from './RoutePreviewDialog';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export function HomeContainer() {
-  const [selectedCity, setSelectedCity] = useState<City | null>(null);
-  const [showDirections, setShowDirections] = useState(false);
-  const [selectedRouteDirections, setSelectedRouteDirections] = useState<DirectionsStep[]>([]);
-  const [user, setUser] = useState<any>(null);
+  const [selectedCity, setSelectedCity] = useState<any>(null);
+  const [selectedRoute, setSelectedRoute] = useState<any>(null);
+  const [showRoutePreview, setShowRoutePreview] = useState(false);
   const { toast } = useToast();
-  const { 
-    selectedRoute,
-    showRoutePreview,
-    setShowRoutePreview,
+
+  const {
     cityRoutes,
     isLoadingRoutes,
-    routeSummary,
-    handleRouteClick
-  } = useRouteManagement(selectedCity, toast);
+    fetchRoutesForCity,
+    clearRoutes,
+  } = useRouteManagement();
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-        if (authError) {
-          console.error('Error fetching auth user:', authError);
-          return;
-        }
-        
-        if (authUser) {
-          try {
-            const { data: profile, error: profileError } = await supabase
-              .from('profiles')
-              .select('username, avatar_url')
-              .eq('id', authUser.id)
-              .maybeSingle();
-            
-            if (profileError) {
-              console.error('Error fetching profile:', profileError);
-              toast({
-                title: "Errore",
-                description: "Impossibile caricare il profilo utente",
-                variant: "destructive",
-              });
-              return;
-            }
-            
-            if (profile) {
-              setUser({ ...authUser, ...profile });
-            } else {
-              setUser(authUser);
-              console.log('No profile found for user, using auth data only');
-            }
-          } catch (profileFetchError) {
-            console.error('Unexpected error fetching profile:', profileFetchError);
-            setUser(authUser);
-          }
-        }
-      } catch (error) {
-        console.error('Unexpected error during user fetch:', error);
-        toast({
-          title: "Errore",
-          description: "Si è verificato un errore durante il caricamento dei dati utente",
-          variant: "destructive",
-        });
-      }
-    };
+    if (selectedCity) {
+      console.log('Fetching routes for city:', selectedCity.id);
+      fetchRoutesForCity(selectedCity.id);
+    } else {
+      clearRoutes();
+    }
+  }, [selectedCity, fetchRoutesForCity, clearRoutes]);
 
-    fetchUser();
-  }, [toast]);
+  const handleCitySelect = async (city: any) => {
+    if (!city) {
+      setSelectedCity(null);
+      clearRoutes();
+      return;
+    }
+
+    try {
+      // Fetch city image
+      console.log('Fetching image for city:', city.id);
+      const { data: imageData, error: imageError } = await supabase
+        .from('city_images')
+        .select('image_url')
+        .eq('city_id', city.id)
+        .maybeSingle();
+
+      console.log('City image query result:', imageData);
+
+      if (imageError) {
+        console.error('Error fetching city image:', imageError);
+        throw imageError;
+      }
+
+      setSelectedCity({
+        ...city,
+        image_url: imageData?.image_url
+      });
+
+    } catch (error) {
+      console.error('Error in city selection:', error);
+      toast({
+        title: "Errore",
+        description: "Impossibile caricare i dettagli della città",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleRouteSelect = (route: any) => {
+    setSelectedRoute(route);
+    setShowRoutePreview(true);
+  };
+
+  const handleCloseRoutePreview = () => {
+    setShowRoutePreview(false);
+    setSelectedRoute(null);
+  };
 
   return (
-    <div className="container mx-auto p-4 space-y-6">
-      <MainMenu />
-      <Header user={user} />
-      <HomeHero />
-      <AboutSection />
-
+    <div className="container mx-auto px-4 py-8">
       {!selectedCity ? (
-        <div className="flex justify-center">
-          <CitySearchSection setSelectedCity={setSelectedCity} />
-        </div>
+        <CitySearch onCitySelect={handleCitySelect} />
       ) : (
         <CityView
           city={selectedCity}
@@ -107,25 +88,17 @@ export function HomeContainer() {
           selectedRoute={selectedRoute}
           onBackClick={() => {
             setSelectedCity(null);
+            clearRoutes();
           }}
-          onRouteClick={handleRouteClick}
+          onRouteSelect={handleRouteSelect}
         />
       )}
 
-      <CreateRouteDialog />
-
       <RoutePreviewDialog
-        showRoutePreview={showRoutePreview}
-        setShowRoutePreview={setShowRoutePreview}
-        selectedRoute={selectedRoute}
-        selectedCity={selectedCity}
-        routeSummary={routeSummary}
-      />
-
-      <DirectionsDialog
-        isOpen={showDirections}
-        onClose={() => setShowDirections(false)}
-        directions={selectedRouteDirections}
+        open={showRoutePreview}
+        onOpenChange={setShowRoutePreview}
+        route={selectedRoute}
+        onClose={handleCloseRoutePreview}
       />
     </div>
   );

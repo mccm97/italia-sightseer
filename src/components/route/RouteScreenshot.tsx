@@ -1,56 +1,57 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface RouteScreenshotProps {
   routeId: string;
-  routeName: string;
 }
 
-export function RouteScreenshot({ routeId, routeName }: RouteScreenshotProps) {
-  const { data: screenshot, isLoading } = useQuery({
-    queryKey: ['routeScreenshot', routeId],
-    queryFn: async () => {
-      console.log('Fetching screenshot for route:', routeId);
-      const { data, error } = await supabase
-        .from('screenshots')
-        .select('screenshot_url')
-        .eq('route_id', routeId)
-        .maybeSingle();
+export function RouteScreenshot({ routeId }: RouteScreenshotProps) {
+  const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-      if (error) {
-        console.error('Error fetching screenshot:', error);
-        return null;
+  useEffect(() => {
+    const fetchScreenshot = async () => {
+      try {
+        console.log('Fetching screenshot for route:', routeId);
+        const { data, error } = await supabase
+          .from('screenshots')
+          .select('screenshot_url')
+          .eq('route_id', routeId)
+          .maybeSingle();
+
+        console.log('Screenshot query result:', data);
+
+        if (error) {
+          console.error('Error fetching screenshot:', error);
+          throw error;
+        }
+
+        setScreenshotUrl(data?.screenshot_url || null);
+      } catch (error) {
+        console.error('Error in screenshot fetch:', error);
+      } finally {
+        setIsLoading(false);
       }
+    };
 
-      console.log('Screenshot data:', data);
-      return data?.screenshot_url || null;
+    if (routeId) {
+      fetchScreenshot();
     }
-  });
+  }, [routeId]);
 
   if (isLoading) {
-    return (
-      <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-500">
-        Caricamento anteprima...
-      </div>
-    );
+    return <div>Caricamento anteprima...</div>;
   }
 
-  if (!screenshot) {
-    return (
-      <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-500">
-        Anteprima mappa non ancora disponibile
-      </div>
-    );
+  if (!screenshotUrl) {
+    return <div>Anteprima mappa non disponibile</div>;
   }
 
   return (
-    <div className="w-full h-48 relative">
-      <img 
-        src={screenshot} 
-        alt={`Screenshot del percorso ${routeName}`}
-        className="w-full h-full object-cover"
-      />
-    </div>
+    <img
+      src={screenshotUrl}
+      alt="Anteprima del percorso"
+      className="w-full h-auto rounded-lg"
+    />
   );
 }
