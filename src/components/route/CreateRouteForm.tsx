@@ -4,11 +4,12 @@ import { CreateRouteFormData } from '@/types/route';
 import { AttractionInput } from '../AttractionInput';
 import { CountrySelector } from './CountrySelector';
 import { CitySelector } from './CitySelector';
-import { FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
+import { FormField, FormItem, FormLabel, FormControl, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useEffect } from 'react';
 import { ImageUpload } from '../ImageUpload';
+import { Textarea } from '@/components/ui/textarea';
 
 interface CreateRouteFormProps {
   onSubmit: (data: CreateRouteFormData) => void;
@@ -33,6 +34,7 @@ export function CreateRouteForm({
       country: '',
       attractions: [{ name: '', address: '', inputType: 'name', visitDuration: 0, price: 0 }],
       image_url: '',
+      description: '',
     }
   });
 
@@ -74,6 +76,26 @@ export function CreateRouteForm({
               <FormControl>
                 <Input placeholder="Inserisci il nome del percorso" {...field} />
               </FormControl>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Descrizione del Percorso</FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="Descrivi il tuo percorso... Cosa rende speciale questa esperienza? Quali emozioni può suscitare?" 
+                  className="min-h-[100px]"
+                  {...field} 
+                />
+              </FormControl>
+              <FormDescription>
+                Una buona descrizione può attirare più visitatori! Racconta cosa rende unico questo percorso e perché gli altri dovrebbero provarlo.
+              </FormDescription>
             </FormItem>
           )}
         />

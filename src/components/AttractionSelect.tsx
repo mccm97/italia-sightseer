@@ -1,18 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { searchGeoapifyPlaces } from '../services/externalAttractions';
-import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
+import { Card } from './ui/card';
 
 interface AttractionSelectProps {
   value: string;
@@ -25,61 +18,23 @@ interface AttractionSelectProps {
 interface Attraction {
   name: string;
   distance?: string;
-  source: 'local' | 'geoapify';
+  source: 'local';
 }
 
-export function AttractionSelect({ value, onChange, inputType, cityId, cityName }: AttractionSelectProps) {
+export function AttractionSelect({ value, onChange, inputType, cityId }: AttractionSelectProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  // Increased debounce delay to 800ms to allow for more typing
-  const debouncedSearch = useDebounce(searchQuery, 800);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const debouncedSearch = useDebounce(searchQuery, 300);
   const [suggestions, setSuggestions] = useState<Attraction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  // Fetch attractions when city changes or on mount
   useEffect(() => {
     const fetchAttractions = async () => {
-      if (!cityId) return;
-      
-      setIsLoading(true);
-      try {
-        console.log('Fetching initial attractions for city:', cityId);
-        const { data: localAttractions, error: localError } = await supabase
-          .from('attractions')
-          .select('name')
-          .eq('city_id', cityId);
-
-        if (localError) {
-          console.error('Error fetching local attractions:', localError);
-          throw localError;
-        }
-
-        const localResults = (localAttractions || []).map(attr => ({
-          name: attr.name,
-          source: 'local' as const
-        }));
-
-        setSuggestions(localResults);
-      } catch (error) {
-        console.error('Error fetching initial attractions:', error);
-        toast({
-          title: "Errore",
-          description: "Impossibile caricare i monumenti. Riprova più tardi.",
-          variant: "destructive"
-        });
-      } finally {
-        setIsLoading(false);
+      if (!cityId || !debouncedSearch || debouncedSearch.length < 2) {
+        setSuggestions([]);
+        return;
       }
-    };
-
-    fetchAttractions();
-  }, [cityId, toast]);
-
-  // Update suggestions when user types (using debounced search)
-  useEffect(() => {
-    const fetchSuggestions = async () => {
-      // Only fetch if we have at least 2 characters
-      if (!cityId || !cityName || !debouncedSearch || debouncedSearch.length < 2) return;
       
       setIsLoading(true);
       try {
@@ -88,33 +43,20 @@ export function AttractionSelect({ value, onChange, inputType, cityId, cityName 
           .from('attractions')
           .select('name')
           .eq('city_id', cityId)
-          .ilike('name', `%${debouncedSearch}%`);
+          .ilike('name', `%${debouncedSearch}%`)
+          .limit(5);
 
         if (localError) {
           console.error('Error fetching local attractions:', localError);
           throw localError;
         }
 
-        const geoapifyAttractions = await searchGeoapifyPlaces(cityName, debouncedSearch);
-
-        const localResults = (localAttractions || []).map(attr => ({
+        const results = (localAttractions || []).map(attr => ({
           name: attr.name,
           source: 'local' as const
         }));
 
-        const geoapifyResults = geoapifyAttractions.map(attr => ({
-          name: attr.name,
-          distance: attr.distance,
-          source: 'geoapify' as const
-        }));
-
-        const combined = [...localResults, ...geoapifyResults];
-        const uniqueAttractions = Array.from(
-          new Map(combined.map(item => [item.name, item])).values()
-        );
-
-        console.log('Combined unique attractions:', uniqueAttractions);
-        setSuggestions(uniqueAttractions);
+        setSuggestions(results);
       } catch (error) {
         console.error('Error fetching suggestions:', error);
         toast({
@@ -127,8 +69,8 @@ export function AttractionSelect({ value, onChange, inputType, cityId, cityName 
       }
     };
 
-    fetchSuggestions();
-  }, [debouncedSearch, cityId, cityName, toast]);
+    fetchAttractions();
+  }, [debouncedSearch, cityId, toast]);
 
   if (inputType === 'address') {
     return (
@@ -143,46 +85,53 @@ export function AttractionSelect({ value, onChange, inputType, cityId, cityName 
   }
 
   return (
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className="w-full">
-        <SelectValue placeholder="Seleziona monumento" />
-      </SelectTrigger>
-      <SelectContent className="w-[300px]">
-        <div className="p-2">
-          <Input
-            type="text"
-            placeholder="Cerca..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="mb-2"
-          />
-        </div>
-        <ScrollArea className="h-[200px]">
-          {isLoading ? (
-            <div className="p-2 text-center text-gray-500">
-              <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
-              Caricamento...
-            </div>
-          ) : suggestions.length > 0 ? (
-            suggestions.map((suggestion) => (
-              <SelectItem key={suggestion.name} value={suggestion.name}>
-                <div className="flex justify-between items-center">
-                  <span>{suggestion.name}</span>
-                  <span className="text-sm text-gray-500">
-                    {suggestion.source === 'local' ? '(DB)' : suggestion.distance}
-                  </span>
-                </div>
-              </SelectItem>
-            ))
-          ) : (
-            <div className="p-2 text-center text-gray-500">
-              {searchQuery.length < 2 ? 
-                "Digita almeno 2 caratteri per cercare" : 
-                searchQuery ? "Nessun risultato trovato" : "Nessun monumento disponibile"}
-            </div>
-          )}
-        </ScrollArea>
-      </SelectContent>
-    </Select>
+    <div className="relative w-full">
+      <Input
+        type="text"
+        value={searchQuery}
+        onChange={(e) => {
+          setSearchQuery(e.target.value);
+          setShowSuggestions(true);
+        }}
+        onFocus={() => setShowSuggestions(true)}
+        placeholder="Cerca un monumento..."
+        className="w-full"
+      />
+      
+      {showSuggestions && searchQuery && (
+        <Card className="absolute z-50 w-full mt-1 shadow-lg">
+          <ScrollArea className="max-h-[200px]">
+            {isLoading ? (
+              <div className="p-2 text-center text-gray-500">
+                <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
+                Caricamento...
+              </div>
+            ) : suggestions.length > 0 ? (
+              <div className="p-2 space-y-1">
+                {suggestions.map((suggestion) => (
+                  <button
+                    key={suggestion.name}
+                    className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-md"
+                    onClick={() => {
+                      onChange(suggestion.name);
+                      setSearchQuery(suggestion.name);
+                      setShowSuggestions(false);
+                    }}
+                  >
+                    {suggestion.name}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="p-2 text-center text-gray-500">
+                {searchQuery.length < 2 ? 
+                  "Digita almeno 2 caratteri per cercare" : 
+                  "Nessun monumento trovato"}
+              </div>
+            )}
+          </ScrollArea>
+        </Card>
+      )}
+    </div>
   );
 }
