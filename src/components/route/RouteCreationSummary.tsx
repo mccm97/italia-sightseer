@@ -1,6 +1,9 @@
 import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { CreateRouteFormData } from '@/types/route';
+import { ImageUpload } from '../ImageUpload';
+import { Alert, AlertDescription } from '../ui/alert';
+import { Info } from 'lucide-react';
 
 interface RouteCreationSummaryProps {
   formData: CreateRouteFormData;
@@ -8,6 +11,8 @@ interface RouteCreationSummaryProps {
   onPreview: () => void;
   calculateTotalDuration: () => number;
   calculateTotalPrice: () => number;
+  onScreenshotUpload: (url: string) => void;
+  screenshotUrl?: string;
 }
 
 export function RouteCreationSummary({
@@ -15,18 +20,20 @@ export function RouteCreationSummary({
   onBack,
   onPreview,
   calculateTotalDuration,
-  calculateTotalPrice
+  calculateTotalPrice,
+  onScreenshotUpload,
+  screenshotUrl
 }: RouteCreationSummaryProps) {
   return (
     <div className="space-y-4">
       <Card>
-        <CardContent className="pt-6 space-y-2">
+        <CardContent className="pt-6 space-y-4">
           <h3 className="font-semibold text-lg">Riepilogo Percorso</h3>
           <p><strong>Nome:</strong> {formData?.name}</p>
           <p><strong>Città:</strong> {formData?.city?.name}</p>
           <p><strong>Durata Totale:</strong> {calculateTotalDuration()} minuti</p>
           <p><strong>Costo Totale:</strong> €{calculateTotalPrice().toFixed(2)}</p>
-          <div className="mt-4">
+          <div>
             <h4 className="font-medium">Attrazioni:</h4>
             <ul className="list-disc pl-5 mt-2">
               {formData?.attractions.map((attr, index) => (
@@ -35,6 +42,24 @@ export function RouteCreationSummary({
                 </li>
               ))}
             </ul>
+          </div>
+
+          <div className="space-y-2">
+            <h4 className="font-medium">Screenshot del Percorso</h4>
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                Per aiutare gli altri utenti a visualizzare meglio il tuo percorso, 
+                carica uno screenshot della mappa che mostri chiaramente il tragitto e i punti di interesse.
+                Puoi creare lo screenshot utilizzando gli strumenti del tuo sistema operativo.
+              </AlertDescription>
+            </Alert>
+            <ImageUpload
+              onImageUploaded={onScreenshotUpload}
+              bucketName="screenshots"
+              currentImage={screenshotUrl}
+              className="mt-2"
+            />
           </div>
         </CardContent>
       </Card>
@@ -46,7 +71,10 @@ export function RouteCreationSummary({
         >
           Modifica
         </Button>
-        <Button onClick={onPreview}>
+        <Button 
+          onClick={onPreview}
+          disabled={!screenshotUrl}
+        >
           Visualizza su Mappa
         </Button>
       </div>
