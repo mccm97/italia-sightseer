@@ -1,4 +1,4 @@
-import { CityMap } from './CityMap';
+import CityMap from './CityMap';
 import { RouteHeader } from './route/RouteHeader';
 import { CreateRouteFormData } from '@/types/route';
 
