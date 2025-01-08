@@ -10,7 +10,7 @@ import { RouteImage } from './RouteImage';
 import { RouteScreenshot } from './RouteScreenshot';
 import { Button } from '../ui/button';
 import { MessageSquare, ListTree, ThumbsUp } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -42,6 +42,7 @@ export function RouteCard({
   const [showDescription, setShowDescription] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: comments = [] } = useQuery({
     queryKey: ['routeComments', route.id],
@@ -56,6 +57,29 @@ export function RouteCard({
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      return data;
+    }
+  });
+
+  // Check if the current user has liked this route
+  const { data: userLike } = useQuery({
+    queryKey: ['routeLike', route.id],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data, error } = await supabase
+        .from('route_likes')
+        .select('id')
+        .eq('route_id', route.id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error checking like status:', error);
+        return null;
+      }
+
       return data;
     }
   });
@@ -78,22 +102,40 @@ export function RouteCard({
     }
 
     try {
-      const { error } = await supabase
-        .from('route_likes')
-        .insert({ route_id: route.id, user_id: user.id });
+      if (userLike) {
+        // If already liked, remove the like
+        const { error } = await supabase
+          .from('route_likes')
+          .delete()
+          .eq('route_id', route.id)
+          .eq('user_id', user.id);
 
-      if (error) {
-        if (error.code === '23505') {
-          // If already liked, remove the like
-          await supabase
-            .from('route_likes')
-            .delete()
-            .eq('route_id', route.id)
-            .eq('user_id', user.id);
-        } else {
-          throw error;
-        }
+        if (error) throw error;
+
+        toast({
+          title: "Mi piace rimosso",
+          description: "Hai rimosso il mi piace dal percorso"
+        });
+      } else {
+        // If not liked, add the like
+        const { error } = await supabase
+          .from('route_likes')
+          .insert({
+            route_id: route.id,
+            user_id: user.id
+          });
+
+        if (error) throw error;
+
+        toast({
+          title: "Mi piace aggiunto",
+          description: "Hai messo mi piace al percorso"
+        });
       }
+
+      // Invalidate queries to refresh the UI
+      await queryClient.invalidateQueries({ queryKey: ['routeLike', route.id] });
+      await queryClient.invalidateQueries({ queryKey: ['routeLikes', route.id] });
     } catch (error) {
       console.error('Error toggling like:', error);
       toast({
@@ -125,7 +167,7 @@ export function RouteCard({
               variant="ghost"
               size="sm"
               onClick={handleLikeClick}
-              className="flex items-center gap-1"
+              className={`flex items-center gap-1 ${userLike ? 'text-red-500' : ''}`}
             >
               <ThumbsUp className="w-4 h-4" />
               <span>{routeStats?.likesCount || 0}</span>
