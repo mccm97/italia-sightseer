@@ -126,7 +126,7 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
   }
 
   return (
-    <Command className="rounded-lg border shadow-md">
+    <Command className="rounded-lg border shadow-md" shouldFilter={false}>
       <CommandInput
         placeholder="Cerca monumento..."
         value={searchQuery}
@@ -143,7 +143,7 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
             <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
             Caricamento...
           </div>
-        ) : (
+        ) : suggestions.length > 0 ? (
           suggestions.map((suggestion) => (
             <CommandItem
               key={suggestion.name}
@@ -151,12 +151,13 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
               onSelect={(currentValue) => {
                 console.log('Selected value:', currentValue);
                 onChange(currentValue);
+                setSearchQuery(currentValue);
               }}
             >
               {suggestion.name}
             </CommandItem>
           ))
-        )}
+        ) : null}
       </CommandGroup>
     </Command>
   );
