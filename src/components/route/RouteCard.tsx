@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Map } from 'lucide-react';
+import { Map, MessageSquare, ListTree } from 'lucide-react';
 import { AttractionDetailsDialog } from './AttractionDetailsDialog';
 import { RouteCardHeader } from './RouteCardHeader';
 import { RouteCardContent } from './RouteCardContent';
@@ -110,6 +110,16 @@ export function RouteCard({
           creatorUsername={route.creator?.username}
         />
 
+        {route.image_url && (
+          <div className="relative w-full h-48">
+            <img 
+              src={route.image_url} 
+              alt={`Immagine del percorso ${route.name}`}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+
         <div className="p-4">
           <RouteStats
             routeId={route.id}
@@ -126,7 +136,42 @@ export function RouteCard({
             summary={route.description || ''}
           />
 
-          <div className="flex justify-end gap-2 mt-4">
+          <div className="flex flex-wrap gap-2 mt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowComments(!showComments);
+              }}
+            >
+              <MessageSquare className="w-4 h-4 mr-2" />
+              Commenti
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowAttractions(true);
+              }}
+            >
+              <ListTree className="w-4 h-4 mr-2" />
+              Dettagli Attrazioni
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDescription(!showDescription);
+              }}
+            >
+              {showDescription ? 'Nascondi Descrizione' : 'Mostra Descrizione'}
+            </Button>
+
             <Button
               variant="outline"
               size="sm"
