@@ -7,6 +7,7 @@ import { RouteStats } from './RouteStats';
 import { RouteActions } from './RouteActions';
 import { RouteHeaderWithImage } from './RouteHeaderWithImage';
 import { RouteReviews } from './RouteReviews';
+import { supabase } from '@/integrations/supabase/client';
 
 interface RouteCardProps {
   route: {
@@ -37,6 +38,34 @@ export function RouteCard({
   const [showComments, setShowComments] = useState(false);
   const [showReviews, setShowReviews] = useState(false);
 
+  const handleLikeClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: existingLike } = await supabase
+      .from('route_likes')
+      .select('id')
+      .eq('route_id', route.id)
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (existingLike) {
+      await supabase
+        .from('route_likes')
+        .delete()
+        .eq('route_id', route.id)
+        .eq('user_id', user.id);
+    } else {
+      await supabase
+        .from('route_likes')
+        .insert({
+          route_id: route.id,
+          user_id: user.id
+        });
+    }
+  };
+
   return (
     <>
       <Card className="relative">
@@ -51,6 +80,7 @@ export function RouteCard({
             routeId={route.id}
             initialLikesCount={routeStats?.likesCount || 0}
             initialAverageRating={routeStats?.averageRating}
+            onLikeClick={handleLikeClick}
           />
           
           <RouteCardContent
