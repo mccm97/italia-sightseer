@@ -1,16 +1,12 @@
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Map, MessageSquare, ListTree } from 'lucide-react';
 import { AttractionDetailsDialog } from './AttractionDetailsDialog';
-import { RouteCardHeader } from './RouteCardHeader';
 import { RouteCardContent } from './RouteCardContent';
 import { CommentSection } from './CommentSection';
-import { RouteDescription } from './RouteDescription';
 import { RouteStats } from './RouteStats';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { useQueryClient } from '@tanstack/react-query';
+import { RouteActions } from './RouteActions';
+import { RouteHeaderWithImage } from './RouteHeaderWithImage';
+import { RouteReviews } from './RouteReviews';
 
 interface RouteCardProps {
   route: {
@@ -39,93 +35,22 @@ export function RouteCard({
   const [showAttractions, setShowAttractions] = useState(false);
   const [showDescription, setShowDescription] = useState(false);
   const [showComments, setShowComments] = useState(false);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  const handleLikeClick = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      toast({
-        title: "Errore",
-        description: "Devi essere autenticato per mettere mi piace",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      const { data: existingLike } = await supabase
-        .from('route_likes')
-        .select('id')
-        .eq('route_id', route.id)
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (existingLike) {
-        await supabase
-          .from('route_likes')
-          .delete()
-          .eq('route_id', route.id)
-          .eq('user_id', user.id);
-
-        toast({
-          title: "Mi piace rimosso",
-          description: "Hai rimosso il mi piace dal percorso"
-        });
-      } else {
-        await supabase
-          .from('route_likes')
-          .insert({
-            route_id: route.id,
-            user_id: user.id
-          });
-
-        toast({
-          title: "Mi piace aggiunto",
-          description: "Hai messo mi piace al percorso"
-        });
-      }
-
-      // Invalidate queries to refresh the UI
-      await queryClient.invalidateQueries({ queryKey: ['routeLike', route.id] });
-      await queryClient.invalidateQueries({ queryKey: ['routeLikes', route.id] });
-    } catch (error) {
-      console.error('Error toggling like:', error);
-      toast({
-        title: "Errore",
-        description: "Si è verificato un errore durante l'operazione",
-        variant: "destructive"
-      });
-    }
-  };
+  const [showReviews, setShowReviews] = useState(false);
 
   return (
     <>
       <Card className="relative">
-        <RouteCardHeader
+        <RouteHeaderWithImage
           name={route.name}
-          routeId={route.id}
           creatorUsername={route.creator?.username}
+          imageUrl={route.image_url}
         />
-
-        {route.image_url && (
-          <div className="relative w-full h-48">
-            <img 
-              src={route.image_url} 
-              alt={`Immagine del percorso ${route.name}`}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        )}
 
         <div className="p-4">
           <RouteStats
             routeId={route.id}
             initialLikesCount={routeStats?.likesCount || 0}
             initialAverageRating={routeStats?.averageRating}
-            onLikeClick={handleLikeClick}
           />
           
           <RouteCardContent
@@ -136,59 +61,24 @@ export function RouteCard({
             summary={route.description || ''}
           />
 
-          <div className="flex flex-wrap gap-2 mt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowComments(!showComments);
-              }}
-            >
-              <MessageSquare className="w-4 h-4 mr-2" />
-              Commenti
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowAttractions(true);
-              }}
-            >
-              <ListTree className="w-4 h-4 mr-2" />
-              Dettagli Attrazioni
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowDescription(!showDescription);
-              }}
-            >
-              {showDescription ? 'Nascondi Descrizione' : 'Mostra Descrizione'}
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onRouteClick();
-              }}
-              className="flex items-center gap-2"
-            >
-              <Map className="w-4 h-4" />
-              Visualizza su mappa
-            </Button>
-          </div>
+          <RouteActions
+            onCommentsClick={() => setShowComments(!showComments)}
+            onAttractionsClick={() => setShowAttractions(true)}
+            onDescriptionToggle={() => setShowDescription(!showDescription)}
+            onMapClick={onRouteClick}
+            onReviewsClick={() => setShowReviews(!showReviews)}
+            showDescription={showDescription}
+          />
 
           {showComments && (
             <div className="mt-4 border-t pt-4" onClick={(e) => e.stopPropagation()}>
               <CommentSection routeId={route.id} />
+            </div>
+          )}
+
+          {showReviews && (
+            <div className="mt-4 border-t pt-4" onClick={(e) => e.stopPropagation()}>
+              <RouteReviews routeId={route.id} />
             </div>
           )}
         </div>

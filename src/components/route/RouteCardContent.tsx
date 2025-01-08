@@ -16,16 +16,19 @@ export function RouteCardContent({
   summary
 }: RouteCardContentProps) {
   return (
-    <CardContent>
-      <p>Durata totale: {duration} minuti</p>
-      <p>Attrazioni: {attractionsCount}</p>
-      <p>Costo totale: €{totalCost}</p>
-      {showSummary && (
-        <div className="mt-4">
-          <h3 className="text-xl font-bold">Riassunto del percorso:</h3>
-          <p>{summary}</p>
+    <div className="space-y-4">
+      <div>
+        <p>Durata totale: {duration} minuti</p>
+        <p>Attrazioni: {attractionsCount}</p>
+        <p>Costo totale: €{totalCost}</p>
+      </div>
+      
+      {showSummary && summary && (
+        <div className="mt-4 p-4 bg-muted rounded-lg">
+          <h3 className="text-sm font-medium mb-2">Descrizione del percorso:</h3>
+          <p className="text-sm text-muted-foreground">{summary}</p>
         </div>
       )}
-    </CardContent>
+    </div>
   );
 }
