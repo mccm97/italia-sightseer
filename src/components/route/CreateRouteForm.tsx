@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useEffect } from 'react';
 import { ImageUpload } from '../ImageUpload';
-import { Textarea } from '@/components/ui/textarea';
 
 interface CreateRouteFormProps {
   onSubmit: (data: CreateRouteFormData) => void;
@@ -34,7 +33,6 @@ export function CreateRouteForm({
       country: '',
       attractions: [{ name: '', address: '', inputType: 'name', visitDuration: 0, price: 0 }],
       image_url: '',
-      description: '',
     }
   });
 
@@ -75,23 +73,6 @@ export function CreateRouteForm({
               <FormLabel>Nome del Percorso</FormLabel>
               <FormControl>
                 <Input placeholder="Inserisci il nome del percorso" {...field} />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Descrizione del Percorso</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Descrivi il tuo percorso... Cosa lo rende speciale? Quali esperienze offre?"
-                  className="min-h-[100px]"
-                  {...field}
-                />
               </FormControl>
             </FormItem>
           )}

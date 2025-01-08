@@ -1,40 +1,44 @@
-import { DirectionsStep } from '@/types/route';
+import axios from 'axios';
 
-export async function getDirections(waypoints: [number, number][]): Promise<DirectionsStep[]> {
+interface DirectionStep {
+  instruction: string;
+  distance: number;
+  duration: number;
+}
+
+export async function getDirections(waypoints: [number, number][]): Promise<DirectionStep[]> {
   try {
     console.log('Getting directions for waypoints:', waypoints);
     
-    if (waypoints.length < 2) {
-      throw new Error('Servono almeno due punti per calcolare le direzioni');
-    }
-
-    // Formatta i waypoint per OSRM
-    const coordinates = waypoints
-      .map(point => `${point[1]},${point[0]}`)
-      .join(';');
+    // Format waypoints for Geoapify
+    const waypointsString = waypoints
+      .map(point => `${point[0]},${point[1]}`)
+      .join('|');
     
-    console.log('Formatted coordinates for OSRM:', coordinates);
+    console.log('Formatted waypoints string:', waypointsString);
 
-    const response = await fetch(
-      `https://router.project-osrm.org/route/v1/foot/${coordinates}?steps=true&geometries=geojson`
+    const response = await axios.get(
+      `https://api.geoapify.com/v1/routing`,
+      {
+        params: {
+          waypoints: waypointsString,
+          mode: 'walk',
+          apiKey: '4e26196999fd47879ca7b7fee264aa4d'
+        }
+      }
     );
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch directions from OSRM');
+    console.log('Geoapify response:', response.data);
+
+    if (!response.data || !response.data.features || !response.data.features[0]) {
+      throw new Error('Invalid response from Geoapify');
     }
 
-    const data = await response.json();
-    
-    if (!data.routes || !data.routes[0] || !data.routes[0].legs) {
-      throw new Error('Invalid response from OSRM');
-    }
-
-    const steps = data.routes[0].legs.flatMap((leg: any) => leg.steps);
-    
-    return steps.map((step: any) => ({
-      instruction: step.maneuver.type,
+    const route = response.data.features[0];
+    return route.properties.legs[0].steps.map((step: any) => ({
+      instruction: step.instruction,
       distance: Math.round(step.distance),
-      duration: Math.round(step.duration)
+      duration: Math.round(step.time)
     }));
   } catch (error) {
     console.error('Error fetching directions:', error);
