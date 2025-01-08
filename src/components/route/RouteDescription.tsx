@@ -13,7 +13,10 @@ export function RouteDescription({ description, isExpanded, onToggle }: RouteDes
       <Button
         variant="ghost"
         size="sm"
-        onClick={onToggle}
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggle();
+        }}
         className="flex items-center gap-2"
       >
         <span>Riassunto percorso</span>
