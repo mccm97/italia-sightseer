@@ -8,6 +8,8 @@ import { CommentSection } from './CommentSection';
 import { RouteDescription } from './RouteDescription';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { Button } from '../ui/button';
+import { MessageSquare, ListTree } from 'lucide-react';
 
 interface RouteCardProps {
   route: {
@@ -173,6 +175,28 @@ export function RouteCard({
           />
 
           <div className="flex justify-end gap-2 mt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowComments(!showComments);
+              }}
+            >
+              <MessageSquare className="w-4 h-4 mr-2" />
+              Commenti
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowAttractions(true);
+              }}
+            >
+              <ListTree className="w-4 h-4 mr-2" />
+              Dettagli Attrazioni
+            </Button>
             <RouteDescription
               description={route.description || ''}
               isExpanded={showDescription}
