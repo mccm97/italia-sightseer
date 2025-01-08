@@ -15,6 +15,9 @@ export function RoutePreview({
 }: RoutePreviewProps) {
   if (!formData) return null;
 
+  console.log('RoutePreview formData:', formData);
+  console.log('Attractions with coordinates:', formData.attractions);
+
   return (
     <div className="space-y-4">
       <RouteHeader 
@@ -24,13 +27,14 @@ export function RoutePreview({
       <div className="h-[400px] relative">
         <CityMap
           center={[formData.city.lat, formData.city.lng]}
-          attractions={formData.attractions.map((attr, index) => ({
+          attractions={formData.attractions.map(attr => ({
             name: attr.name || attr.address,
-            position: [0, 0], // You might want to get actual coordinates
+            position: [attr.lat, attr.lng],
             visitDuration: attr.visitDuration,
             price: attr.price
           }))}
           zoom={13}
+          showWalkingPath={true}
         />
       </div>
     </div>
