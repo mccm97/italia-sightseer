@@ -3,15 +3,15 @@ import { CardContent } from '@/components/ui/card';
 interface RouteCardContentProps {
   duration: number;
   attractionsCount: number;
-  totalCost: number;
   showSummary: boolean;
   summary: string;
+  totalCost?: number;
 }
 
 export function RouteCardContent({
   duration,
   attractionsCount,
-  totalCost,
+  totalCost = 0,
   showSummary,
   summary
 }: RouteCardContentProps) {

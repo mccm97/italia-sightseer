@@ -109,10 +109,6 @@ export function HomeContainer() {
             setSelectedCity(null);
           }}
           onRouteClick={handleRouteClick}
-          onDirectionsClick={(directions) => {
-            setSelectedRouteDirections(directions);
-            setShowDirections(true);
-          }}
         />
       )}
 

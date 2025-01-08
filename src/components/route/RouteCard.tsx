@@ -39,6 +39,11 @@ export function RouteCard({
   const [showComments, setShowComments] = useState(false);
   const queryClient = useQueryClient();
 
+  // Calculate total cost from attractions
+  const totalCost = route.attractions.reduce((sum, attraction) => {
+    return sum + (attraction.price || 0);
+  }, 0);
+
   const { data: isLiked = false } = useQuery({
     queryKey: ['routeLike', route.id],
     queryFn: async () => {
@@ -123,9 +128,8 @@ export function RouteCard({
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
-    if (screenshot) {
+    if (route.screenshot_url) {
       e.stopPropagation();
-      // Show screenshot in modal
       // TODO: Implement screenshot modal
     } else {
       onRouteClick();
@@ -163,6 +167,7 @@ export function RouteCard({
           <RouteCardContent
             duration={route.total_duration}
             attractionsCount={route.attractions?.length || 0}
+            totalCost={totalCost}
             showSummary={showDescription}
             summary={route.description || ''}
           />
