@@ -25,7 +25,6 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  // Fetch attractions when city changes or on mount
   useEffect(() => {
     const fetchAttractions = async () => {
       if (!cityId) {
@@ -70,7 +69,6 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
     fetchAttractions();
   }, [cityId, toast]);
 
-  // Update suggestions when user types (using debounced search)
   useEffect(() => {
     const fetchSuggestions = async () => {
       if (!cityId || !debouncedSearch || debouncedSearch.length < 2) {

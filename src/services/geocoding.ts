@@ -1,38 +1,32 @@
-import axios from 'axios';
+import { supabase } from '@/integrations/supabase/client';
 
-interface GeocodingResult {
-  lat: number;
-  lon: number;
-  display_name: string;
-}
-
-export const geocodeAddress = async (address: string): Promise<[number, number]> => {
+export const geocodeAddress = async (searchTerm: string): Promise<[number, number]> => {
   try {
-    console.log('Geocoding address:', address);
-    const response = await axios.get<GeocodingResult[]>(
-      `https://nominatim.openstreetmap.org/search`,
-      {
-        params: {
-          q: address,
-          format: 'json',
-          limit: 1,
-          countrycodes: 'it'
-        },
-        headers: {
-          'User-Agent': 'TourPlanner/1.0'
-        }
-      }
-    );
+    console.log('Searching attraction in database:', searchTerm);
+    
+    // Rimuovi eventuali riferimenti alla città e al paese dalla ricerca
+    const cleanSearchTerm = searchTerm.split(',')[0].trim();
 
-    if (response.data.length === 0) {
-      throw new Error('Indirizzo non trovato');
+    const { data: attraction, error } = await supabase
+      .from('attractions')
+      .select('lat, lng')
+      .ilike('name', `%${cleanSearchTerm}%`)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error searching attraction:', error);
+      throw new Error('Errore durante la ricerca dell\'attrazione');
     }
 
-    const result = response.data[0];
-    console.log('Geocoding result:', result);
-    return [result.lat, result.lon].map(Number) as [number, number];
+    if (!attraction) {
+      console.warn('Attraction not found:', searchTerm);
+      throw new Error('Attrazione non trovata');
+    }
+
+    console.log('Found attraction coordinates:', attraction);
+    return [attraction.lat, attraction.lng];
   } catch (error) {
-    console.error('Geocoding error:', error);
+    console.error('Error in geocodeAddress:', error);
     throw new Error('Errore durante la ricerca dell\'indirizzo');
   }
 }
