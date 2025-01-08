@@ -23,10 +23,10 @@ export function RouteCardContent({
         <p>Costo totale: €{totalCost}</p>
       </div>
       
-      {showSummary && summary && (
+      {showSummary && (
         <div className="mt-4 p-4 bg-muted rounded-lg">
           <h3 className="text-sm font-medium mb-2">Descrizione del percorso:</h3>
-          <p className="text-sm text-muted-foreground">{summary}</p>
+          <p className="text-sm text-muted-foreground">{summary || "Nessuna descrizione disponibile"}</p>
         </div>
       )}
     </div>
