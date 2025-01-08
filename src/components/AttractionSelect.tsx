@@ -29,7 +29,10 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
   // Fetch attractions when city changes or on mount
   useEffect(() => {
     const fetchAttractions = async () => {
-      if (!cityId) return;
+      if (!cityId) {
+        setSuggestions([]);
+        return;
+      }
       
       setIsLoading(true);
       try {
@@ -57,6 +60,7 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
           description: "Impossibile caricare i monumenti. Riprova più tardi.",
           variant: "destructive"
         });
+        setSuggestions([]); // Ensure suggestions is always an array
       } finally {
         setIsLoading(false);
       }
@@ -68,7 +72,9 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
   // Update suggestions when user types (using debounced search)
   useEffect(() => {
     const fetchSuggestions = async () => {
-      if (!cityId || !debouncedSearch || debouncedSearch.length < 2) return;
+      if (!cityId || !debouncedSearch || debouncedSearch.length < 2) {
+        return;
+      }
       
       setIsLoading(true);
       try {
@@ -98,6 +104,7 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
           description: "Impossibile caricare i suggerimenti. Riprova più tardi.",
           variant: "destructive"
         });
+        setSuggestions([]); // Ensure suggestions is always an array
       } finally {
         setIsLoading(false);
       }
