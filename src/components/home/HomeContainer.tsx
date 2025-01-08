@@ -102,14 +102,7 @@ export function HomeContainer() {
       ) : (
         <CityView
           city={selectedCity}
-          routes={cityRoutes.map(route => ({
-            ...route,
-            attractions: route.route_attractions?.map(ra => ({
-              name: ra.attraction.name,
-              visitDuration: ra.attraction.visit_duration,
-              price: ra.attraction.price
-            })) || []
-          }))}
+          routes={cityRoutes}
           isLoadingRoutes={isLoadingRoutes}
           selectedRoute={selectedRoute}
           onBackClick={() => {
