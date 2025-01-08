@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
@@ -118,7 +117,7 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
     return (
       <Input
         type="text"
-        value={value}
+        value={value || ''}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Inserisci l'indirizzo esatto"
         className="w-full"
