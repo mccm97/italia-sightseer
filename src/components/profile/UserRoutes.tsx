@@ -16,12 +16,18 @@ export function UserRoutes() {
         .from('routes')
         .select(`
           *,
-          cities(name),
+          cities(name, lat, lng),
           route_likes(count),
           route_ratings(rating),
           route_attractions(
             *,
-            attraction:attractions(*)
+            attraction:attractions(
+              name,
+              visit_duration,
+              price,
+              lat,
+              lng
+            )
           )
         `)
         .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
@@ -33,7 +39,7 @@ export function UserRoutes() {
 
       console.log('User routes fetched:', routes);
       return routes as (DbRoute & { 
-        cities: { name: string },
+        cities: { name: string, lat: number, lng: number },
         route_likes: { count: number }[],
         route_ratings: { rating: number }[],
         route_attractions: {
@@ -41,6 +47,8 @@ export function UserRoutes() {
             name: string;
             visit_duration: number;
             price: number;
+            lat: number;
+            lng: number;
           }
         }[]
       })[];
@@ -64,7 +72,8 @@ export function UserRoutes() {
             const attractions = route.route_attractions?.map(ra => ({
               name: ra.attraction.name,
               visitDuration: ra.attraction.visit_duration,
-              price: ra.attraction.price
+              price: ra.attraction.price,
+              position: [ra.attraction.lat, ra.attraction.lng] as [number, number]
             })) || [];
 
             return (
