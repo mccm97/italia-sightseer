@@ -44,6 +44,7 @@ export function RoutePreviewDialog({
             transportMode: 'walking'
           }}
           onBack={() => setShowRoutePreview(false)}
+          onContinue={() => {}}
           screenshotUrl={selectedRoute.image_url || null}
         />
         {routeSummary && (

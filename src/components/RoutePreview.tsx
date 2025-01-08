@@ -17,7 +17,7 @@ interface RoutePreviewProps {
   screenshotUrl: string | null;
 }
 
-export function RoutePreview({ formData, onBack, onContinue }: RoutePreviewProps) {
+export function RoutePreview({ formData, onBack, onContinue, screenshotUrl }: RoutePreviewProps) {
   const [attractions, setAttractions] = useState<Array<{ name: string; position: [number, number] }>>([]);
   const [totalTravelTime, setTotalTravelTime] = useState(0);
   const mapRef = useRef<HTMLDivElement>(null);
@@ -80,6 +80,8 @@ export function RoutePreview({ formData, onBack, onContinue }: RoutePreviewProps
     <div className="space-y-4">
       <RouteHeader
         onBack={onBack}
+        onCreateRoute={() => {}}
+        screenshotUrl={screenshotUrl}
       />
 
       <h2 className="text-2xl font-bold">Anteprima Percorso</h2>
