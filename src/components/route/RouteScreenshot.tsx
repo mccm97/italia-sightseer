@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MapOff } from 'lucide-react';
+import { Map } from 'lucide-react';
 
 interface RouteScreenshotProps {
   routeId: string;
@@ -51,7 +51,7 @@ export function RouteScreenshot({ routeId }: RouteScreenshotProps) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-gray-100">
         <div className="text-center text-gray-500">
-          <MapOff className="w-12 h-12 mx-auto mb-2" />
+          <Map className="w-12 h-12 mx-auto mb-2" />
           <p className="text-sm">Anteprima non disponibile</p>
         </div>
       </div>
