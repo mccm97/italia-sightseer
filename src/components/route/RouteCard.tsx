@@ -8,8 +8,9 @@ import { CommentSection } from './CommentSection';
 import { RouteDescription } from './RouteDescription';
 import { RouteImage } from './RouteImage';
 import { RouteScreenshot } from './RouteScreenshot';
+import { RouteStats } from './RouteStats';
 import { Button } from '../ui/button';
-import { MessageSquare, ListTree, ThumbsUp } from 'lucide-react';
+import { MessageSquare, ListTree } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -44,23 +45,6 @@ export function RouteCard({
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: comments = [] } = useQuery({
-    queryKey: ['routeComments', route.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('route_comments')
-        .select(`
-          *,
-          profiles:user_id (username)
-        `)
-        .eq('route_id', route.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data;
-    }
-  });
-
   // Check if the current user has liked this route
   const { data: userLike } = useQuery({
     queryKey: ['routeLike', route.id],
@@ -84,10 +68,6 @@ export function RouteCard({
     }
   });
 
-  const totalCost = route.attractions.reduce((sum, attraction) => {
-    return sum + (attraction.price || 0);
-  }, 0);
-
   const handleLikeClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const { data: { user } } = await supabase.auth.getUser();
@@ -103,7 +83,6 @@ export function RouteCard({
 
     try {
       if (userLike) {
-        // If already liked, remove the like
         const { error } = await supabase
           .from('route_likes')
           .delete()
@@ -117,7 +96,6 @@ export function RouteCard({
           description: "Hai rimosso il mi piace dal percorso"
         });
       } else {
-        // If not liked, add the like
         const { error } = await supabase
           .from('route_likes')
           .insert({
@@ -158,26 +136,18 @@ export function RouteCard({
         <RouteImage imageUrl={route.image_url} routeName={route.name} />
 
         <div className="p-4">
-          <div className="flex items-center justify-between gap-4 mb-4">
-            <RouteRating
-              routeId={route.id}
-              initialRating={routeStats?.averageRating}
-            />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLikeClick}
-              className={`flex items-center gap-1 ${userLike ? 'text-red-500' : ''}`}
-            >
-              <ThumbsUp className="w-4 h-4" />
-              <span>{routeStats?.likesCount || 0}</span>
-            </Button>
-          </div>
+          <RouteStats
+            routeId={route.id}
+            initialLikesCount={routeStats?.likesCount || 0}
+            initialAverageRating={routeStats?.averageRating}
+            isLiked={!!userLike}
+            onLikeClick={handleLikeClick}
+          />
           
           <RouteCardContent
             duration={route.total_duration}
             attractionsCount={route.attractions?.length || 0}
-            totalCost={totalCost}
+            totalCost={route.attractions.reduce((sum, attraction) => sum + (attraction.price || 0), 0)}
             showSummary={showDescription}
             summary={route.description || ''}
           />
@@ -217,7 +187,7 @@ export function RouteCard({
 
         {showComments && (
           <div className="p-4 border-t" onClick={(e) => e.stopPropagation()}>
-            <CommentSection routeId={route.id} comments={comments} />
+            <CommentSection routeId={route.id} />
           </div>
         )}
       </Card>

@@ -22,6 +22,7 @@ export function RouteStats({
   const { data: likesCount = initialLikesCount } = useQuery({
     queryKey: ['routeLikes', routeId],
     queryFn: async () => {
+      console.log('Fetching likes count for route:', routeId);
       const { count, error } = await supabase
         .from('route_likes')
         .select('*', { count: 'exact', head: true })
