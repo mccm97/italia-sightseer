@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '../ui/button';
-import { ChevronDown } from 'lucide-react';
 import { AttractionDetailsDialog } from './AttractionDetailsDialog';
 import { RouteCardHeader } from './RouteCardHeader';
 import { RouteCardContent } from './RouteCardContent';
 import { RouteStats } from './RouteStats';
-import { RouteComments } from './RouteComments';
-import { RouteScreenshot } from './RouteScreenshot';
+import { CommentSection } from './CommentSection';
+import { RouteDescription } from './RouteDescription';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -20,26 +19,24 @@ interface RouteCardProps {
     };
     total_duration: number;
     attractions: any[];
+    image_url?: string;
+    description?: string;
   };
   routeStats?: {
     likesCount: number;
     averageRating: number;
   };
   onRouteClick: () => void;
-  onDirectionsClick: () => void;
 }
 
 export function RouteCard({
   route,
   routeStats,
   onRouteClick,
-  onDirectionsClick
 }: RouteCardProps) {
   const [showAttractions, setShowAttractions] = useState(false);
-  const [showSummary, setShowSummary] = useState(false);
+  const [showDescription, setShowDescription] = useState(false);
   const [showComments, setShowComments] = useState(false);
-  const [isLoadingScreenshot, setIsLoadingScreenshot] = useState(true);
-  const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   // Calculate total cost from attractions
@@ -65,6 +62,24 @@ export function RouteCard({
     }
   });
 
+  // Fetch comments
+  const { data: comments = [] } = useQuery({
+    queryKey: ['routeComments', route.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('route_comments')
+        .select(`
+          *,
+          profiles:user_id (username)
+        `)
+        .eq('route_id', route.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    }
+  });
+
   const handleLikeClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const { data: { user } } = await supabase.auth.getUser();
@@ -72,14 +87,12 @@ export function RouteCard({
 
     try {
       if (isLiked) {
-        // If already liked, remove the like
         await supabase
           .from('route_likes')
           .delete()
           .eq('route_id', route.id)
           .eq('user_id', user.id);
       } else {
-        // Check if like exists first
         const { data: existingLike } = await supabase
           .from('route_likes')
           .select('id')
@@ -87,7 +100,6 @@ export function RouteCard({
           .eq('user_id', user.id)
           .maybeSingle();
 
-        // Only insert if no existing like
         if (!existingLike) {
           await supabase
             .from('route_likes')
@@ -98,7 +110,6 @@ export function RouteCard({
         }
       }
 
-      // Invalidate queries to refresh the UI
       await queryClient.invalidateQueries({ queryKey: ['routeLike', route.id] });
       await queryClient.invalidateQueries({ queryKey: ['routeLikes', route.id] });
     } catch (error) {
@@ -114,35 +125,16 @@ export function RouteCard({
           routeId={route.id}
           creatorUsername={route.creator?.username}
         />
-        
-        <div className="absolute top-4 right-4 flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDirectionsClick();
-            }}
-          >
-            Visualizza Indicazioni
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowAttractions(true);
-            }}
-          >
-            Dettagli Attrazioni
-          </Button>
-        </div>
 
-        <RouteScreenshot
-          isLoading={isLoadingScreenshot}
-          url={screenshotUrl}
-          routeName={route.name}
-        />
+        {route.image_url && (
+          <div className="w-full h-48 relative">
+            <img 
+              src={route.image_url} 
+              alt={`Immagine del percorso ${route.name}`}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
 
         <div className="p-4">
           <RouteStats
@@ -157,22 +149,26 @@ export function RouteCard({
             duration={route.total_duration}
             attractionsCount={route.attractions?.length || 0}
             totalCost={totalCost}
-            showSummary={showSummary}
-            summary=""
+            showSummary={showDescription}
+            summary={route.description || ''}
           />
 
           <div className="flex justify-end gap-2 mt-4">
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
-                setShowSummary(!showSummary);
+                setShowAttractions(true);
               }}
             >
-              <span className="mr-2">Riassunto percorso</span>
-              <ChevronDown className="w-4 h-4" />
+              Dettagli Attrazioni
             </Button>
+            <RouteDescription
+              description={route.description || ''}
+              isExpanded={showDescription}
+              onToggle={() => setShowDescription(!showDescription)}
+            />
             <Button
               variant="ghost"
               size="sm"
@@ -181,15 +177,14 @@ export function RouteCard({
                 setShowComments(!showComments);
               }}
             >
-              <span className="mr-2">Commenti</span>
-              <ChevronDown className="w-4 h-4" />
+              Commenti
             </Button>
           </div>
         </div>
 
         {showComments && (
-          <div className="p-4 border-t">
-            <RouteComments routeId={route.id} />
+          <div className="p-4 border-t" onClick={(e) => e.stopPropagation()}>
+            <CommentSection routeId={route.id} comments={comments} />
           </div>
         )}
       </Card>
