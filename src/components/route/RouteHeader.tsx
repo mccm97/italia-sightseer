@@ -21,14 +21,7 @@ export function RouteHeader({
         className="flex items-center gap-2"
       >
         <ArrowLeft className="w-4 h-4" />
-        Torna al riepilogo
-      </Button>
-      <Button 
-        onClick={onCreateRoute}
-        className="bg-primary text-white"
-        disabled={!screenshotUrl}
-      >
-        Crea Percorso
+        Torna indietro
       </Button>
     </div>
   );
