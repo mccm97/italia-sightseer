@@ -7,7 +7,6 @@ interface RouteStatsProps {
   routeId: string;
   initialLikesCount: number;
   initialAverageRating?: number;
-  isLiked: boolean;
   onLikeClick: (e: React.MouseEvent) => void;
 }
 
@@ -15,7 +14,6 @@ export function RouteStats({
   routeId, 
   initialLikesCount,
   initialAverageRating,
-  isLiked,
   onLikeClick 
 }: RouteStatsProps) {
   // Fetch real-time likes count
@@ -30,6 +28,25 @@ export function RouteStats({
       
       if (error) throw error;
       return count || 0;
+    }
+  });
+
+  // Fetch current user's like status
+  const { data: isLiked = false } = useQuery({
+    queryKey: ['routeLike', routeId],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+
+      const { data, error } = await supabase
+        .from('route_likes')
+        .select('id')
+        .eq('route_id', routeId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return !!data;
     }
   });
 
