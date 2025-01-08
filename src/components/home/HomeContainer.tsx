@@ -76,7 +76,12 @@ export function HomeContainer() {
   return (
     <div className="container mx-auto px-4 py-8">
       {!selectedCity ? (
-        <CitySearch onCitySelect={handleCitySelect} />
+        <div className="max-w-2xl mx-auto">
+          <h2 className="text-2xl font-bold text-center mb-8">
+            Cerca una città per iniziare
+          </h2>
+          <CitySearch onCitySelect={handleCitySelect} />
+        </div>
       ) : (
         <CityView
           city={selectedCity}
