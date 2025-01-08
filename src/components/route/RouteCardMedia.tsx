@@ -1,17 +1,25 @@
-import { RouteScreenshot } from '../route/RouteScreenshot';
-import { Card, CardContent } from '../ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import { RouteScreenshot } from './RouteScreenshot';
 
 interface RouteCardMediaProps {
   routeId: string;
-  routeName?: string;
+  imageUrl?: string;
 }
 
-export function RouteCardMedia({ routeId }: RouteCardMediaProps) {
+export function RouteCardMedia({ routeId, imageUrl }: RouteCardMediaProps) {
   return (
     <Card>
       <CardContent className="p-0">
         <div className="relative aspect-[16/9] overflow-hidden rounded-t-lg">
-          <RouteScreenshot routeId={routeId} />
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt="Route preview"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <RouteScreenshot routeId={routeId} />
+          )}
         </div>
       </CardContent>
     </Card>
