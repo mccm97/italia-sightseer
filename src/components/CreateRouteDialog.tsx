@@ -33,89 +33,52 @@ export function CreateRouteDialog() {
 
   useEffect(() => {
     const getUser = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          console.log('No authenticated user found');
-          return;
-        }
-        setUser(user);
-      } catch (error) {
-        console.error('Error getting user:', error);
-      }
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
     };
     getUser();
   }, []);
 
   useEffect(() => {
     const fetchCities = async () => {
-      try {
-        console.log('Fetching cities from Supabase...');
-        const { data, error } = await supabase.from('cities').select('*');
-        if (error) {
-          console.error('Error fetching cities:', error);
-          toast({
-            title: "Error",
-            description: "Failed to load cities. Please try again.",
-            variant: "destructive"
-          });
-          return;
-        }
-        console.log('Cities fetched successfully:', data);
+      const { data, error } = await supabase.from('cities').select('*');
+      if (error) {
+        console.error('Error fetching cities:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load cities. Please try again.",
+          variant: "destructive"
+        });
+      } else {
         setCities(data);
         const uniqueCountries = [...new Set(data.map(city => city.country))];
         setCountries(uniqueCountries);
-      } catch (error) {
-        console.error('Error in fetchCities:', error);
-        toast({
-          title: "Error",
-          description: "An unexpected error occurred while loading cities.",
-          variant: "destructive"
-        });
       }
     };
     fetchCities();
   }, [toast]);
 
-  const handleOpenChange = async (newOpen: boolean) => {
-    try {
-      if (newOpen) {
-        const { data: { user: currentUser } } = await supabase.auth.getUser();
-        if (!currentUser) {
-          console.log('User not authenticated, redirecting to login');
-          toast({
-            title: "Accesso richiesto",
-            description: "Devi essere autenticato per creare un percorso",
-            variant: "destructive"
-          });
-          navigate('/login');
-          return;
-        }
-      }
-      
-      if (!newOpen) {
-        setShowPreview(false);
-        setShowSummary(false);
-        setScreenshotUrl(null);
-        setFormData(null);
-      }
-      setOpen(newOpen);
-    } catch (error) {
-      console.error('Error in handleOpenChange:', error);
+  const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen && !user) {
       toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
+        title: "Accesso richiesto",
+        description: "Devi essere autenticato per creare un percorso",
         variant: "destructive"
       });
+      navigate('/login');
+      return;
     }
+    if (!newOpen) {
+      setShowPreview(false);
+      setShowSummary(false);
+      setScreenshotUrl(null);
+      setFormData(null);
+    }
+    setOpen(newOpen);
   };
 
   const onFormSubmit = async (data: CreateRouteFormData) => {
-    if (!user) {
-      console.log('No user found, cannot submit form');
-      return;
-    }
-    console.log('Submitting form data:', data);
+    if (!user) return;
     const success = await handleFormSubmit(data, user.id);
     if (success) {
       setShowPreview(true);
@@ -123,7 +86,6 @@ export function CreateRouteDialog() {
   };
 
   const handleCreateRoute = async () => {
-    console.log('Creating route...');
     const success = await createRoute();
     if (success) {
       setOpen(false);
@@ -135,7 +97,6 @@ export function CreateRouteDialog() {
   };
 
   const handleScreenshotUpload = (url: string) => {
-    console.log('Screenshot uploaded:', url);
     setScreenshotUrl(url);
   };
 

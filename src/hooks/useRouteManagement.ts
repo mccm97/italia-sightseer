@@ -9,7 +9,7 @@ export function useRouteManagement(selectedCity: any, toast: any) {
   const [showRoutePreview, setShowRoutePreview] = useState(false);
   const [routeSummary, setRouteSummary] = useState<string>('');
 
-  const fetchRoutesForCity = useCallback(async () => {
+  const fetchCityRoutes = useCallback(async () => {
     if (!selectedCity?.id) return [];
 
     console.log('Fetching routes for city:', selectedCity.id);
@@ -38,13 +38,14 @@ export function useRouteManagement(selectedCity: any, toast: any) {
 
     console.log('Routes fetched:', routes?.length || 0, 'routes found');
 
+    // Transform the data to match the Route type with proper type checking
     return routes?.map(route => {
-      // Transform attractions with proper type checking
       const transformedAttractions: Attraction[] = route.route_attractions?.map((ra: any) => {
         // Ensure position is always a tuple of [number, number]
-        const lat = Number(ra.attraction.lat) || 0;
-        const lng = Number(ra.attraction.lng) || 0;
-        const position: [number, number] = [lat, lng];
+        const position: [number, number] = [
+          Number(ra.attraction.lat) || 0,
+          Number(ra.attraction.lng) || 0
+        ];
 
         return {
           name: String(ra.attraction.name),
@@ -54,14 +55,26 @@ export function useRouteManagement(selectedCity: any, toast: any) {
         };
       }) || [];
 
-      // Parse directions with proper type checking
-      const parsedDirections: DirectionsStep[] = Array.isArray(route.directions) 
-        ? route.directions.map((step: any) => ({
-            instruction: typeof step === 'object' && step !== null ? String(step.instruction || '') : '',
-            distance: typeof step === 'object' && step !== null ? Number(step.distance || 0) : 0,
-            duration: typeof step === 'object' && step !== null ? Number(step.duration || 0) : 0
-          }))
-        : [];
+      // Parse directions from JSON to DirectionsStep[]
+      let parsedDirections: DirectionsStep[] = [];
+      if (route.directions) {
+        try {
+          // If directions is a string, parse it, otherwise use it directly
+          const directionsData = typeof route.directions === 'string' 
+            ? JSON.parse(route.directions) 
+            : route.directions;
+            
+          if (Array.isArray(directionsData)) {
+            parsedDirections = directionsData.map(step => ({
+              instruction: String(step.instruction || ''),
+              distance: Number(step.distance || 0),
+              duration: Number(step.duration || 0)
+            }));
+          }
+        } catch (error) {
+          console.error('Error parsing directions:', error);
+        }
+      }
 
       return {
         id: route.id,
@@ -72,22 +85,14 @@ export function useRouteManagement(selectedCity: any, toast: any) {
         creator: route.creator,
         attractions: transformedAttractions,
         isPublic: Boolean(route.is_public),
-        directions: parsedDirections,
-        image_url: route.image_url,
-        description: route.description
+        directions: parsedDirections
       } satisfies Route;
     }) || [];
   }, [selectedCity, toast]);
 
-  const clearRoutes = useCallback(() => {
-    setSelectedRoute(null);
-    setShowRoutePreview(false);
-    setRouteSummary('');
-  }, []);
-
-  const { data: cityRoutes = [], isLoading: isLoadingRoutes } = useQuery({
+  const { data: cityRoutes = [], isLoading: isLoadingRoutes, error } = useQuery({
     queryKey: ['cityRoutes', selectedCity?.id],
-    queryFn: fetchRoutesForCity,
+    queryFn: fetchCityRoutes,
     enabled: !!selectedCity?.id,
     staleTime: 1000 * 60 * 5, // 5 minutes
     retry: 1
@@ -118,8 +123,6 @@ export function useRouteManagement(selectedCity: any, toast: any) {
     cityRoutes,
     isLoadingRoutes,
     routeSummary,
-    handleRouteClick,
-    fetchRoutesForCity,
-    clearRoutes
+    handleRouteClick
   };
 }

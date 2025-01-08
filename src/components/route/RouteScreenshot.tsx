@@ -1,72 +1,56 @@
-import { useEffect, useState } from 'react';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Map } from 'lucide-react';
 
 interface RouteScreenshotProps {
   routeId: string;
+  routeName: string;
 }
 
-export function RouteScreenshot({ routeId }: RouteScreenshotProps) {
-  const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export function RouteScreenshot({ routeId, routeName }: RouteScreenshotProps) {
+  const { data: screenshot, isLoading } = useQuery({
+    queryKey: ['routeScreenshot', routeId],
+    queryFn: async () => {
+      console.log('Fetching screenshot for route:', routeId);
+      const { data, error } = await supabase
+        .from('screenshots')
+        .select('screenshot_url')
+        .eq('route_id', routeId)
+        .maybeSingle();
 
-  useEffect(() => {
-    const fetchScreenshot = async () => {
-      try {
-        console.log('Fetching screenshot for route:', routeId);
-        const { data, error } = await supabase
-          .from('screenshots')
-          .select('screenshot_url')
-          .eq('route_id', routeId)
-          .maybeSingle();
-
-        if (error) {
-          console.error('Error fetching screenshot:', error);
-          setError(error.message);
-          return;
-        }
-
-        console.log('Screenshot data:', data);
-        setScreenshotUrl(data?.screenshot_url || null);
-      } catch (err) {
-        console.error('Error in screenshot fetch:', err);
-        setError(err instanceof Error ? err.message : 'Unknown error');
-      } finally {
-        setIsLoading(false);
+      if (error) {
+        console.error('Error fetching screenshot:', error);
+        return null;
       }
-    };
 
-    if (routeId) {
-      fetchScreenshot();
+      console.log('Screenshot data:', data);
+      return data?.screenshot_url || null;
     }
-  }, [routeId]);
+  });
 
   if (isLoading) {
-    return <Skeleton className="w-full h-full" />;
+    return (
+      <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-500">
+        Caricamento anteprima...
+      </div>
+    );
   }
 
-  if (error || !screenshotUrl) {
+  if (!screenshot) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-gray-100">
-        <div className="text-center text-gray-500">
-          <Map className="w-12 h-12 mx-auto mb-2" />
-          <p className="text-sm">Anteprima non disponibile</p>
-        </div>
+      <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-500">
+        Anteprima mappa non ancora disponibile
       </div>
     );
   }
 
   return (
-    <img
-      src={screenshotUrl}
-      alt="Route preview"
-      className="w-full h-full object-cover"
-      onError={(e) => {
-        console.error('Error loading screenshot image');
-        setError('Failed to load image');
-      }}
-    />
+    <div className="w-full h-48 relative">
+      <img 
+        src={screenshot} 
+        alt={`Screenshot del percorso ${routeName}`}
+        className="w-full h-full object-cover"
+      />
+    </div>
   );
 }

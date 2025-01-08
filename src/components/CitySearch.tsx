@@ -16,7 +16,7 @@ interface CitySearchProps {
   onCitySelect: (city: City) => void;
 }
 
-export const CitySearch = ({ onCitySelect }: CitySearchProps) => {
+const CitySearch = ({ onCitySelect }: CitySearchProps) => {
   const [search, setSearch] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [cities, setCities] = useState<City[]>([]);
