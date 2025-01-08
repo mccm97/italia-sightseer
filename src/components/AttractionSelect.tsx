@@ -143,7 +143,7 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
             <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
             Caricamento...
           </div>
-        ) : suggestions.length > 0 ? (
+        ) : suggestions && suggestions.length > 0 ? (
           suggestions.map((suggestion) => (
             <CommandItem
               key={suggestion.name}
