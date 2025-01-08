@@ -2,8 +2,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { Route, RouteOff } from 'lucide-react';
 import { Tables } from '@/integrations/supabase/types';
-import { DeleteRouteButton } from './DeleteRouteButton';
-import { RouteCard } from '../route/RouteCard';
+import { DeleteRouteButton } from '../profile/DeleteRouteButton';
+import { RouteCard } from './RouteCard';
 
 type DbRoute = Tables<'routes'>;
 
