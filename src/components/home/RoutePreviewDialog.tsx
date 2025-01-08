@@ -44,6 +44,7 @@ export function RoutePreviewDialog({
             transportMode: 'walking'
           }}
           onBack={() => setShowRoutePreview(false)}
+          screenshotUrl={selectedRoute.image_url || null}
         />
         {routeSummary && (
           <div className="mt-4">
