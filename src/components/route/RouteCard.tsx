@@ -9,6 +9,7 @@ import { RouteHeaderWithImage } from './RouteHeaderWithImage';
 import { RouteReviews } from './RouteReviews';
 import { supabase } from '@/integrations/supabase/client';
 import CityMap from '../CityMap';
+import { toast } from '@/components/ui/use-toast';
 
 interface RouteCardProps {
   route: {
@@ -65,34 +66,74 @@ export function RouteCard({
       }
     } catch (error) {
       console.error('Error fetching city coordinates:', error);
+      toast({
+        title: "Errore",
+        description: "Impossibile caricare le coordinate della città",
+        variant: "destructive"
+      });
     }
   };
 
   const handleLikeClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data: existingLike } = await supabase
-      .from('route_likes')
-      .select('id')
-      .eq('route_id', route.id)
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    if (existingLike) {
-      await supabase
-        .from('route_likes')
-        .delete()
-        .eq('route_id', route.id)
-        .eq('user_id', user.id);
-    } else {
-      await supabase
-        .from('route_likes')
-        .insert({
-          route_id: route.id,
-          user_id: user.id
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Errore",
+          description: "Devi essere autenticato per mettere mi piace",
+          variant: "destructive"
         });
+        return;
+      }
+
+      const { data: existingLike } = await supabase
+        .from('route_likes')
+        .select('id')
+        .eq('route_id', route.id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (existingLike) {
+        await supabase
+          .from('route_likes')
+          .delete()
+          .eq('route_id', route.id)
+          .eq('user_id', user.id);
+        
+        console.log('Like removed successfully');
+      } else {
+        const { error: insertError } = await supabase
+          .from('route_likes')
+          .insert({
+            route_id: route.id,
+            user_id: user.id
+          });
+
+        if (insertError) {
+          console.error('Error inserting like:', insertError);
+          if (insertError.code === '23505') {
+            // If we get a duplicate error, we'll try to delete the like instead
+            await supabase
+              .from('route_likes')
+              .delete()
+              .eq('route_id', route.id)
+              .eq('user_id', user.id);
+          } else {
+            throw insertError;
+          }
+        } else {
+          console.log('Like added successfully');
+        }
+      }
+    } catch (error) {
+      console.error('Error handling like:', error);
+      toast({
+        title: "Errore",
+        description: "Impossibile gestire il mi piace",
+        variant: "destructive"
+      });
     }
   };
 
