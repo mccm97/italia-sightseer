@@ -7,9 +7,10 @@ import { RouteRating } from './RouteRating';
 import { CommentSection } from './CommentSection';
 import { RouteDescription } from './RouteDescription';
 import { Button } from '../ui/button';
-import { MessageSquare, ListTree } from 'lucide-react';
+import { MessageSquare, ListTree, ThumbsUp } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface RouteCardProps {
   route: {
@@ -39,6 +40,7 @@ export function RouteCard({
   const [showAttractions, setShowAttractions] = useState(false);
   const [showDescription, setShowDescription] = useState(false);
   const [showComments, setShowComments] = useState(false);
+  const { toast } = useToast();
 
   const { data: comments = [] } = useQuery({
     queryKey: ['routeComments', route.id],
@@ -57,20 +59,74 @@ export function RouteCard({
     }
   });
 
+  const { data: screenshot } = useQuery({
+    queryKey: ['routeScreenshot', route.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('screenshots')
+        .select('screenshot_url')
+        .eq('route_id', route.id)
+        .single();
+
+      if (error) throw error;
+      return data?.screenshot_url;
+    }
+  });
+
   const totalCost = route.attractions.reduce((sum, attraction) => {
     return sum + (attraction.price || 0);
   }, 0);
 
+  const handleLikeClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast({
+        title: "Errore",
+        description: "Devi essere autenticato per mettere mi piace",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('route_likes')
+        .insert({ route_id: route.id, user_id: user.id });
+
+      if (error) {
+        if (error.code === '23505') {
+          // If already liked, remove the like
+          await supabase
+            .from('route_likes')
+            .delete()
+            .eq('route_id', route.id)
+            .eq('user_id', user.id);
+        } else {
+          throw error;
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      toast({
+        title: "Errore",
+        description: "Si è verificato un errore durante l'operazione",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <>
-      <Card className="cursor-pointer hover:bg-gray-50 relative" onClick={onRouteClick}>
+      <Card className="cursor-pointer hover:bg-gray-50 relative">
         <RouteCardHeader
           name={route.name}
           routeId={route.id}
           creatorUsername={route.creator?.username}
         />
 
-        {route.image_url && (
+        {route.image_url ? (
           <div className="w-full h-48 relative">
             <img 
               src={route.image_url} 
@@ -78,14 +134,27 @@ export function RouteCard({
               className="w-full h-full object-cover"
             />
           </div>
+        ) : (
+          <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-500">
+            Immagine percorso non disponibile
+          </div>
         )}
 
         <div className="p-4">
-          <div className="flex items-center gap-4 mb-4">
+          <div className="flex items-center justify-between gap-4 mb-4">
             <RouteRating
               routeId={route.id}
               initialRating={routeStats?.averageRating}
             />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLikeClick}
+              className="flex items-center gap-1"
+            >
+              <ThumbsUp className="w-4 h-4" />
+              <span>{routeStats?.likesCount || 0}</span>
+            </Button>
           </div>
           
           <RouteCardContent
@@ -95,6 +164,20 @@ export function RouteCard({
             showSummary={showDescription}
             summary={route.description || ''}
           />
+
+          {screenshot ? (
+            <div className="w-full h-48 relative mt-4">
+              <img 
+                src={screenshot} 
+                alt={`Screenshot del percorso ${route.name}`}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : (
+            <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-500 mt-4">
+              Anteprima mappa non ancora disponibile
+            </div>
+          )}
 
           <div className="flex justify-end gap-2 mt-4">
             <Button
