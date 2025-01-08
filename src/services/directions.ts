@@ -1,6 +1,6 @@
-import { DirectionStep } from '@/types/route';
+import { DirectionsStep } from '@/types/route';
 
-export async function getDirections(waypoints: [number, number][]): Promise<DirectionStep[]> {
+export async function getDirections(waypoints: [number, number][]): Promise<DirectionsStep[]> {
   try {
     console.log('Getting directions for waypoints:', waypoints);
     
