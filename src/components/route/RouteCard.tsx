@@ -8,7 +8,7 @@ import { RouteCardContent } from './RouteCardContent';
 import { RouteStats } from './RouteStats';
 import { RouteComments } from './RouteComments';
 import { RouteScreenshot } from './RouteScreenshot';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 interface RouteCardProps {
@@ -40,6 +40,7 @@ export function RouteCard({
   const [showComments, setShowComments] = useState(false);
   const [isLoadingScreenshot, setIsLoadingScreenshot] = useState(true);
   const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   // Calculate total cost from attractions
   const totalCost = route.attractions.reduce((sum, attraction) => {
@@ -69,19 +70,39 @@ export function RouteCard({
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    if (isLiked) {
-      await supabase
-        .from('route_likes')
-        .delete()
-        .eq('route_id', route.id)
-        .eq('user_id', user.id);
-    } else {
-      await supabase
-        .from('route_likes')
-        .insert({
-          route_id: route.id,
-          user_id: user.id
-        });
+    try {
+      if (isLiked) {
+        // If already liked, remove the like
+        await supabase
+          .from('route_likes')
+          .delete()
+          .eq('route_id', route.id)
+          .eq('user_id', user.id);
+      } else {
+        // Check if like exists first
+        const { data: existingLike } = await supabase
+          .from('route_likes')
+          .select('id')
+          .eq('route_id', route.id)
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        // Only insert if no existing like
+        if (!existingLike) {
+          await supabase
+            .from('route_likes')
+            .insert({
+              route_id: route.id,
+              user_id: user.id
+            });
+        }
+      }
+
+      // Invalidate queries to refresh the UI
+      await queryClient.invalidateQueries({ queryKey: ['routeLike', route.id] });
+      await queryClient.invalidateQueries({ queryKey: ['routeLikes', route.id] });
+    } catch (error) {
+      console.error('Error handling like:', error);
     }
   };
 
