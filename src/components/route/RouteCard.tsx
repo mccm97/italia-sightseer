@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Map } from 'lucide-react';
 import { AttractionDetailsDialog } from './AttractionDetailsDialog';
 import { RouteCardHeader } from './RouteCardHeader';
 import { RouteCardContent } from './RouteCardContent';
 import { CommentSection } from './CommentSection';
 import { RouteDescription } from './RouteDescription';
-import { RouteCardMedia } from './RouteCardMedia';
-import { RouteCardActions } from './RouteCardActions';
 import { RouteStats } from './RouteStats';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -103,17 +103,11 @@ export function RouteCard({
 
   return (
     <>
-      <Card className="cursor-pointer hover:bg-gray-50 relative" onClick={onRouteClick}>
+      <Card className="relative">
         <RouteCardHeader
           name={route.name}
           routeId={route.id}
           creatorUsername={route.creator?.username}
-        />
-
-        <RouteCardMedia
-          routeId={route.id}
-          routeName={route.name}
-          imageUrl={route.image_url}
         />
 
         <div className="p-4">
@@ -132,19 +126,27 @@ export function RouteCard({
             summary={route.description || ''}
           />
 
-          <RouteCardActions
-            onCommentsClick={() => setShowComments(!showComments)}
-            onAttractionsClick={() => setShowAttractions(true)}
-            onDescriptionToggle={() => setShowDescription(!showDescription)}
-            showDescription={showDescription}
-          />
-        </div>
-
-        {showComments && (
-          <div className="p-4 border-t" onClick={(e) => e.stopPropagation()}>
-            <CommentSection routeId={route.id} />
+          <div className="flex justify-end gap-2 mt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onRouteClick();
+              }}
+              className="flex items-center gap-2"
+            >
+              <Map className="w-4 h-4" />
+              Visualizza su mappa
+            </Button>
           </div>
-        )}
+
+          {showComments && (
+            <div className="mt-4 border-t pt-4" onClick={(e) => e.stopPropagation()}>
+              <CommentSection routeId={route.id} />
+            </div>
+          )}
+        </div>
       </Card>
 
       <AttractionDetailsDialog

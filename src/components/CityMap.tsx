@@ -2,9 +2,8 @@ import React, { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { Route } from '@/data/routes';
+import { Route } from '@/types/route';
 
-// Fix for default marker icons in React-Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -18,13 +17,14 @@ interface CityMapProps {
   attractions?: Array<{
     name: string;
     position?: [number, number];
+    visitDuration?: number;
+    price?: number;
   }>;
   routes?: Route[];
   onRouteClick?: (route: Route) => void;
   showWalkingPath?: boolean;
 }
 
-// Helper function to validate coordinates
 const isValidCoordinate = (coord: [number, number]): boolean => {
   return coord[0] !== 0 && coord[1] !== 0 && 
          !isNaN(coord[0]) && !isNaN(coord[1]) &&
@@ -95,7 +95,14 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
   return null;
 };
 
-const CityMap = ({ center, zoom = 13, attractions = [], routes = [], onRouteClick, showWalkingPath = false }: CityMapProps) => {
+const CityMap = ({ 
+  center, 
+  zoom = 13, 
+  attractions = [], 
+  routes = [], 
+  onRouteClick, 
+  showWalkingPath = false 
+}: CityMapProps) => {
   // Filter out attractions without positions and with invalid coordinates
   const validAttractions = attractions.filter((attr): attr is { name: string; position: [number, number] } => 
     !!attr.position && isValidCoordinate(attr.position)
@@ -113,20 +120,24 @@ const CityMap = ({ center, zoom = 13, attractions = [], routes = [], onRouteClic
       />
       
       {/* Show existing routes */}
-      {routes.map((route) => (
-        <Polyline
-          key={route.id}
-          positions={route.attractions
-            .filter(a => a.position && isValidCoordinate(a.position))
-            .map(a => a.position as [number, number])}
-          color="purple"
-          weight={3}
-          opacity={0.6}
-          eventHandlers={{
-            click: () => onRouteClick?.(route)
-          }}
-        />
-      ))}
+      {routes.map((route) => {
+        const routePositions = route.attractions
+          .filter(a => a.position && isValidCoordinate(a.position))
+          .map(a => a.position as [number, number]);
+
+        return routePositions.length > 1 && (
+          <Polyline
+            key={route.id}
+            positions={routePositions}
+            color="purple"
+            weight={3}
+            opacity={0.6}
+            eventHandlers={{
+              click: () => onRouteClick?.(route)
+            }}
+          />
+        );
+      })}
 
       {/* Show attraction markers */}
       {validAttractions.map((attraction, index) => (
