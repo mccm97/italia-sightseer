@@ -8,6 +8,7 @@ import { RouteActions } from './RouteActions';
 import { RouteHeaderWithImage } from './RouteHeaderWithImage';
 import { RouteReviews } from './RouteReviews';
 import { supabase } from '@/integrations/supabase/client';
+import CityMap from '../CityMap';
 
 interface RouteCardProps {
   route: {
@@ -17,26 +18,55 @@ interface RouteCardProps {
       username: string;
     };
     total_duration: number;
-    attractions: any[];
+    attractions: Array<{
+      name: string;
+      visitDuration?: number;
+      price?: number;
+      position?: [number, number];
+    }>;
     image_url?: string;
     description?: string;
+    city_id?: string;
   };
   routeStats?: {
     likesCount: number;
     averageRating: number;
   };
-  onRouteClick: () => void;
+  onRouteClick?: () => void;
+  showDeleteButton?: boolean;
 }
 
 export function RouteCard({
   route,
   routeStats,
   onRouteClick,
+  showDeleteButton = false,
 }: RouteCardProps) {
   const [showAttractions, setShowAttractions] = useState(false);
   const [showDescription, setShowDescription] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [showReviews, setShowReviews] = useState(false);
+  const [showMap, setShowMap] = useState(false);
+  const [cityCoordinates, setCityCoordinates] = useState<[number, number] | null>(null);
+
+  const handleMapClick = async () => {
+    if (!route.city_id) return;
+
+    try {
+      const { data: city } = await supabase
+        .from('cities')
+        .select('lat, lng')
+        .eq('id', route.city_id)
+        .single();
+
+      if (city) {
+        setCityCoordinates([city.lat, city.lng]);
+        setShowMap(true);
+      }
+    } catch (error) {
+      console.error('Error fetching city coordinates:', error);
+    }
+  };
 
   const handleLikeClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -91,11 +121,21 @@ export function RouteCard({
             summary={route.description || ''}
           />
 
+          {showMap && cityCoordinates && (
+            <div className="mt-4 h-[300px] rounded-lg overflow-hidden">
+              <CityMap
+                center={cityCoordinates}
+                attractions={route.attractions}
+                showWalkingPath={true}
+              />
+            </div>
+          )}
+
           <RouteActions
             onCommentsClick={() => setShowComments(!showComments)}
             onAttractionsClick={() => setShowAttractions(true)}
             onDescriptionToggle={() => setShowDescription(!showDescription)}
-            onMapClick={onRouteClick}
+            onMapClick={handleMapClick}
             onReviewsClick={() => setShowReviews(!showReviews)}
             showDescription={showDescription}
           />

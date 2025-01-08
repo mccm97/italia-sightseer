@@ -38,7 +38,6 @@ export function useRouteManagement(selectedCity: any, toast: any) {
 
     console.log('Routes fetched:', routes?.length || 0, 'routes found');
 
-    // Transform the data to match the Route type with proper type checking
     return routes?.map(route => {
       const transformedAttractions: Attraction[] = route.route_attractions?.map((ra: any) => ({
         name: String(ra.attraction.name),
@@ -50,7 +49,11 @@ export function useRouteManagement(selectedCity: any, toast: any) {
         ]
       })) || [];
 
-      // Parse directions from JSON to DirectionsStep[]
+      // Calculate total duration including travel time
+      const totalDuration = route.total_duration + (route.route_attractions?.reduce((sum: number, ra: any) => {
+        return sum + (ra.travel_duration || 0);
+      }, 0) || 0);
+
       let parsedDirections: DirectionsStep[] = [];
       if (route.directions) {
         try {
@@ -74,14 +77,15 @@ export function useRouteManagement(selectedCity: any, toast: any) {
         id: route.id,
         cityName: selectedCity.name,
         name: route.name,
-        duration: route.total_duration,
-        total_duration: route.total_duration,
+        duration: totalDuration,
+        total_duration: totalDuration,
         creator: route.creator,
         attractions: transformedAttractions,
         isPublic: Boolean(route.is_public),
         directions: parsedDirections,
         description: route.description,
-        image_url: route.image_url
+        image_url: route.image_url,
+        city_id: route.city_id
       } satisfies Route;
     }) || [];
   }, [selectedCity, toast]);
