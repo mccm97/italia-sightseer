@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { Button } from '../ui/button';
 import { AttractionDetailsDialog } from './AttractionDetailsDialog';
 import { RouteCardHeader } from './RouteCardHeader';
 import { RouteCardContent } from './RouteCardContent';
@@ -21,6 +20,7 @@ interface RouteCardProps {
     attractions: any[];
     image_url?: string;
     description?: string;
+    screenshot_url?: string;
   };
   routeStats?: {
     likesCount: number;
@@ -39,12 +39,6 @@ export function RouteCard({
   const [showComments, setShowComments] = useState(false);
   const queryClient = useQueryClient();
 
-  // Calculate total cost from attractions
-  const totalCost = route.attractions.reduce((sum, attraction) => {
-    return sum + (attraction.price || 0);
-  }, 0);
-
-  // Check if the current user has liked this route
   const { data: isLiked = false } = useQuery({
     queryKey: ['routeLike', route.id],
     queryFn: async () => {
@@ -62,7 +56,6 @@ export function RouteCard({
     }
   });
 
-  // Fetch screenshot URL
   const { data: screenshot } = useQuery({
     queryKey: ['routeScreenshot', route.id],
     queryFn: async () => {
@@ -75,7 +68,6 @@ export function RouteCard({
     }
   });
 
-  // Fetch comments
   const { data: comments = [] } = useQuery({
     queryKey: ['routeComments', route.id],
     queryFn: async () => {
@@ -131,11 +123,10 @@ export function RouteCard({
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // If we have a screenshot, show it instead of the interactive map
     if (screenshot) {
       e.stopPropagation();
-      // Show screenshot in a modal or full-screen view
-      // You might want to create a separate component for this
+      // Show screenshot in modal
+      // TODO: Implement screenshot modal
     } else {
       onRouteClick();
     }
@@ -172,37 +163,16 @@ export function RouteCard({
           <RouteCardContent
             duration={route.total_duration}
             attractionsCount={route.attractions?.length || 0}
-            totalCost={totalCost}
             showSummary={showDescription}
             summary={route.description || ''}
           />
 
           <div className="flex justify-end gap-2 mt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowAttractions(true);
-              }}
-            >
-              Dettagli Attrazioni
-            </Button>
             <RouteDescription
               description={route.description || ''}
               isExpanded={showDescription}
               onToggle={() => setShowDescription(!showDescription)}
             />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowComments(!showComments);
-              }}
-            >
-              Commenti
-            </Button>
           </div>
         </div>
 

@@ -63,7 +63,6 @@ export function UserRoutes() {
                     averageRating
                   }}
                   onRouteClick={() => {}}
-                  onDirectionsClick={() => {}}
                 />
                 <div className="absolute top-2 right-2">
                   <DeleteRouteButton routeId={route.id} onDelete={() => refetch()} />

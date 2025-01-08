@@ -15,7 +15,6 @@ interface CityViewProps {
   selectedRoute: Route | null;
   onBackClick: () => void;
   onRouteClick: (route: Route) => void;
-  onDirectionsClick: (directions: any[]) => void;
 }
 
 export const CityView = ({
@@ -25,7 +24,6 @@ export const CityView = ({
   selectedRoute,
   onBackClick,
   onRouteClick,
-  onDirectionsClick,
 }: CityViewProps) => {
   return (
     <>
@@ -46,9 +44,6 @@ export const CityView = ({
                   key={route.id}
                   route={route}
                   onRouteClick={() => onRouteClick(route)}
-                  onDirectionsClick={() => {
-                    onDirectionsClick(route.directions || []);
-                  }}
                 />
               ))
             ) : (

@@ -81,6 +81,7 @@ export function useRouteCreation() {
         user_id: user.id,
         transport_mode: formData.transportMode || 'walking',
         total_duration: calculateTotalDuration(),
+        total_distance: 0, // Add this line
         country: formData.country,
         is_public: true
       });
@@ -95,6 +96,7 @@ export function useRouteCreation() {
           user_id: user.id,
           transport_mode: formData.transportMode || 'walking',
           total_duration: calculateTotalDuration(),
+          total_distance: 0, // Add this line
           country: formData.country,
           is_public: true
         })
