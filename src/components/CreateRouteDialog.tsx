@@ -68,6 +68,12 @@ export function CreateRouteDialog() {
       navigate('/login');
       return;
     }
+    if (!newOpen) {
+      // Reset all states when closing the dialog
+      setShowPreview(false);
+      setShowSummary(false);
+      setScreenshotUrl(null);
+    }
     setOpen(newOpen);
   };
 
@@ -75,23 +81,32 @@ export function CreateRouteDialog() {
     if (!user) return;
     const success = await handleFormSubmit(data, user.id);
     if (success) {
-      setShowSummary(true);
+      setShowPreview(true);
     }
   };
 
   const handleCreateRoute = async () => {
     const success = await createRoute();
     if (success) {
-      setFormData(null);
       setOpen(false);
       setShowPreview(false);
       setShowSummary(false);
       setScreenshotUrl(null);
+      setFormData(null);
     }
   };
 
   const handleScreenshotUpload = (url: string) => {
     setScreenshotUrl(url);
+  };
+
+  const handleBack = () => {
+    if (showSummary) {
+      setShowSummary(false);
+      setShowPreview(true);
+    } else if (showPreview) {
+      setShowPreview(false);
+    }
   };
 
   return (
@@ -106,33 +121,30 @@ export function CreateRouteDialog() {
           <DialogTitle>Crea Nuovo Percorso</DialogTitle>
         </DialogHeader>
         
-        {showPreview ? (
-          <RoutePreview
-            formData={formData!}
-            onBack={() => setShowPreview(false)}
-            onContinue={() => setShowSummary(true)}
-            screenshotUrl={screenshotUrl}
-          />
-        ) : showSummary ? (
-          <RouteCreationSummary
-            formData={formData!}
-            onBack={() => {
-              setShowSummary(false);
-              setShowPreview(true);
-            }}
-            onCreateRoute={handleCreateRoute}
-            calculateTotalDuration={calculateTotalDuration}
-            calculateTotalPrice={calculateTotalPrice}
-            onScreenshotUpload={handleScreenshotUpload}
-            screenshotUrl={screenshotUrl}
-          />
-        ) : (
+        {!showPreview && !showSummary ? (
           <CreateRouteForm
             onSubmit={onFormSubmit}
             countries={countries}
             cities={cities}
             selectedCountry={selectedCountry}
             onCountrySelect={setSelectedCountry}
+          />
+        ) : showPreview ? (
+          <RoutePreview
+            formData={formData!}
+            onBack={handleBack}
+            onContinue={() => setShowSummary(true)}
+            screenshotUrl={screenshotUrl}
+          />
+        ) : (
+          <RouteCreationSummary
+            formData={formData!}
+            onBack={handleBack}
+            onCreateRoute={handleCreateRoute}
+            calculateTotalDuration={calculateTotalDuration}
+            calculateTotalPrice={calculateTotalPrice}
+            onScreenshotUpload={handleScreenshotUpload}
+            screenshotUrl={screenshotUrl}
           />
         )}
       </DialogContent>
