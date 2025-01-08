@@ -5,14 +5,12 @@ import { RouteCardHeader } from './RouteCardHeader';
 import { RouteCardContent } from './RouteCardContent';
 import { CommentSection } from './CommentSection';
 import { RouteDescription } from './RouteDescription';
-import { RouteImage } from './RouteImage';
-import { RouteScreenshot } from './RouteScreenshot';
+import { RouteCardMedia } from './RouteCardMedia';
+import { RouteCardActions } from './RouteCardActions';
 import { RouteStats } from './RouteStats';
-import { Button } from '../ui/button';
-import { MessageSquare, ListTree } from 'lucide-react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface RouteCardProps {
   route: {
@@ -44,29 +42,6 @@ export function RouteCard({
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Check if the current user has liked this route
-  const { data: userLike } = useQuery({
-    queryKey: ['routeLike', route.id],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
-
-      const { data, error } = await supabase
-        .from('route_likes')
-        .select('id')
-        .eq('route_id', route.id)
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error checking like status:', error);
-        return null;
-      }
-
-      return data;
-    }
-  });
-
   const handleLikeClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const { data: { user } } = await supabase.auth.getUser();
@@ -81,28 +56,31 @@ export function RouteCard({
     }
 
     try {
-      if (userLike) {
-        const { error } = await supabase
+      const { data: existingLike } = await supabase
+        .from('route_likes')
+        .select('id')
+        .eq('route_id', route.id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (existingLike) {
+        await supabase
           .from('route_likes')
           .delete()
           .eq('route_id', route.id)
           .eq('user_id', user.id);
-
-        if (error) throw error;
 
         toast({
           title: "Mi piace rimosso",
           description: "Hai rimosso il mi piace dal percorso"
         });
       } else {
-        const { error } = await supabase
+        await supabase
           .from('route_likes')
           .insert({
             route_id: route.id,
             user_id: user.id
           });
-
-        if (error) throw error;
 
         toast({
           title: "Mi piace aggiunto",
@@ -125,21 +103,24 @@ export function RouteCard({
 
   return (
     <>
-      <Card className="cursor-pointer hover:bg-gray-50 relative">
+      <Card className="cursor-pointer hover:bg-gray-50 relative" onClick={onRouteClick}>
         <RouteCardHeader
           name={route.name}
           routeId={route.id}
           creatorUsername={route.creator?.username}
         />
 
-        <RouteImage imageUrl={route.image_url} routeName={route.name} />
+        <RouteCardMedia
+          routeId={route.id}
+          routeName={route.name}
+          imageUrl={route.image_url}
+        />
 
         <div className="p-4">
           <RouteStats
             routeId={route.id}
             initialLikesCount={routeStats?.likesCount || 0}
             initialAverageRating={routeStats?.averageRating}
-            isLiked={!!userLike}
             onLikeClick={handleLikeClick}
           />
           
@@ -151,37 +132,12 @@ export function RouteCard({
             summary={route.description || ''}
           />
 
-          <RouteScreenshot routeId={route.id} routeName={route.name} />
-
-          <div className="flex justify-end gap-2 mt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowComments(!showComments);
-              }}
-            >
-              <MessageSquare className="w-4 h-4 mr-2" />
-              Commenti
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowAttractions(true);
-              }}
-            >
-              <ListTree className="w-4 h-4 mr-2" />
-              Dettagli Attrazioni
-            </Button>
-            <RouteDescription
-              description={route.description || ''}
-              isExpanded={showDescription}
-              onToggle={() => setShowDescription(!showDescription)}
-            />
-          </div>
+          <RouteCardActions
+            onCommentsClick={() => setShowComments(!showComments)}
+            onAttractionsClick={() => setShowAttractions(true)}
+            onDescriptionToggle={() => setShowDescription(!showDescription)}
+            showDescription={showDescription}
+          />
         </div>
 
         {showComments && (

@@ -1,28 +1,32 @@
-import { Button } from '@/components/ui/button';
-import { ListTree, ChevronDown } from 'lucide-react';
+import React from 'react';
+import { Button } from '../ui/button';
+import { MessageSquare, ListTree } from 'lucide-react';
 
 interface RouteCardActionsProps {
-  onDirectionsClick: () => void;
+  onCommentsClick: () => void;
   onAttractionsClick: () => void;
-  onSummaryClick: () => void;
+  onDescriptionToggle: () => void;
+  showDescription: boolean;
 }
 
 export function RouteCardActions({
-  onDirectionsClick,
+  onCommentsClick,
   onAttractionsClick,
-  onSummaryClick
+  onDescriptionToggle,
+  showDescription
 }: RouteCardActionsProps) {
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex justify-end gap-2 mt-4">
       <Button
         variant="outline"
         size="sm"
         onClick={(e) => {
           e.stopPropagation();
-          onDirectionsClick();
+          onCommentsClick();
         }}
       >
-        Visualizza Indicazioni
+        <MessageSquare className="w-4 h-4 mr-2" />
+        Commenti
       </Button>
       <Button
         variant="outline"
@@ -36,14 +40,14 @@ export function RouteCardActions({
         Dettagli Attrazioni
       </Button>
       <Button
-        variant="ghost"
+        variant="outline"
         size="sm"
         onClick={(e) => {
           e.stopPropagation();
-          onSummaryClick();
+          onDescriptionToggle();
         }}
       >
-        <ChevronDown className="w-4 h-4" />
+        {showDescription ? 'Nascondi Descrizione' : 'Mostra Descrizione'}
       </Button>
     </div>
   );

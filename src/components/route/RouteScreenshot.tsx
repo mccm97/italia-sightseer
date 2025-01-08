@@ -16,11 +16,11 @@ export function RouteScreenshot({ routeId, routeName }: RouteScreenshotProps) {
         .from('screenshots')
         .select('screenshot_url')
         .eq('route_id', routeId)
-        .maybeSingle();
+        .single();
 
       if (error) {
         console.error('Error fetching screenshot:', error);
-        throw error;
+        return null;
       }
 
       console.log('Screenshot data:', data);
@@ -30,14 +30,14 @@ export function RouteScreenshot({ routeId, routeName }: RouteScreenshotProps) {
 
   if (isLoading) {
     return (
-      <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-500 mt-4">
+      <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-500">
         Caricamento anteprima...
       </div>
     );
   }
 
   return screenshot ? (
-    <div className="w-full h-48 relative mt-4">
+    <div className="w-full h-48 relative">
       <img 
         src={screenshot} 
         alt={`Screenshot del percorso ${routeName}`}
@@ -45,7 +45,7 @@ export function RouteScreenshot({ routeId, routeName }: RouteScreenshotProps) {
       />
     </div>
   ) : (
-    <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-500 mt-4">
+    <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-500">
       Anteprima mappa non ancora disponibile
     </div>
   );
