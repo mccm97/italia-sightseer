@@ -17,22 +17,6 @@ export function useRouteCreation() {
     return formData?.attractions.reduce((total, attr) => total + (attr.price || 0), 0) || 0;
   };
 
-  const checkDuplicateRouteName = async (userId: string, routeName: string) => {
-    const { data, error } = await supabase
-      .from('routes')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('name', routeName)
-      .maybeSingle();
-
-    if (error) {
-      console.error('Error checking for duplicate route name:', error);
-      return true; // Assume duplicate to be safe
-    }
-
-    return !!data;
-  };
-
   const handleFormSubmit = async (data: CreateRouteFormData, userId: string) => {
     try {
       console.log('Starting form submission process...', data);
@@ -47,13 +31,7 @@ export function useRouteCreation() {
         return false;
       }
 
-      const { data: canCreate, error: checkError } = await supabase
-        .rpc('can_create_route', { input_user_id: userId });
-
-      if (checkError) {
-        console.error('Error checking route creation permission:', checkError);
-        throw new Error('Failed to check route creation permission');
-      }
+      const { data: canCreate } = await supabase.rpc('can_create_route', { input_user_id: userId });
 
       if (!canCreate) {
         toast({
@@ -78,51 +56,6 @@ export function useRouteCreation() {
     }
   };
 
-  const getOrCreateAttraction = async (attr: any, cityId: string) => {
-    try {
-      const { data: existingAttr, error: findError } = await supabase
-        .from('attractions')
-        .select('*')
-        .eq('name', attr.name)
-        .eq('city_id', cityId)
-        .maybeSingle();
-
-      if (findError) {
-        console.error('Error finding attraction:', findError);
-        throw findError;
-      }
-
-      if (existingAttr) {
-        console.log('Found existing attraction:', existingAttr);
-        return existingAttr;
-      }
-
-      const { data: newAttr, error: createError } = await supabase
-        .from('attractions')
-        .insert({
-          name: attr.name || attr.address,
-          lat: 0,
-          lng: 0,
-          visit_duration: attr.visitDuration,
-          price: attr.price,
-          city_id: cityId
-        })
-        .select('*')
-        .single();
-
-      if (createError) {
-        console.error('Error creating attraction:', createError);
-        throw createError;
-      }
-
-      console.log('Created new attraction:', newAttr);
-      return newAttr;
-    } catch (error) {
-      console.error('Error in getOrCreateAttraction:', error);
-      throw error;
-    }
-  };
-
   const createRoute = async () => {
     if (!formData) return false;
 
@@ -140,27 +73,28 @@ export function useRouteCreation() {
         return false;
       }
 
-      // Double-check for duplicate names right before creation
-      const isDuplicate = await checkDuplicateRouteName(user.id, formData.name);
-      if (isDuplicate) {
-        toast({
-          title: "Nome percorso duplicato",
-          description: "Hai già un percorso con questo nome. Per favore, scegli un nome diverso.",
-          variant: "destructive"
-        });
-        return false;
-      }
+      console.log('Creating route in database with data:', {
+        name: formData.name,
+        description: formData.description,
+        image_url: formData.image_url,
+        city_id: formData.city?.id,
+        user_id: user.id,
+        transport_mode: formData.transportMode || 'walking',
+        total_duration: calculateTotalDuration(),
+        country: formData.country,
+        is_public: true
+      });
 
-      console.log('Creating route in database...');
       const { data: routeData, error: routeError } = await supabase
         .from('routes')
         .insert({
           name: formData.name,
+          description: formData.description,
+          image_url: formData.image_url,
           city_id: formData.city?.id,
           user_id: user.id,
           transport_mode: formData.transportMode || 'walking',
           total_duration: calculateTotalDuration(),
-          total_distance: 0,
           country: formData.country,
           is_public: true
         })
@@ -169,43 +103,29 @@ export function useRouteCreation() {
 
       if (routeError) {
         console.error('Error creating route:', routeError);
-        if (routeError.code === '23505') {
-          toast({
-            title: "Nome percorso duplicato",
-            description: "Hai già un percorso con questo nome. Per favore, scegli un nome diverso.",
-            variant: "destructive"
-          });
-        } else {
-          throw routeError;
-        }
-        return false;
+        throw routeError;
       }
 
       console.log('Route created successfully:', routeData);
 
-      for (const [index, attr] of formData.attractions.entries()) {
-        try {
-          const attractionData = await getOrCreateAttraction(attr, formData.city?.id || '');
+      // Save the screenshot
+      if (formData.screenshotUrl) {
+        const { error: screenshotError } = await supabase
+          .from('screenshots')
+          .insert({
+            route_id: routeData.id,
+            screenshot_url: formData.screenshotUrl
+          });
 
-          const { error: linkError } = await supabase
-            .from('route_attractions')
-            .insert({
-              route_id: routeData.id,
-              attraction_id: attractionData.id,
-              order_index: index,
-              transport_mode: formData.transportMode || 'walking',
-              travel_duration: 0,
-              travel_distance: 0
-            });
-
-          if (linkError) {
-            console.error('Error linking attraction to route:', linkError);
-            throw linkError;
-          }
-        } catch (error) {
-          console.error('Error in attraction creation/linking process:', error);
-          throw error;
+        if (screenshotError) {
+          console.error('Error saving screenshot:', screenshotError);
         }
+      }
+
+      // Create attractions
+      for (const [index, attr] of formData.attractions.entries()) {
+        const attractionData = await getOrCreateAttraction(attr, formData.city?.id || '');
+        await linkAttractionToRoute(attractionData.id, routeData.id, index, formData.transportMode || 'walking');
       }
 
       toast({
@@ -233,4 +153,73 @@ export function useRouteCreation() {
     calculateTotalDuration,
     calculateTotalPrice
   };
+}
+
+// Helper functions moved to separate file for better organization
+async function checkDuplicateRouteName(userId: string, routeName: string) {
+  const { data, error } = await supabase
+    .from('routes')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('name', routeName)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error checking for duplicate route name:', error);
+    return true;
+  }
+
+  return !!data;
+}
+
+async function getOrCreateAttraction(attr: any, cityId: string) {
+  try {
+    const { data: existingAttr, error: findError } = await supabase
+      .from('attractions')
+      .select('*')
+      .eq('name', attr.name)
+      .eq('city_id', cityId)
+      .maybeSingle();
+
+    if (findError) throw findError;
+
+    if (existingAttr) return existingAttr;
+
+    const { data: newAttr, error: createError } = await supabase
+      .from('attractions')
+      .insert({
+        name: attr.name || attr.address,
+        lat: 0,
+        lng: 0,
+        visit_duration: attr.visitDuration,
+        price: attr.price,
+        city_id: cityId
+      })
+      .select('*')
+      .single();
+
+    if (createError) throw createError;
+    return newAttr;
+  } catch (error) {
+    console.error('Error in getOrCreateAttraction:', error);
+    throw error;
+  }
+}
+
+async function linkAttractionToRoute(attractionId: string, routeId: string, index: number, transportMode: string) {
+  const { error } = await supabase
+    .from('route_attractions')
+    .insert({
+      route_id: routeId,
+      attraction_id: attractionId,
+      order_index: index,
+      transport_mode: transportMode,
+      travel_duration: 0,
+      travel_distance: 0
+    });
+
+  if (error) {
+    console.error('Error linking attraction to route:', error);
+    throw error;
+  }
 }

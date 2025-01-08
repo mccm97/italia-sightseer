@@ -62,6 +62,19 @@ export function RouteCard({
     }
   });
 
+  // Fetch screenshot URL
+  const { data: screenshot } = useQuery({
+    queryKey: ['routeScreenshot', route.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('screenshots')
+        .select('screenshot_url')
+        .eq('route_id', route.id)
+        .maybeSingle();
+      return data?.screenshot_url;
+    }
+  });
+
   // Fetch comments
   const { data: comments = [] } = useQuery({
     queryKey: ['routeComments', route.id],
@@ -117,9 +130,20 @@ export function RouteCard({
     }
   };
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // If we have a screenshot, show it instead of the interactive map
+    if (screenshot) {
+      e.stopPropagation();
+      // Show screenshot in a modal or full-screen view
+      // You might want to create a separate component for this
+    } else {
+      onRouteClick();
+    }
+  };
+
   return (
     <>
-      <Card className="cursor-pointer hover:bg-gray-50 relative" onClick={onRouteClick}>
+      <Card className="cursor-pointer hover:bg-gray-50 relative" onClick={handleCardClick}>
         <RouteCardHeader
           name={route.name}
           routeId={route.id}
