@@ -143,7 +143,7 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
           "Digita almeno 2 caratteri per cercare" : 
           "Nessun monumento trovato"}
       </CommandEmpty>
-      {Array.isArray(suggestions) && suggestions.length > 0 && (
+      {suggestions && suggestions.length > 0 && (
         <CommandGroup>
           {suggestions.map((suggestion) => (
             <CommandItem
