@@ -18,8 +18,8 @@ export function AttractionTimeline({ attractions }: AttractionTimelineProps) {
           <div className="flex-1 p-4 border rounded-lg space-y-2 bg-white">
             <h3 className="font-semibold">{attraction.name}</h3>
             <div className="text-sm text-muted-foreground">
-              <p>Durata visita: {attraction.visitDuration} minuti</p>
-              {attraction.price !== undefined && (
+              <p>Durata visita: {attraction.visitDuration || 0} minuti</p>
+              {typeof attraction.price === 'number' && (
                 <p>Prezzo: €{attraction.price.toFixed(2)}</p>
               )}
             </div>
