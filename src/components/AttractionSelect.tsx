@@ -127,7 +127,7 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
   }
 
   return (
-    <Command className="rounded-lg border shadow-md">
+    <Command className="rounded-lg border shadow-md" shouldFilter={false}>
       <CommandInput
         placeholder="Cerca monumento..."
         value={searchQuery}
@@ -143,7 +143,7 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
           "Digita almeno 2 caratteri per cercare" : 
           "Nessun monumento trovato"}
       </CommandEmpty>
-      {suggestions && suggestions.length > 0 && (
+      {Array.isArray(suggestions) && suggestions.length > 0 && (
         <CommandGroup>
           {suggestions.map((suggestion) => (
             <CommandItem
