@@ -1,5 +1,4 @@
-import React from 'react';
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
 interface RouteHeaderProps {
@@ -13,13 +12,19 @@ export function RouteHeader({
 }: RouteHeaderProps) {
   return (
     <div className="flex items-center justify-between mb-4">
-      <Button 
-        variant="outline" 
+      <Button
+        variant="ghost"
         onClick={onBack}
         className="flex items-center gap-2"
       >
         <ArrowLeft className="w-4 h-4" />
-        Torna indietro
+        Indietro
+      </Button>
+      <Button 
+        onClick={onCreateRoute}
+        className="bg-primary text-white hover:bg-primary/90"
+      >
+        Crea Percorso
       </Button>
     </div>
   );
