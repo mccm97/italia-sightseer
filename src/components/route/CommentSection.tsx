@@ -3,17 +3,34 @@ import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 interface CommentSectionProps {
   routeId: string;
-  comments: any[];
 }
 
-export function CommentSection({ routeId, comments }: CommentSectionProps) {
+export function CommentSection({ routeId }: CommentSectionProps) {
   const [newComment, setNewComment] = useState('');
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const { data: comments = [] } = useQuery({
+    queryKey: ['routeComments', routeId],
+    queryFn: async () => {
+      console.log('Fetching comments for route:', routeId);
+      const { data, error } = await supabase
+        .from('route_comments')
+        .select(`
+          *,
+          profiles:user_id (username)
+        `)
+        .eq('route_id', routeId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    }
+  });
 
   const handleSubmitComment = async () => {
     if (!newComment.trim()) return;

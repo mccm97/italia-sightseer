@@ -3,7 +3,6 @@ import { Card } from '@/components/ui/card';
 import { AttractionDetailsDialog } from './AttractionDetailsDialog';
 import { RouteCardHeader } from './RouteCardHeader';
 import { RouteCardContent } from './RouteCardContent';
-import { RouteRating } from './RouteRating';
 import { CommentSection } from './CommentSection';
 import { RouteDescription } from './RouteDescription';
 import { RouteImage } from './RouteImage';
