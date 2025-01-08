@@ -81,7 +81,7 @@ export function RoutePreview({ formData, onBack, onContinue, screenshotUrl }: Ro
       <RouteHeader
         onBack={onBack}
         onCreateRoute={() => {}}
-        screenshotUrl={screenshotUrl}
+        screenshotUrl={null}
       />
 
       <h2 className="text-2xl font-bold">Anteprima Percorso</h2>
@@ -111,8 +111,11 @@ export function RoutePreview({ formData, onBack, onContinue, screenshotUrl }: Ro
       </Alert>
 
       <div className="flex justify-end">
-        <Button onClick={onContinue}>
-          Continua
+        <Button 
+          onClick={onContinue}
+          className="bg-primary text-white hover:bg-primary/90"
+        >
+          Continua al Riepilogo
         </Button>
       </div>
     </div>
