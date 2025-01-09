@@ -24,15 +24,6 @@ interface BlogPostProps {
 export function BlogPost({ post, onLike, isLiked }: BlogPostProps) {
   const navigate = useNavigate();
   const [isSharing, setIsSharing] = useState(false);
-  const [currentUser, setCurrentUser] = useState<string | null>(null);
-
-  useEffect(() => {
-    const getCurrentUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setCurrentUser(user?.id || null);
-    };
-    getCurrentUser();
-  }, []);
 
   const handleShare = async (platform: string) => {
     const postUrl = `${window.location.origin}/blog/${post.id}`;
@@ -63,9 +54,9 @@ export function BlogPost({ post, onLike, isLiked }: BlogPostProps) {
     e.preventDefault();
     e.stopPropagation();
     
-    if (post.creator?.id) {
-      console.log('Navigating to creator profile:', post.creator.id);
-      navigate(`/profile/${post.creator.id}`);
+    if (post.user_id) {
+      console.log('Navigating to user profile:', post.user_id);
+      navigate(`/profile/${post.user_id}`);
     }
   };
 

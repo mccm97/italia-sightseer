@@ -8,6 +8,7 @@ interface RouteHeaderWithImageProps {
   creatorId?: string;
   creatorAvatarUrl?: string;
   imageUrl?: string;
+  userId?: string;
 }
 
 export function RouteHeaderWithImage({
@@ -15,7 +16,8 @@ export function RouteHeaderWithImage({
   creatorUsername,
   creatorId,
   creatorAvatarUrl,
-  imageUrl
+  imageUrl,
+  userId
 }: RouteHeaderWithImageProps) {
   return (
     <div className="flex items-start gap-4 p-4">
@@ -24,16 +26,16 @@ export function RouteHeaderWithImage({
           <CardTitle className="flex flex-col">
             <span>{name}</span>
             <div className="flex items-center gap-2 mt-2">
-              {creatorId && creatorUsername ? (
+              {userId ? (
                 <Link 
-                  to={`/profile/${creatorId}`}
+                  to={`/profile/${userId}`}
                   className="flex items-center gap-2 hover:opacity-80 transition-opacity"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Avatar className="h-6 w-6">
                     <AvatarImage src={creatorAvatarUrl} />
                     <AvatarFallback>
-                      {creatorUsername[0]?.toUpperCase() || 'U'}
+                      {creatorUsername?.[0]?.toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
                   <span className="text-sm text-muted-foreground hover:underline">
