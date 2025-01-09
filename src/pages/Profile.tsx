@@ -19,7 +19,7 @@ export default function Profile() {
   const [profile, setProfile] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { userId } = useParams(); // Get userId from URL params
+  const { userId } = useParams();
 
   useEffect(() => {
     const getProfile = async () => {
@@ -78,7 +78,7 @@ export default function Profile() {
     };
 
     getProfile();
-  }, [navigate, toast, userId]); // Add userId to dependencies
+  }, [navigate, toast, userId]);
 
   if (loading) {
     return (
