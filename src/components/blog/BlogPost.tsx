@@ -1,6 +1,11 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { formatDate } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { ThumbsUp } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface BlogPostProps {
   post: {
@@ -17,6 +22,81 @@ interface BlogPostProps {
 }
 
 export function BlogPost({ post }: BlogPostProps) {
+  const [likes, setLikes] = useState<number>(0);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    fetchLikes();
+    checkIfLiked();
+  }, [post.id]);
+
+  const fetchLikes = async () => {
+    const { count } = await supabase
+      .from('blog_post_likes')
+      .select('*', { count: 'exact' })
+      .eq('post_id', post.id);
+    
+    setLikes(count || 0);
+  };
+
+  const checkIfLiked = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data } = await supabase
+      .from('blog_post_likes')
+      .select('id')
+      .eq('post_id', post.id)
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    setIsLiked(!!data);
+  };
+
+  const handleLike = async () => {
+    setIsLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Errore",
+          description: "Devi essere autenticato per mettere mi piace",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (isLiked) {
+        await supabase
+          .from('blog_post_likes')
+          .delete()
+          .eq('post_id', post.id)
+          .eq('user_id', user.id);
+        setLikes(prev => prev - 1);
+      } else {
+        await supabase
+          .from('blog_post_likes')
+          .insert({
+            post_id: post.id,
+            user_id: user.id
+          });
+        setLikes(prev => prev + 1);
+      }
+      setIsLiked(!isLiked);
+    } catch (error) {
+      console.error('Error handling like:', error);
+      toast({
+        title: "Errore",
+        description: "Si è verificato un errore",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Card className="overflow-hidden">
       {post.cover_image_url && (
@@ -45,7 +125,19 @@ export function BlogPost({ post }: BlogPostProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <p className="whitespace-pre-wrap">{post.content}</p>
+        <p className="whitespace-pre-wrap mb-4">{post.content}</p>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleLike}
+            disabled={isLoading}
+            className={isLiked ? 'bg-blue-50' : ''}
+          >
+            <ThumbsUp className={`h-4 w-4 mr-2 ${isLiked ? 'fill-blue-500 text-blue-500' : ''}`} />
+            {likes} Mi piace
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

@@ -21,6 +21,15 @@ export function CreatePostInput() {
   }, []);
 
   const handleSubmit = async () => {
+    if (!user) {
+      toast({
+        title: "Errore",
+        description: "Devi essere autenticato per pubblicare",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (content.trim().split(/\s+/).length < 50) {
       toast({
         title: "Contenuto troppo breve",
@@ -37,7 +46,7 @@ export function CreatePostInput() {
         .insert({
           content,
           title: content.split('\n')[0].slice(0, 100),
-          user_id: user?.id,
+          user_id: user.id,
           is_published: true
         });
 
