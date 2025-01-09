@@ -1,133 +1,197 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { formatDate } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { ThumbsUp, Share2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { Link } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Share2 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { it } from 'date-fns/locale';
-import { BlogPost as BlogPostType } from '@/types/blog';
+} from "@/components/ui/dropdown-menu";
 
 interface BlogPostProps {
-  post: BlogPostType;
-  onLike?: () => void;
-  isLiked?: boolean;
+  post: {
+    id: string;
+    title: string;
+    content: string;
+    created_at: string;
+    cover_image_url: string | null;
+    user_id?: string;
+    profiles: {
+      username: string | null;
+      avatar_url: string | null;
+    } | null;
+  };
 }
 
-export function BlogPost({ post, onLike, isLiked }: BlogPostProps) {
-  const navigate = useNavigate();
-  const [isSharing, setIsSharing] = useState(false);
+export function BlogPost({ post }: BlogPostProps) {
+  const [likes, setLikes] = useState<number>(0);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
-  const handleShare = async (platform: string) => {
-    const postUrl = `${window.location.origin}/blog/${post.id}`;
-    const text = `Leggi "${post.title}" su WayWonder`;
+  useEffect(() => {
+    fetchLikes();
+    checkIfLiked();
+  }, [post.id]);
 
-    let shareUrl = '';
-    switch (platform) {
-      case 'whatsapp':
-        shareUrl = `https://wa.me/?text=${encodeURIComponent(`${text}\n${postUrl}`)}`;
-        break;
-      case 'facebook':
-        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`;
-        break;
-      case 'twitter':
-        shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(postUrl)}`;
-        break;
-      case 'linkedin':
-        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(postUrl)}`;
-        break;
-      default:
-        return;
-    }
-
-    window.open(shareUrl, '_blank', 'noopener,noreferrer');
+  const fetchLikes = async () => {
+    const { count } = await supabase
+      .from('blog_post_likes')
+      .select('*', { count: 'exact' })
+      .eq('post_id', post.id);
+    
+    setLikes(count || 0);
   };
 
-  const navigateToProfile = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (post.user_id) {
-      console.log('Navigating to user profile:', post.user_id);
-      navigate(`/profile/${post.user_id}`);
+  const checkIfLiked = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data } = await supabase
+      .from('blog_post_likes')
+      .select('id')
+      .eq('post_id', post.id)
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    setIsLiked(!!data);
+  };
+
+  const handleLike = async () => {
+    setIsLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Errore",
+          description: "Devi essere autenticato per mettere mi piace",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (isLiked) {
+        await supabase
+          .from('blog_post_likes')
+          .delete()
+          .eq('post_id', post.id)
+          .eq('user_id', user.id);
+        setLikes(prev => prev - 1);
+      } else {
+        await supabase
+          .from('blog_post_likes')
+          .insert({
+            post_id: post.id,
+            user_id: user.id
+          });
+        setLikes(prev => prev + 1);
+      }
+      setIsLiked(!isLiked);
+    } catch (error) {
+      console.error('Error handling like:', error);
+      toast({
+        title: "Errore",
+        description: "Si è verificato un errore",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const handleShare = (platform: string) => {
+    const url = window.location.href;
+    const text = encodeURIComponent(post.title);
+    
+    const shareUrls = {
+      whatsapp: `https://wa.me/?text=${text}%20${url}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
+      twitter: `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`
+    };
+
+    window.open(shareUrls[platform as keyof typeof shareUrls], '_blank');
   };
 
   return (
-    <Card className="mb-6">
-      <CardHeader className="flex flex-row items-center gap-4">
-        <div 
-          onClick={navigateToProfile}
-          className="cursor-pointer"
-        >
-          <Avatar>
-            <AvatarImage src={post.creator?.avatar_url} />
-            <AvatarFallback>{post.creator?.username?.[0]?.toUpperCase()}</AvatarFallback>
-          </Avatar>
-        </div>
-        <div className="flex flex-col">
-          <span 
-            className="font-semibold cursor-pointer hover:underline"
-            onClick={navigateToProfile}
-          >
-            {post.creator?.username}
-          </span>
-          <span className="text-sm text-gray-500">
-            {formatDistanceToNow(new Date(post.created_at), { addSuffix: true, locale: it })}
-          </span>
-        </div>
-      </CardHeader>
-
-      <CardContent>
-        <h2 className="text-xl font-bold mb-4">{post.title}</h2>
-        {post.cover_image_url && (
+    <Card className="overflow-hidden">
+      {post.cover_image_url && (
+        <div className="w-full h-64 relative">
           <img
             src={post.cover_image_url}
             alt={post.title}
-            className="w-full h-64 object-cover rounded-md mb-4"
+            className="w-full h-full object-cover"
           />
-        )}
-        <p className="whitespace-pre-wrap">{post.content}</p>
+        </div>
+      )}
+      <CardHeader className="flex flex-row items-center gap-4">
+        <Link to={`/profile/${post.user_id}`} className="hover:opacity-80 transition-opacity">
+          <Avatar>
+            <AvatarImage src={post.profiles?.avatar_url || undefined} />
+            <AvatarFallback>
+              {post.profiles?.username?.[0]?.toUpperCase() || 'U'}
+            </AvatarFallback>
+          </Avatar>
+        </Link>
+        <div>
+          <h2 className="text-2xl font-bold">{post.title}</h2>
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <Link 
+              to={`/profile/${post.user_id}`}
+              className="hover:underline hover:text-gray-700 transition-colors"
+            >
+              {post.profiles?.username || 'Utente anonimo'}
+            </Link>
+            <span>•</span>
+            <span>{formatDate(post.created_at)}</span>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <p className="whitespace-pre-wrap mb-6">{post.content}</p>
+        <div className="flex items-center gap-2 border-t pt-4">
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={handleLike}
+            disabled={isLoading}
+            className={`flex-1 ${isLiked ? 'bg-blue-50 hover:bg-blue-100' : ''}`}
+          >
+            <ThumbsUp className={`h-5 w-5 mr-2 ${isLiked ? 'fill-blue-500 text-blue-500' : ''}`} />
+            <span className={`${isLiked ? 'text-blue-500' : ''}`}>
+              {likes} Mi piace
+            </span>
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="flex-1">
+                <Share2 className="h-5 w-5 mr-2" />
+                Condividi
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => handleShare('whatsapp')}>
+                WhatsApp
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleShare('facebook')}>
+                Facebook
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleShare('twitter')}>
+                Twitter
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleShare('linkedin')}>
+                LinkedIn
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </CardContent>
-
-      <CardFooter className="flex justify-between">
-        <Button
-          variant={isLiked ? "default" : "outline"}
-          onClick={onLike}
-          className="gap-2"
-        >
-          {isLiked ? "Mi piace" : "Mi piace"}
-        </Button>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="gap-2">
-              <Share2 className="h-4 w-4" />
-              Condividi
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => handleShare('whatsapp')}>
-              WhatsApp
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleShare('facebook')}>
-              Facebook
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleShare('twitter')}>
-              Twitter
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleShare('linkedin')}>
-              LinkedIn
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </CardFooter>
     </Card>
   );
 }

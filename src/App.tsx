@@ -15,7 +15,6 @@ function App() {
       <Route path="/profile" element={<Profile />} />
       <Route path="/profile/:id" element={<Profile />} />
       <Route path="/blog" element={<Blog />} />
-      <Route path="/blog/:id" element={<Blog />} />
       <Route path="/statistics" element={<Statistics />} />
       <Route path="/admin" element={<Admin />} />
       <Route path="/upgrade" element={<Upgrade />} />
