@@ -125,17 +125,19 @@ export function BlogPost({ post }: BlogPostProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <p className="whitespace-pre-wrap mb-4">{post.content}</p>
-        <div className="flex items-center gap-2">
+        <p className="whitespace-pre-wrap mb-6">{post.content}</p>
+        <div className="flex items-center gap-2 border-t pt-4">
           <Button 
-            variant="outline" 
+            variant="ghost" 
             size="sm"
             onClick={handleLike}
             disabled={isLoading}
-            className={isLiked ? 'bg-blue-50' : ''}
+            className={`flex-1 ${isLiked ? 'bg-blue-50 hover:bg-blue-100' : ''}`}
           >
-            <ThumbsUp className={`h-4 w-4 mr-2 ${isLiked ? 'fill-blue-500 text-blue-500' : ''}`} />
-            {likes} Mi piace
+            <ThumbsUp className={`h-5 w-5 mr-2 ${isLiked ? 'fill-blue-500 text-blue-500' : ''}`} />
+            <span className={`${isLiked ? 'text-blue-500' : ''}`}>
+              {likes} Mi piace
+            </span>
           </Button>
         </div>
       </CardContent>
