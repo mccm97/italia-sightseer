@@ -106,14 +106,15 @@ export function BlogPost({ post }: BlogPostProps) {
   };
 
   const handleShare = (platform: string) => {
-    const url = window.location.href;
+    // Costruisci l'URL completo del post
+    const postUrl = `${window.location.origin}/blog/${post.id}`;
     const text = encodeURIComponent(post.title);
     
     const shareUrls = {
-      whatsapp: `https://wa.me/?text=${text}%20${url}`,
-      facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
-      twitter: `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
-      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`
+      whatsapp: `https://wa.me/?text=${text}%20${postUrl}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${postUrl}`,
+      twitter: `https://twitter.com/intent/tweet?text=${text}&url=${postUrl}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${postUrl}`
     };
 
     window.open(shareUrls[platform as keyof typeof shareUrls], '_blank');
