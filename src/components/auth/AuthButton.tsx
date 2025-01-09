@@ -21,23 +21,30 @@ export function AuthButton() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    // Initial session check and setup
+    // Clear any stale data first
+    localStorage.clear(); // Clear all localStorage data to ensure no stale tokens
+    queryClient.clear();
+
     const initializeAuth = async () => {
       try {
-        // Clear any stale data first
-        localStorage.removeItem('sb-shcbdouqszburohgegcb-auth-token');
-        queryClient.clear();
-
         const { data: { session }, error } = await supabase.auth.getSession();
+        
         if (error) {
           console.error('Initial session check error:', error);
+          setUser(null);
           return;
         }
 
-        console.log('Initial session state:', session?.user?.id || 'No session');
-        setUser(session?.user || null);
+        if (session?.user) {
+          console.log('Valid session found:', session.user.id);
+          setUser(session.user);
+        } else {
+          console.log('No valid session found');
+          setUser(null);
+        }
       } catch (error) {
         console.error('Session initialization error:', error);
+        setUser(null);
       } finally {
         setLoading(false);
       }
@@ -47,22 +54,31 @@ export function AuthButton() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state change:', event, session?.user?.id);
       
-      if (event === 'SIGNED_IN') {
-        console.log('User signed in:', session?.user?.id);
-        setUser(session?.user);
-      } else if (event === 'SIGNED_OUT') {
-        console.log('User signed out');
-        setUser(null);
-        queryClient.clear();
-        localStorage.removeItem('sb-shcbdouqszburohgegcb-auth-token');
-        navigate('/');
+      switch (event) {
+        case 'SIGNED_IN':
+          console.log('User signed in:', session?.user?.id);
+          setUser(session?.user);
+          break;
+        case 'SIGNED_OUT':
+          console.log('User signed out');
+          setUser(null);
+          queryClient.clear();
+          localStorage.clear();
+          navigate('/');
+          break;
+        case 'TOKEN_REFRESHED':
+          console.log('Token refreshed for user:', session?.user?.id);
+          setUser(session?.user);
+          break;
+        default:
+          console.log('Unhandled auth event:', event);
       }
     });
 
     initializeAuth();
 
-    // Cleanup subscription on unmount
     return () => {
+      console.log('Cleaning up auth subscriptions');
       subscription.unsubscribe();
     };
   }, [navigate, queryClient]);
