@@ -21,6 +21,8 @@ export function AuthButton() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
+    let mounted = true;
+
     const initializeAuth = async () => {
       try {
         console.log('Checking existing session...');
@@ -28,28 +30,30 @@ export function AuthButton() {
         
         if (error) {
           console.error('Session error:', error);
-          setUser(null);
+          if (mounted) setUser(null);
           return;
         }
 
         if (session?.user) {
           console.log('Found existing session for user:', session.user.id);
-          setUser(session.user);
+          if (mounted) setUser(session.user);
         } else {
           console.log('No active session found');
-          setUser(null);
+          if (mounted) setUser(null);
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
-        setUser(null);
+        if (mounted) setUser(null);
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state change:', event);
       
+      if (!mounted) return;
+
       switch (event) {
         case 'SIGNED_IN':
           if (session?.user) {
@@ -59,7 +63,9 @@ export function AuthButton() {
           break;
         case 'SIGNED_OUT':
           console.log('User signed out');
-          await handleSignOut();
+          setUser(null);
+          queryClient.clear();
+          navigate('/');
           break;
         case 'TOKEN_REFRESHED':
           if (session?.user) {
@@ -79,6 +85,7 @@ export function AuthButton() {
     initializeAuth();
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, [navigate, queryClient]);
@@ -89,12 +96,15 @@ export function AuthButton() {
       console.log('Signing out...');
       
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
-      console.log('Sign out successful, clearing local data');
-      queryClient.clear();
-      setUser(null);
-      navigate('/');
+      if (error) {
+        console.error('Sign out error:', error);
+        toast({
+          title: "Errore",
+          description: "Si è verificato un errore durante il logout",
+          variant: "destructive",
+        });
+        return;
+      }
       
       toast({
         title: "Logout effettuato",
