@@ -21,6 +21,8 @@ export function ProfileHeader({
   subscriptionLevel,
   showEditButton = true
 }: ProfileHeaderProps) {
+  console.log('ProfileHeader rendering with userId:', userId);
+  
   return (
     <div className="flex flex-col items-center text-center">
       <Avatar className="h-24 w-24 mb-4">

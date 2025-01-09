@@ -19,7 +19,7 @@ export default function Profile() {
   const [profile, setProfile] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { userId } = useParams();
+  const { id: userId } = useParams();
 
   useEffect(() => {
     const getProfile = async () => {
