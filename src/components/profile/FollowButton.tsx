@@ -4,9 +4,9 @@ import { UserPlus, UserMinus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-interface FollowButtonProps {
+export interface FollowButtonProps {
   profileId: string;
-  currentUserId: string | undefined;
+  currentUserId: string;
 }
 
 export function FollowButton({ profileId, currentUserId }: FollowButtonProps) {
@@ -15,9 +15,7 @@ export function FollowButton({ profileId, currentUserId }: FollowButtonProps) {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (currentUserId) {
-      checkIfFollowing();
-    }
+    checkIfFollowing();
   }, [currentUserId, profileId]);
 
   const checkIfFollowing = async () => {
@@ -36,15 +34,6 @@ export function FollowButton({ profileId, currentUserId }: FollowButtonProps) {
   };
 
   const handleFollow = async () => {
-    if (!currentUserId) {
-      toast({
-        title: "Errore",
-        description: "Devi essere autenticato per seguire altri utenti",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsLoading(true);
     try {
       if (isFollowing) {
@@ -83,8 +72,6 @@ export function FollowButton({ profileId, currentUserId }: FollowButtonProps) {
       setIsLoading(false);
     }
   };
-
-  if (currentUserId === profileId) return null;
 
   return (
     <Button

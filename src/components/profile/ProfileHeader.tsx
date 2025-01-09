@@ -2,13 +2,15 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Medal } from 'lucide-react';
 import { FollowButton } from './FollowButton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ProfileHeaderProps {
   username?: string | null;
   avatarUrl?: string | null;
   bio?: string | null;
   onEditClick?: () => void;
-  userId?: string;
+  profileId?: string;
+  currentUserId?: string;
   subscriptionLevel?: string;
   showEditButton?: boolean;
 }
@@ -18,7 +20,8 @@ export function ProfileHeader({
   avatarUrl,
   bio,
   onEditClick,
-  userId,
+  profileId,
+  currentUserId,
   subscriptionLevel = 'bronze',
   showEditButton = false,
 }: ProfileHeaderProps) {
@@ -44,11 +47,20 @@ export function ProfileHeader({
           <div>
             <div className="flex items-center space-x-2">
               <h2 className="text-2xl font-bold">{username || 'Utente Anonimo'}</h2>
-              <Medal 
-                className="h-6 w-6" 
-                style={{ color: getSubscriptionColor(subscriptionLevel) }}
-                title={`Livello ${subscriptionLevel.charAt(0).toUpperCase() + subscriptionLevel.slice(1)}`}
-              />
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Medal 
+                      className="h-6 w-6" 
+                      style={{ color: getSubscriptionColor(subscriptionLevel) }}
+                      aria-label={`Livello ${subscriptionLevel.charAt(0).toUpperCase() + subscriptionLevel.slice(1)}`}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Livello {subscriptionLevel.charAt(0).toUpperCase() + subscriptionLevel.slice(1)}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
             {bio && <p className="text-muted-foreground mt-1">{bio}</p>}
           </div>
@@ -59,8 +71,8 @@ export function ProfileHeader({
               Modifica Profilo
             </Button>
           )}
-          {userId && !showEditButton && (
-            <FollowButton userId={userId} />
+          {profileId && currentUserId && profileId !== currentUserId && (
+            <FollowButton profileId={profileId} currentUserId={currentUserId} />
           )}
         </div>
       </div>
