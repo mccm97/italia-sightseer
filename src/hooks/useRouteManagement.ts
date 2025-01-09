@@ -49,7 +49,6 @@ export function useRouteManagement(selectedCity: any, toast: any) {
         ]
       })) || [];
 
-      // Calculate total duration including travel time
       const totalDuration = route.total_duration + (route.route_attractions?.reduce((sum: number, ra: any) => {
         return sum + (ra.travel_duration || 0);
       }, 0) || 0);
