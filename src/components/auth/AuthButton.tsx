@@ -21,76 +21,44 @@ export function AuthButton() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        setLoading(true);
-        // Clear any stale session data
+    // Configure Supabase to persist session
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN') {
+        console.log('User signed in:', session?.user?.id);
+        setUser(session?.user || null);
+      } else if (event === 'SIGNED_OUT') {
+        console.log('User signed out');
+        setUser(null);
         queryClient.clear();
         localStorage.removeItem('sb-shcbdouqszburohgegcb-auth-token');
-        
+      }
+    });
+
+    // Initial session check
+    const checkSession = async () => {
+      try {
         const { data: { session }, error } = await supabase.auth.getSession();
-        console.log('Session check:', session?.user?.id || 'No session');
-        
         if (error) {
-          console.error('Session error:', error);
-          await handleSignOut();
+          console.error('Session check error:', error);
           return;
         }
-
+        console.log('Initial session check:', session?.user?.id || 'No session');
         setUser(session?.user || null);
       } catch (error) {
-        console.error('Auth error:', error);
-        await handleSignOut();
+        console.error('Session check failed:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    initializeAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth event:', event, session?.user?.id);
-      
-      switch (event) {
-        case 'SIGNED_IN':
-          console.log('User signed in:', session?.user?.id);
-          setUser(session?.user || null);
-          break;
-        case 'SIGNED_OUT':
-          console.log('User signed out');
-          await handleSignOut();
-          break;
-        case 'TOKEN_REFRESHED':
-          console.log('Token refreshed for user:', session?.user?.id);
-          setUser(session?.user || null);
-          break;
-        default:
-          console.log('Unhandled auth event:', event);
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+    checkSession();
+  }, [queryClient]);
 
   const handleSignOut = async () => {
     try {
       setLoading(true);
-      
-      // Clear client state
-      setUser(null);
-      queryClient.clear();
-      
-      // Clear all storage
-      localStorage.removeItem('sb-shcbdouqszburohgegcb-auth-token');
-      
-      // Sign out from Supabase
       const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Sign out error:', error);
-        throw error;
-      }
+      if (error) throw error;
       
       toast({
         title: "Logout effettuato",
