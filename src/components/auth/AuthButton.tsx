@@ -21,58 +21,74 @@ export function AuthButton() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    // Initial session check
-    const checkSession = async () => {
+    const initializeAuth = async () => {
       try {
+        setLoading(true);
+        // First clear any potentially stale data
+        localStorage.removeItem('supabase.auth.token');
+        queryClient.clear();
+
         const { data: { session }, error } = await supabase.auth.getSession();
         console.log('Initial session check:', session?.user?.id || 'No session');
-        
+
         if (error) {
-          console.error('Session check error:', error);
-          await handleSignOut(); // Clear session if there's an error
+          console.error('Session initialization error:', error);
+          await handleSignOut();
           return;
         }
-        
-        setUser(session?.user ?? null);
+
+        if (session?.user) {
+          setUser(session.user);
+        } else {
+          console.log('No active session found');
+          await handleSignOut();
+        }
       } catch (error) {
-        console.error('Session check error:', error);
-        await handleSignOut(); // Clear session on error
+        console.error('Auth initialization error:', error);
+        await handleSignOut();
       } finally {
         setLoading(false);
       }
     };
 
-    checkSession();
+    initializeAuth();
 
-    // Subscribe to auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session?.user?.id);
       
-      if (event === 'SIGNED_OUT') {
-        await handleSignOut();
-      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        setUser(session?.user ?? null);
+      switch (event) {
+        case 'SIGNED_IN':
+        case 'TOKEN_REFRESHED':
+          setUser(session?.user ?? null);
+          break;
+        case 'SIGNED_OUT':
+          await handleSignOut();
+          break;
+        default:
+          console.log('Unhandled auth event:', event);
       }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [queryClient, navigate]);
+  }, []);
 
   const handleSignOut = async () => {
     try {
       setLoading(true);
-      // Clear all session data first
+      
+      // Clear all client-side state first
+      setUser(null);
       queryClient.clear();
       localStorage.clear();
       
+      // Then sign out from Supabase
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
-      setUser(null);
+      if (error) {
+        console.error('Sign out error:', error);
+        throw error;
+      }
       
       toast({
         title: "Logout effettuato",
