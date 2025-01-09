@@ -30,6 +30,12 @@ export function UserRoutes() {
     queryKey: ['userRoutes'],
     queryFn: async () => {
       console.log('Fetching user routes...');
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
       const { data: routes, error } = await supabase
         .from('routes')
         .select(`
@@ -49,7 +55,7 @@ export function UserRoutes() {
           ),
           creator:profiles!routes_user_id_fkey(id, username, avatar_url)
         `)
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
+        .eq('user_id', user.id);
 
       if (error) {
         console.error('Error fetching user routes:', error);

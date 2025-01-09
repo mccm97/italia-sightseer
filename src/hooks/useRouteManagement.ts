@@ -22,7 +22,7 @@ export function useRouteManagement(selectedCity: any, toast: any) {
           *,
           attraction: attractions (*)
         ),
-        creator:profiles (username)
+        creator:profiles!routes_user_id_fkey(id, username, avatar_url)
       `)
       .eq('city_id', selectedCity.id);
 
@@ -79,7 +79,11 @@ export function useRouteManagement(selectedCity: any, toast: any) {
         name: route.name,
         duration: totalDuration,
         total_duration: totalDuration,
-        creator: route.creator,
+        creator: route.creator ? {
+          id: route.creator.id,
+          username: route.creator.username,
+          avatar_url: route.creator.avatar_url
+        } : undefined,
         attractions: transformedAttractions,
         isPublic: Boolean(route.is_public),
         directions: parsedDirections,
