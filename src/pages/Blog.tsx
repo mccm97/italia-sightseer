@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { MainMenu } from '@/components/MainMenu';
 import { BlogPost } from '@/components/blog/BlogPost';
-import { CreatePostButton } from '@/components/blog/CreatePostButton';
+import { CreatePostInput } from '@/components/blog/CreatePostInput';
 import { Loader2 } from 'lucide-react';
 
 interface BlogPost {
@@ -59,11 +59,10 @@ export default function Blog() {
   return (
     <div className="container mx-auto p-4">
       <MainMenu />
-      <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Blog</h1>
-          <CreatePostButton />
-        </div>
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-3xl font-bold mb-8">Blog</h1>
+        
+        <CreatePostInput />
         
         {loading ? (
           <div className="flex justify-center items-center h-64">
