@@ -25,15 +25,19 @@ type DbRoute = Tables<'routes'> & {
   };
 };
 
-export function UserRoutes() {
+interface UserRoutesProps {
+  userId?: string;
+}
+
+export function UserRoutes({ userId }: UserRoutesProps) {
   const { data: routes, isLoading, refetch } = useQuery({
-    queryKey: ['userRoutes'],
+    queryKey: ['userRoutes', userId],
     queryFn: async () => {
-      console.log('Fetching user routes...');
-      const { data: { user } } = await supabase.auth.getUser();
+      console.log('Fetching routes for user:', userId);
       
-      if (!user) {
-        throw new Error('User not authenticated');
+      if (!userId) {
+        console.warn('No userId provided to UserRoutes');
+        return [];
       }
 
       const { data: routes, error } = await supabase
@@ -55,7 +59,7 @@ export function UserRoutes() {
           ),
           creator:profiles!routes_user_id_fkey(id, username, avatar_url)
         `)
-        .eq('user_id', user.id);
+        .eq('user_id', userId);
 
       if (error) {
         console.error('Error fetching user routes:', error);
@@ -63,10 +67,7 @@ export function UserRoutes() {
       }
 
       console.log('User routes fetched:', routes);
-      return routes.map(route => ({
-        ...route,
-        creator: route.creator
-      })) as unknown as DbRoute[];
+      return routes as unknown as DbRoute[];
     },
   });
 
@@ -74,7 +75,7 @@ export function UserRoutes() {
 
   return (
     <div className="mt-8">
-      <h2 className="text-xl font-semibold mb-4">I miei percorsi</h2>
+      <h2 className="text-xl font-semibold mb-4">I percorsi</h2>
       {routes && routes.length > 0 ? (
         <div className="grid grid-cols-1 gap-4">
           {routes.map((route) => {
@@ -109,9 +110,11 @@ export function UserRoutes() {
                   }}
                   onRouteClick={() => {}}
                 />
-                <div className="absolute top-2 right-2">
-                  <DeleteRouteButton routeId={route.id} onDelete={() => refetch()} />
-                </div>
+                {route.creator.id === (auth.user()?.id || null) && (
+                  <div className="absolute top-2 right-2">
+                    <DeleteRouteButton routeId={route.id} onDelete={() => refetch()} />
+                  </div>
+                )}
               </div>
             );
           })}
@@ -119,7 +122,7 @@ export function UserRoutes() {
       ) : (
         <div className="text-center py-8 text-muted-foreground">
           <RouteOff className="mx-auto h-12 w-12 mb-4" />
-          <p>Non hai ancora creato alcun percorso</p>
+          <p>Nessun percorso trovato</p>
         </div>
       )}
     </div>

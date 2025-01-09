@@ -124,7 +124,7 @@ export default function Profile() {
                   <TabsTrigger value="posts" className="flex-1">Post</TabsTrigger>
                 </TabsList>
                 <TabsContent value="routes">
-                  <UserRoutes />
+                  <UserRoutes userId={profile?.id} />
                 </TabsContent>
                 <TabsContent value="comments">
                   <UserComments userId={profile?.id} />
