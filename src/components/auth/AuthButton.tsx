@@ -25,16 +25,18 @@ export function AuthButton() {
     const checkSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
+        console.log('Initial session check:', session?.user?.id || 'No session');
+        
         if (error) {
           console.error('Session check error:', error);
-          // Clear any invalid session data
-          await supabase.auth.signOut();
-          setUser(null);
+          await handleSignOut(); // Clear session if there's an error
           return;
         }
+        
         setUser(session?.user ?? null);
       } catch (error) {
         console.error('Session check error:', error);
+        await handleSignOut(); // Clear session on error
       } finally {
         setLoading(false);
       }
@@ -49,10 +51,7 @@ export function AuthButton() {
       console.log('Auth state changed:', event, session?.user?.id);
       
       if (event === 'SIGNED_OUT') {
-        // Clear all queries and session data
-        setUser(null);
-        queryClient.clear();
-        localStorage.clear(); // Clear any stored session data
+        await handleSignOut();
       } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         setUser(session?.user ?? null);
       }
@@ -61,17 +60,19 @@ export function AuthButton() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [queryClient]);
+  }, [queryClient, navigate]);
 
   const handleSignOut = async () => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-
-      // Clear all queries and local storage
+      // Clear all session data first
       queryClient.clear();
       localStorage.clear();
+      
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      setUser(null);
       
       toast({
         title: "Logout effettuato",
