@@ -3,22 +3,10 @@ import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { MainMenu } from '@/components/MainMenu';
-import { BlogPost } from '@/components/blog/BlogPost';
+import { BlogPost as BlogPostComponent } from '@/components/blog/BlogPost';
 import { CreatePostInput } from '@/components/blog/CreatePostInput';
 import { Loader2 } from 'lucide-react';
-
-interface BlogPost {
-  id: string;
-  title: string;
-  content: string;
-  created_at: string;
-  user_id: string;
-  cover_image_url: string | null;
-  profiles: {
-    username: string | null;
-    avatar_url: string | null;
-  } | null;
-}
+import { BlogPost } from '@/types/blog';
 
 export default function Blog() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -59,7 +47,13 @@ export default function Blog() {
       const { data, error } = await query;
 
       if (error) throw error;
-      setPosts(data || []);
+      
+      const formattedPosts: BlogPost[] = data?.map(post => ({
+        ...post,
+        creator: post.profiles
+      })) || [];
+      
+      setPosts(formattedPosts);
     } catch (error) {
       console.error('Error fetching posts:', error);
       toast({
@@ -87,7 +81,7 @@ export default function Blog() {
         ) : posts.length > 0 ? (
           <div className="space-y-8">
             {posts.map((post) => (
-              <BlogPost key={post.id} post={post} />
+              <BlogPostComponent key={post.id} post={post} />
             ))}
           </div>
         ) : (
