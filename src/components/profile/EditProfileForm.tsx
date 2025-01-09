@@ -82,6 +82,8 @@ export function EditProfileForm({ initialProfile, onCancel, onSave }: EditProfil
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log('Submitting profile update:', profile);
+    
     if (!profile.username?.trim()) {
       toast({
         title: "Errore",
@@ -95,7 +97,12 @@ export function EditProfileForm({ initialProfile, onCancel, onSave }: EditProfil
     try {
       const { error } = await supabase
         .from('profiles')
-        .update(profile)
+        .update({
+          username: profile.username,
+          bio: profile.bio,
+          is_public: profile.is_public,
+          avatar_url: profile.avatar_url,
+        })
         .eq('id', profile.id);
 
       if (error) throw error;
@@ -170,7 +177,7 @@ export function EditProfileForm({ initialProfile, onCancel, onSave }: EditProfil
       <div className="flex items-center space-x-2">
         <Switch
           id="public-profile"
-          checked={profile?.is_public || false}
+          checked={profile?.is_public}
           onCheckedChange={(checked) => setProfile({ ...profile, is_public: checked })}
         />
         <Label htmlFor="public-profile">Profilo pubblico</Label>
