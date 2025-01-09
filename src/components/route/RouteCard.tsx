@@ -11,6 +11,7 @@ import CityMap from '../CityMap';
 import { toast } from '@/components/ui/use-toast';
 import { useLikeManagement } from '@/hooks/useLikeManagement';
 import { Link } from 'react-router-dom';
+import { RouteRating } from './RouteRating';
 
 interface RouteCardProps {
   route: {
@@ -145,6 +146,12 @@ export function RouteCard({
           {showComments && (
             <div className="mt-4 border-t pt-4" onClick={(e) => e.stopPropagation()}>
               <CommentSection routeId={route.id} />
+            </div>
+          )}
+
+          {showReviews && (
+            <div className="mt-4 border-t pt-4" onClick={(e) => e.stopPropagation()}>
+              <RouteRating routeId={route.id} initialRating={routeStats?.averageRating} />
             </div>
           )}
         </div>

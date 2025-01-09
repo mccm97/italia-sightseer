@@ -44,6 +44,15 @@ export function RouteComments({ routeId }: RouteCommentsProps) {
 
   const handleDeleteComment = async (commentId: string) => {
     try {
+      // First delete any replies to this comment
+      const { error: repliesError } = await supabase
+        .from('route_comments')
+        .delete()
+        .eq('reply_to_id', commentId);
+
+      if (repliesError) throw repliesError;
+
+      // Then delete the comment itself
       const { error } = await supabase
         .from('route_comments')
         .delete()
@@ -66,7 +75,7 @@ export function RouteComments({ routeId }: RouteCommentsProps) {
     }
   };
 
-  const handleReply = async (commentId: string, content: string) => {
+  const handleReply = async (commentId: string, content: string, imageUrl?: string) => {
     if (!content.trim()) return;
 
     try {
@@ -75,7 +84,8 @@ export function RouteComments({ routeId }: RouteCommentsProps) {
         .insert({
           route_id: routeId,
           content: content,
-          reply_to_id: commentId
+          reply_to_id: commentId,
+          image_url: imageUrl
         });
 
       if (error) throw error;
