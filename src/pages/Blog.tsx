@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { MainMenu } from '@/components/MainMenu';
@@ -23,10 +24,11 @@ export default function Blog() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { id } = useParams();
 
   useEffect(() => {
     fetchPosts();
-  }, []);
+  }, [id]);
 
   const fetchPosts = async () => {
     try {
@@ -43,6 +45,11 @@ export default function Blog() {
         `)
         .eq('is_published', true)
         .order('created_at', { ascending: false });
+
+      // Se c'è un ID specifico, filtra per quel post
+      if (id) {
+        query = query.eq('id', id);
+      }
 
       // Se l'utente è autenticato, includiamo anche i suoi post non pubblicati
       if (user) {
@@ -71,7 +78,7 @@ export default function Blog() {
       <div className="max-w-2xl mx-auto">
         <h1 className="text-3xl font-bold mb-8">Blog</h1>
         
-        <CreatePostInput />
+        {!id && <CreatePostInput />}
         
         {loading ? (
           <div className="flex justify-center items-center h-64">
@@ -85,7 +92,9 @@ export default function Blog() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-gray-500">Nessun post pubblicato</p>
+            <p className="text-gray-500">
+              {id ? "Post non trovato" : "Nessun post pubblicato"}
+            </p>
           </div>
         )}
       </div>
