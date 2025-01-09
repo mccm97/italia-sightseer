@@ -23,10 +23,7 @@ export function AuthButton() {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        // Clear any stale data
-        localStorage.clear();
-        queryClient.clear();
-        
+        // Get current session without clearing storage first
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -40,7 +37,8 @@ export function AuthButton() {
           setUser(session.user);
         } else {
           console.log('No active session');
-          await handleSignOut();
+          // Don't sign out here, just clear the user state
+          setUser(null);
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
@@ -51,18 +49,17 @@ export function AuthButton() {
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state change:', event);
+      console.log('Auth state change:', event, session);
       
       if (event === 'SIGNED_IN' && session?.user) {
         console.log('User signed in:', session.user.id);
         setUser(session.user);
-      } else if (event === 'SIGNED_OUT') {
-        console.log('User signed out');
+      } else if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+        console.log('User signed out or deleted');
         await handleSignOut();
       } else if (event === 'TOKEN_REFRESHED' && session?.user) {
         console.log('Token refreshed for:', session.user.id);
-        // Re-initialize auth to ensure fresh session
-        await initializeAuth();
+        setUser(session.user);
       }
     });
 
@@ -78,12 +75,12 @@ export function AuthButton() {
     try {
       setLoading(true);
       
-      // Clear all local storage and cache first
-      localStorage.clear();
-      queryClient.clear();
-      
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      
+      // Only clear storage and cache after successful sign out
+      localStorage.clear();
+      queryClient.clear();
       
       setUser(null);
       navigate('/');
