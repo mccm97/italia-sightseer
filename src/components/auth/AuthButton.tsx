@@ -32,7 +32,6 @@ export function AuthButton() {
           console.error('Errore durante il controllo della sessione:', error);
           if (mounted) {
             setUser(null);
-            navigate('/login');
           }
           return;
         }
@@ -106,10 +105,11 @@ export function AuthButton() {
       setLoading(true);
       console.log('Avvio processo di logout...');
       
-      // Clear any existing session data first
-      await supabase.auth.clearSession();
+      // Sign out from Supabase
+      const { error } = await supabase.auth.signOut({
+        scope: 'local' // Only clear local session
+      });
       
-      const { error } = await supabase.auth.signOut();
       if (error) {
         console.error('Errore durante il logout:', error);
         throw error;
