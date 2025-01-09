@@ -23,12 +23,15 @@ export function AuthButton() {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        // First, get the current session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        // Clear any stale data
+        localStorage.clear();
+        queryClient.clear();
         
-        if (sessionError) {
-          console.error('Session error:', sessionError);
-          await handleSignOut(); // Clean up if session is invalid
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Session error:', error);
+          await handleSignOut();
           return;
         }
 
@@ -47,35 +50,19 @@ export function AuthButton() {
       }
     };
 
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state change:', event);
       
-      switch (event) {
-        case 'SIGNED_IN':
-          if (session?.user) {
-            console.log('User signed in:', session.user.id);
-            setUser(session.user);
-          }
-          break;
-        case 'SIGNED_OUT':
-          console.log('User signed out');
-          await handleSignOut();
-          break;
-        case 'TOKEN_REFRESHED':
-          if (session?.user) {
-            console.log('Token refreshed for:', session.user.id);
-            setUser(session.user);
-          }
-          break;
-        case 'USER_UPDATED':
-          if (session?.user) {
-            console.log('User updated:', session.user.id);
-            setUser(session.user);
-          }
-          break;
-        default:
-          console.log('Unhandled auth event:', event);
+      if (event === 'SIGNED_IN' && session?.user) {
+        console.log('User signed in:', session.user.id);
+        setUser(session.user);
+      } else if (event === 'SIGNED_OUT') {
+        console.log('User signed out');
+        await handleSignOut();
+      } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+        console.log('Token refreshed for:', session.user.id);
+        // Re-initialize auth to ensure fresh session
+        await initializeAuth();
       }
     });
 
@@ -83,7 +70,6 @@ export function AuthButton() {
     initializeAuth();
 
     return () => {
-      console.log('Cleaning up auth subscriptions');
       subscription.unsubscribe();
     };
   }, [navigate, queryClient]);
@@ -91,7 +77,8 @@ export function AuthButton() {
   const handleSignOut = async () => {
     try {
       setLoading(true);
-      // Clear all local storage and cache
+      
+      // Clear all local storage and cache first
       localStorage.clear();
       queryClient.clear();
       
