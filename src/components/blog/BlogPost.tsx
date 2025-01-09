@@ -13,6 +13,7 @@ import { Share2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { BlogPost as BlogPostType } from '@/types/blog';
+import { supabase } from '@/integrations/supabase/client';
 
 interface BlogPostProps {
   post: BlogPostType;
@@ -23,6 +24,16 @@ interface BlogPostProps {
 export function BlogPost({ post, onLike, isLiked }: BlogPostProps) {
   const navigate = useNavigate();
   const [isSharing, setIsSharing] = useState(false);
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
+
+  // Ottieni l'utente corrente quando il componente viene montato
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUser(user?.id || null);
+    };
+    getCurrentUser();
+  }, []);
 
   const handleShare = async (platform: string) => {
     const postUrl = `${window.location.origin}/blog/${post.id}`;
@@ -52,9 +63,13 @@ export function BlogPost({ post, onLike, isLiked }: BlogPostProps) {
   const navigateToProfile = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (post.creator?.id) {
-      console.log('Navigating to profile:', post.creator.id);
-      navigate(`/profile/${post.creator.id}`);
+    
+    // Se il post è dell'utente corrente, vai al proprio profilo
+    // Altrimenti vai al profilo del creatore
+    const profileId = post.creator?.id;
+    if (profileId) {
+      console.log('Navigating to profile:', profileId, 'Current user:', currentUser);
+      navigate(`/profile/${profileId}`);
     }
   };
 
