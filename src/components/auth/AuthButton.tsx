@@ -23,7 +23,7 @@ export function AuthButton() {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        // Get current session without clearing storage first
+        console.log('Initializing auth...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -80,7 +80,7 @@ export function AuthButton() {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
-      // Only clear storage and cache after successful sign out
+      // Clear storage and cache after successful sign out
       localStorage.clear();
       queryClient.clear();
       
