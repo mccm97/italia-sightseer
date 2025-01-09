@@ -11,7 +11,9 @@ export interface Route {
   duration: number;
   total_duration: number;
   creator?: {
+    id: string;
     username: string;
+    avatar_url?: string;
   };
   attractions: Array<{
     name: string;
