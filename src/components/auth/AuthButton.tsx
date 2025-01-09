@@ -24,8 +24,14 @@ export function AuthButton() {
     // Initial session check
     const checkSession = async () => {
       try {
-        setLoading(true);
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Session check error:', error);
+          // Clear any invalid session data
+          await supabase.auth.signOut();
+          setUser(null);
+          return;
+        }
         setUser(session?.user ?? null);
       } catch (error) {
         console.error('Session check error:', error);
@@ -39,13 +45,16 @@ export function AuthButton() {
     // Subscribe to auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log('Auth state changed:', _event, session?.user?.id);
-      setUser(session?.user ?? null);
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session?.user?.id);
       
-      if (!session) {
-        // Clear all queries when user logs out
+      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+        // Clear all queries and session data
+        setUser(null);
         queryClient.clear();
+        localStorage.clear(); // Clear any stored session data
+      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        setUser(session?.user ?? null);
       }
     });
 
@@ -56,11 +65,13 @@ export function AuthButton() {
 
   const handleSignOut = async () => {
     try {
+      setLoading(true);
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
 
-      // Clear all queries
+      // Clear all queries and local storage
       queryClient.clear();
+      localStorage.clear();
       
       toast({
         title: "Logout effettuato",
@@ -75,6 +86,8 @@ export function AuthButton() {
         description: "Si è verificato un errore durante il logout",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
