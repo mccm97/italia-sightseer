@@ -23,20 +23,14 @@ export function AuthButton() {
   useEffect(() => {
     let mounted = true;
 
-    const initializeAuth = async () => {
+    async function initializeAuth() {
       try {
         console.log('Checking existing session...');
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const { data: { session } } = await supabase.auth.getSession();
         
-        if (error) {
-          console.error('Session error:', error);
-          if (mounted) setUser(null);
-          return;
-        }
-
-        if (session?.user) {
+        if (session?.user && mounted) {
           console.log('Found existing session for user:', session.user.id);
-          if (mounted) setUser(session.user);
+          setUser(session.user);
         } else {
           console.log('No active session found');
           if (mounted) setUser(null);
@@ -47,28 +41,23 @@ export function AuthButton() {
       } finally {
         if (mounted) setLoading(false);
       }
-    };
+    }
 
-    // Initialize auth state
-    initializeAuth();
-
-    // Set up auth state change listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state change:', event, session);
-      
+    // Set up auth state change listener first
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
+      
+      console.log('Auth state change:', event, session?.user?.id);
 
       if (session?.user) {
-        console.log('Session user found:', session.user.id);
         setUser(session.user);
       } else {
-        console.log('No session user found');
         setUser(null);
       }
 
       switch (event) {
         case 'SIGNED_IN':
-          console.log('User signed in');
+          console.log('User signed in successfully');
           break;
         case 'SIGNED_OUT':
           console.log('User signed out');
@@ -76,13 +65,16 @@ export function AuthButton() {
           navigate('/');
           break;
         case 'TOKEN_REFRESHED':
-          console.log('Token refreshed');
+          console.log('Session token refreshed');
           break;
         case 'USER_UPDATED':
-          console.log('User updated');
+          console.log('User profile updated');
           break;
       }
     });
+
+    // Then initialize auth
+    initializeAuth();
 
     return () => {
       mounted = false;
@@ -96,22 +88,14 @@ export function AuthButton() {
       console.log('Signing out...');
       
       const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Sign out error:', error);
-        toast({
-          title: "Errore",
-          description: "Si è verificato un errore durante il logout",
-          variant: "destructive",
-        });
-        return;
-      }
+      if (error) throw error;
       
       toast({
         title: "Logout effettuato",
         description: "Hai effettuato il logout con successo",
       });
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('Sign out error:', error);
       toast({
         title: "Errore",
         description: "Si è verificato un errore durante il logout",
