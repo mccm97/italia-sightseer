@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Compass, Map, Heart } from 'lucide-react';
+import { Compass, Map, Heart, BookOpen, Crown } from 'lucide-react';
 
 export const HomeHero = () => {
   return (
@@ -65,6 +65,38 @@ export const HomeHero = () => {
           <h3 className="font-semibold text-lg">Salva i Preferiti</h3>
           <p className="text-muted-foreground">
             Conserva e condividi i tuoi itinerari preferiti con altri viaggiatori
+          </p>
+        </motion.article>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-6 text-center px-4 pb-12">
+        <motion.article 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.8 }}
+          className="p-6 space-y-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-xl transition-all duration-300"
+        >
+          <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900 rounded-full flex items-center justify-center mx-auto">
+            <BookOpen className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+          </div>
+          <h3 className="font-semibold text-lg">Blog di Viaggio</h3>
+          <p className="text-muted-foreground">
+            Condividi le tue esperienze di viaggio e scopri i racconti di altri viaggiatori attraverso il nostro blog integrato
+          </p>
+        </motion.article>
+
+        <motion.article 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 1.0 }}
+          className="p-6 space-y-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-xl transition-all duration-300"
+        >
+          <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900 rounded-full flex items-center justify-center mx-auto">
+            <Crown className="h-6 w-6 text-rose-600 dark:text-rose-400" />
+          </div>
+          <h3 className="font-semibold text-lg">Abbonamenti Premium</h3>
+          <p className="text-muted-foreground">
+            Sblocca funzionalità avanzate con i nostri piani Silver e Gold per creare più percorsi e accedere a strumenti esclusivi
           </p>
         </motion.article>
       </div>

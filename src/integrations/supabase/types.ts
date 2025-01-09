@@ -556,14 +556,17 @@ export type Database = {
       }
       subscription_limits: {
         Row: {
+          icon_color: string
           max_routes_per_month: number | null
           subscription_level: string
         }
         Insert: {
+          icon_color?: string
           max_routes_per_month?: number | null
           subscription_level: string
         }
         Update: {
+          icon_color?: string
           max_routes_per_month?: number | null
           subscription_level?: string
         }
