@@ -11,7 +11,7 @@ interface BlogPostHeaderProps {
 }
 
 export function BlogPostHeader({ userId, username, avatarUrl, title, createdAt }: BlogPostHeaderProps) {
-  console.log('Rendering profile link for user:', userId);
+  console.log('BlogPostHeader - Rendering for user:', { userId, username });
   
   return (
     <div className="flex flex-row items-center gap-4">
@@ -20,7 +20,7 @@ export function BlogPostHeader({ userId, username, avatarUrl, title, createdAt }
         className="hover:opacity-80 transition-opacity"
         onClick={(e) => {
           e.stopPropagation();
-          console.log('Navigating to profile:', userId);
+          console.log('BlogPostHeader - Avatar clicked, navigating to profile:', userId);
         }}
       >
         <Avatar>
@@ -38,7 +38,7 @@ export function BlogPostHeader({ userId, username, avatarUrl, title, createdAt }
             className="hover:underline hover:text-gray-700 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
-              console.log('Navigating to profile:', userId);
+              console.log('BlogPostHeader - Username clicked, navigating to profile:', userId);
             }}
           >
             {username || 'Utente anonimo'}

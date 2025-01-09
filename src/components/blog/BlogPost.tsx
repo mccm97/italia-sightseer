@@ -110,8 +110,7 @@ export function BlogPost({ post }: BlogPostProps) {
     window.open(shareUrls[platform as keyof typeof shareUrls], '_blank');
   };
 
-  // Log per debugging
-  console.log('Rendering BlogPost for user:', post.user_id);
+  console.log('BlogPost - Rendering post for user:', post.user_id);
 
   return (
     <Card className="overflow-hidden">
