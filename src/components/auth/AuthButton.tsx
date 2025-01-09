@@ -48,7 +48,6 @@ export function AuthButton() {
           console.log('Nessuna sessione attiva trovata');
           if (mounted) {
             setUser(null);
-            // Non reindirizzare automaticamente qui per evitare loop
           }
         }
       } catch (error) {
@@ -90,15 +89,10 @@ export function AuthButton() {
           console.log('Profilo utente aggiornato');
           if (session?.user) setUser(session.user);
           break;
-        case 'USER_DELETED':
-          console.log('Utente eliminato');
-          setUser(null);
-          navigate('/login');
-          break;
       }
     });
 
-    // Verifica iniziale della sessione
+    // Initial session check
     checkSession();
 
     return () => {
@@ -111,6 +105,9 @@ export function AuthButton() {
     try {
       setLoading(true);
       console.log('Avvio processo di logout...');
+      
+      // Clear any existing session data first
+      await supabase.auth.clearSession();
       
       const { error } = await supabase.auth.signOut();
       if (error) {
