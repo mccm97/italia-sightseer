@@ -4,6 +4,7 @@ import { UserCog, Award, Medal, Crown } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { FollowButton } from './FollowButton';
 
 interface ProfileHeaderProps {
   username: string | null;
@@ -67,12 +68,39 @@ export function ProfileHeader({ username, avatarUrl, bio, onEditClick, userId, s
         ? (ratings.reduce((acc, curr) => acc + curr.rating, 0) / ratings.length).toFixed(1)
         : '0.0';
 
-      console.log('Stats fetched:', { totalLikes, averageRating });
-      
       return {
         totalLikes,
         averageRating
       };
+    }
+  });
+
+  const { data: followStats, isLoading: isLoadingFollowStats } = useQuery({
+    queryKey: ['followStats', userId],
+    queryFn: async () => {
+      const [followers, following] = await Promise.all([
+        supabase
+          .from('user_follows')
+          .select('id')
+          .eq('following_id', userId),
+        supabase
+          .from('user_follows')
+          .select('id')
+          .eq('follower_id', userId)
+      ]);
+
+      return {
+        followers: followers.data?.length || 0,
+        following: following.data?.length || 0
+      };
+    }
+  });
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      return user;
     }
   });
 
@@ -106,13 +134,34 @@ export function ProfileHeader({ username, avatarUrl, bio, onEditClick, userId, s
                   </p>
                 </>
               )}
+              {isLoadingFollowStats ? (
+                <>
+                  <Skeleton className="h-6 w-24" />
+                  <Skeleton className="h-6 w-24" />
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-muted-foreground">
+                    <span className="font-medium text-foreground">{followStats?.followers}</span> Follower
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    <span className="font-medium text-foreground">{followStats?.following}</span> Seguiti
+                  </p>
+                </>
+              )}
             </div>
           </div>
         </div>
-        <Button variant="outline" onClick={onEditClick}>
-          <UserCog className="mr-2 h-4 w-4" />
-          Modifica Profilo
-        </Button>
+        <div className="flex gap-2">
+          {currentUser?.id === userId ? (
+            <Button variant="outline" onClick={onEditClick}>
+              <UserCog className="mr-2 h-4 w-4" />
+              Modifica Profilo
+            </Button>
+          ) : (
+            <FollowButton profileId={userId} currentUserId={currentUser?.id} />
+          )}
+        </div>
       </div>
     </div>
   );
