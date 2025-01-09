@@ -2,11 +2,17 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { formatDate } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { ThumbsUp } from 'lucide-react';
+import { ThumbsUp, Share2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface BlogPostProps {
   post: {
@@ -99,6 +105,20 @@ export function BlogPost({ post }: BlogPostProps) {
     }
   };
 
+  const handleShare = (platform: string) => {
+    const url = window.location.href;
+    const text = encodeURIComponent(post.title);
+    
+    const shareUrls = {
+      whatsapp: `https://wa.me/?text=${text}%20${url}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
+      twitter: `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`
+    };
+
+    window.open(shareUrls[platform as keyof typeof shareUrls], '_blank');
+  };
+
   return (
     <Card className="overflow-hidden">
       {post.cover_image_url && (
@@ -148,6 +168,28 @@ export function BlogPost({ post }: BlogPostProps) {
               {likes} Mi piace
             </span>
           </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="flex-1">
+                <Share2 className="h-5 w-5 mr-2" />
+                Condividi
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => handleShare('whatsapp')}>
+                WhatsApp
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleShare('facebook')}>
+                Facebook
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleShare('twitter')}>
+                Twitter
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleShare('linkedin')}>
+                LinkedIn
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </CardContent>
     </Card>

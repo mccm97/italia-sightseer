@@ -4,17 +4,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Share2, Image as ImageIcon } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ImageUpload } from '@/components/ImageUpload';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 export function CreatePostInput() {
   const [title, setTitle] = useState('');
@@ -103,20 +97,6 @@ export function CreatePostInput() {
     }
   };
 
-  const handleShare = (platform: string) => {
-    const url = window.location.href;
-    const text = encodeURIComponent(title);
-    
-    const shareUrls = {
-      whatsapp: `https://wa.me/?text=${text}%20${url}`,
-      facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
-      twitter: `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
-      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`
-    };
-
-    window.open(shareUrls[platform as keyof typeof shareUrls], '_blank');
-  };
-
   if (!user) return null;
 
   const progress = (wordCount / REQUIRED_WORDS) * 100;
@@ -163,29 +143,7 @@ export function CreatePostInput() {
             <span>{remainingWords} parole rimanenti</span>
           </div>
           <Progress value={Math.min(progress, 100)} className="h-2" />
-          <div className="flex justify-end gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Condividi
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => handleShare('whatsapp')}>
-                  WhatsApp
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleShare('facebook')}>
-                  Facebook
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleShare('twitter')}>
-                  Twitter
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleShare('linkedin')}>
-                  LinkedIn
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          <div className="flex justify-end">
             <Button 
               onClick={handleSubmit}
               disabled={isSubmitting || wordCount < REQUIRED_WORDS || !title.trim()}
