@@ -5,6 +5,7 @@ import Login from '@/pages/Login';
 import Profile from '@/pages/Profile';
 import Admin from '@/pages/Admin';
 import Upgrade from '@/pages/Upgrade';
+import Blog from '@/pages/Blog';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Analytics } from '@vercel/analytics/react';
 
@@ -29,6 +30,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/upgrade" element={<Upgrade />} />
+          <Route path="/blog" element={<Blog />} />
         </Routes>
       </Router>
       <Analytics />

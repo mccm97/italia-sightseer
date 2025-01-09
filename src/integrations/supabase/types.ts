@@ -68,6 +68,76 @@ export type Database = {
           },
         ]
       }
+      blog_post_images: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          post_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          post_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          post_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_post_images_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      blog_posts: {
+        Row: {
+          content: string
+          cover_image_url: string | null
+          created_at: string
+          id: string
+          is_published: boolean | null
+          title: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          cover_image_url?: string | null
+          created_at?: string
+          id?: string
+          is_published?: boolean | null
+          title: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          cover_image_url?: string | null
+          created_at?: string
+          id?: string
+          is_published?: boolean | null
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cities: {
         Row: {
           country: string | null

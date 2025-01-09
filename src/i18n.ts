@@ -14,7 +14,8 @@ i18n
             profile: 'Profile',
             subscriptions: 'Subscriptions',
             administration: 'Administration',
-            logout: 'Logout'
+            logout: 'Logout',
+            blog: 'Blog'
           }
         }
       },
@@ -25,7 +26,8 @@ i18n
             profile: 'Profilo',
             subscriptions: 'Abbonamenti',
             administration: 'Amministrazione',
-            logout: 'Logout'
+            logout: 'Logout',
+            blog: 'Blog'
           }
         }
       }
