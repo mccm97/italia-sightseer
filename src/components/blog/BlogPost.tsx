@@ -26,7 +26,6 @@ export function BlogPost({ post, onLike, isLiked }: BlogPostProps) {
   const [isSharing, setIsSharing] = useState(false);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
 
-  // Ottieni l'utente corrente quando il componente viene montato
   useEffect(() => {
     const getCurrentUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -64,12 +63,9 @@ export function BlogPost({ post, onLike, isLiked }: BlogPostProps) {
     e.preventDefault();
     e.stopPropagation();
     
-    // Se il post è dell'utente corrente, vai al proprio profilo
-    // Altrimenti vai al profilo del creatore
-    const profileId = post.creator?.id;
-    if (profileId) {
-      console.log('Navigating to profile:', profileId, 'Current user:', currentUser);
-      navigate(`/profile/${profileId}`);
+    if (post.creator?.id) {
+      console.log('Navigating to creator profile:', post.creator.id);
+      navigate(`/profile/${post.creator.id}`);
     }
   };
 
