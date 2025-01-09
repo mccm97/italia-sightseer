@@ -6,18 +6,20 @@ import { CommentSection } from './CommentSection';
 import { RouteStats } from './RouteStats';
 import { RouteActions } from './RouteActions';
 import { RouteHeaderWithImage } from './RouteHeaderWithImage';
-import { RouteReviews } from './RouteReviews';
 import { supabase } from '@/integrations/supabase/client';
 import CityMap from '../CityMap';
 import { toast } from '@/components/ui/use-toast';
 import { useLikeManagement } from '@/hooks/useLikeManagement';
+import { Link } from 'react-router-dom';
 
 interface RouteCardProps {
   route: {
     id: string;
     name: string;
     creator?: {
+      id?: string;
       username: string;
+      avatar_url?: string;
     };
     total_duration: number;
     attractions: Array<{
@@ -99,6 +101,8 @@ export function RouteCard({
         <RouteHeaderWithImage
           name={route.name}
           creatorUsername={route.creator?.username}
+          creatorId={route.creator?.id}
+          creatorAvatarUrl={route.creator?.avatar_url}
           imageUrl={route.image_url}
         />
 
@@ -141,12 +145,6 @@ export function RouteCard({
           {showComments && (
             <div className="mt-4 border-t pt-4" onClick={(e) => e.stopPropagation()}>
               <CommentSection routeId={route.id} />
-            </div>
-          )}
-
-          {showReviews && (
-            <div className="mt-4 border-t pt-4" onClick={(e) => e.stopPropagation()}>
-              <RouteReviews routeId={route.id} />
             </div>
           )}
         </div>

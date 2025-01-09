@@ -1,14 +1,20 @@
 import { CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Link } from 'react-router-dom';
 
 interface RouteHeaderWithImageProps {
   name: string;
   creatorUsername?: string;
+  creatorId?: string;
+  creatorAvatarUrl?: string;
   imageUrl?: string;
 }
 
 export function RouteHeaderWithImage({
   name,
   creatorUsername,
+  creatorId,
+  creatorAvatarUrl,
   imageUrl
 }: RouteHeaderWithImageProps) {
   return (
@@ -17,9 +23,34 @@ export function RouteHeaderWithImage({
         <CardHeader className="p-0">
           <CardTitle className="flex flex-col">
             <span>{name}</span>
-            <span className="text-sm text-muted-foreground">
-              Creato da: {creatorUsername || 'Utente anonimo'}
-            </span>
+            <div className="flex items-center gap-2 mt-2">
+              {creatorId ? (
+                <Link 
+                  to={`/profile/${creatorId}`}
+                  className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage src={creatorAvatarUrl} />
+                    <AvatarFallback>
+                      {creatorUsername?.[0]?.toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm text-muted-foreground hover:underline">
+                    {creatorUsername || 'Utente anonimo'}
+                  </span>
+                </Link>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-6 w-6">
+                    <AvatarFallback>U</AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm text-muted-foreground">
+                    Utente anonimo
+                  </span>
+                </div>
+              )}
+            </div>
           </CardTitle>
         </CardHeader>
       </div>

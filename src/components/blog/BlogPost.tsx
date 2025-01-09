@@ -6,6 +6,7 @@ import { ThumbsUp } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Link } from 'react-router-dom';
 
 interface BlogPostProps {
   post: {
@@ -14,6 +15,7 @@ interface BlogPostProps {
     content: string;
     created_at: string;
     cover_image_url: string | null;
+    user_id?: string;
     profiles: {
       username: string | null;
       avatar_url: string | null;
@@ -109,16 +111,23 @@ export function BlogPost({ post }: BlogPostProps) {
         </div>
       )}
       <CardHeader className="flex flex-row items-center gap-4">
-        <Avatar>
-          <AvatarImage src={post.profiles?.avatar_url || undefined} />
-          <AvatarFallback>
-            {post.profiles?.username?.[0]?.toUpperCase() || 'U'}
-          </AvatarFallback>
-        </Avatar>
+        <Link to={`/profile/${post.user_id}`} className="hover:opacity-80 transition-opacity">
+          <Avatar>
+            <AvatarImage src={post.profiles?.avatar_url || undefined} />
+            <AvatarFallback>
+              {post.profiles?.username?.[0]?.toUpperCase() || 'U'}
+            </AvatarFallback>
+          </Avatar>
+        </Link>
         <div>
           <h2 className="text-2xl font-bold">{post.title}</h2>
           <div className="flex items-center gap-2 text-sm text-gray-500">
-            <span>{post.profiles?.username || 'Utente anonimo'}</span>
+            <Link 
+              to={`/profile/${post.user_id}`}
+              className="hover:underline hover:text-gray-700 transition-colors"
+            >
+              {post.profiles?.username || 'Utente anonimo'}
+            </Link>
             <span>•</span>
             <span>{formatDate(post.created_at)}</span>
           </div>
