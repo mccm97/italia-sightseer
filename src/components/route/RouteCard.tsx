@@ -53,7 +53,19 @@ export function RouteCard({
   const { handleLike } = useLikeManagement();
 
   const handleMapClick = async () => {
-    if (!route.city_id) return;
+    if (!route.city_id && !showMap) {
+      toast({
+        title: "Errore",
+        description: "Impossibile caricare le coordinate della città",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (showMap) {
+      setShowMap(false);
+      return;
+    }
 
     try {
       const { data: city } = await supabase
@@ -123,6 +135,7 @@ export function RouteCard({
             onMapClick={handleMapClick}
             onReviewsClick={() => setShowReviews(!showReviews)}
             showDescription={showDescription}
+            showMap={showMap}
           />
 
           {showComments && (

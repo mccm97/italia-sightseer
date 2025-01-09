@@ -8,6 +8,7 @@ interface RouteActionsProps {
   onMapClick: () => void;
   onReviewsClick: () => void;
   showDescription: boolean;
+  showMap: boolean;
 }
 
 export function RouteActions({
@@ -16,7 +17,8 @@ export function RouteActions({
   onDescriptionToggle,
   onMapClick,
   onReviewsClick,
-  showDescription
+  showDescription,
+  showMap
 }: RouteActionsProps) {
   return (
     <div className="flex flex-wrap gap-2 mt-4">
@@ -68,7 +70,7 @@ export function RouteActions({
       </Button>
 
       <Button
-        variant="outline"
+        variant={showMap ? "default" : "outline"}
         size="sm"
         onClick={(e) => {
           e.stopPropagation();
@@ -77,7 +79,7 @@ export function RouteActions({
         className="flex items-center gap-2"
       >
         <Map className="w-4 h-4" />
-        Visualizza su mappa
+        {showMap ? 'Nascondi mappa' : 'Visualizza su mappa'}
       </Button>
     </div>
   );
