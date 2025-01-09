@@ -29,9 +29,13 @@ export function RouteStats({
         .select('*', { count: 'exact', head: true })
         .eq('route_id', routeId);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching likes count:', error);
+        throw error;
+      }
       return count || 0;
-    }
+    },
+    initialData: initialLikesCount
   });
 
   // Fetch current user's like status
@@ -48,17 +52,35 @@ export function RouteStats({
         .eq('user_id', user.id)
         .maybeSingle();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching like status:', error);
+        throw error;
+      }
       return !!data;
     }
   });
+
+  const handleLikeClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Optimistically update UI
+    queryClient.setQueryData(['routeLike', routeId], !isLiked);
+    queryClient.setQueryData(
+      ['routeLikes', routeId], 
+      (old: number) => isLiked ? (old - 1) : (old + 1)
+    );
+    
+    // Call the provided click handler
+    await onLikeClick(e);
+  };
 
   return (
     <div className="flex items-center gap-4">
       <Button
         variant="ghost"
         size="sm"
-        onClick={onLikeClick}
+        onClick={handleLikeClick}
         className={cn(
           "flex items-center gap-1",
           isLiked && "text-red-500 hover:text-red-600"
