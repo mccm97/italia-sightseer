@@ -110,7 +110,7 @@ export function UserRoutes({ userId }: UserRoutesProps) {
                   }}
                   onRouteClick={() => {}}
                 />
-                {route.creator.id === (auth.user()?.id || null) && (
+                {route.creator.id === (supabase.auth.getUser().then(({ data }) => data.user?.id)) && (
                   <div className="absolute top-2 right-2">
                     <DeleteRouteButton routeId={route.id} onDelete={() => refetch()} />
                   </div>
