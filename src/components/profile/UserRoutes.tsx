@@ -22,7 +22,7 @@ type DbRoute = Tables<'routes'> & {
     id: string;
     username: string;
     avatar_url: string;
-  }[];
+  };
 };
 
 export function UserRoutes() {
@@ -47,7 +47,7 @@ export function UserRoutes() {
               lng
             )
           ),
-          creator:profiles(id, username, avatar_url)
+          creator:profiles!routes_user_id_fkey(id, username, avatar_url)
         `)
         .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
 
@@ -57,7 +57,10 @@ export function UserRoutes() {
       }
 
       console.log('User routes fetched:', routes);
-      return routes as unknown as DbRoute[];
+      return routes.map(route => ({
+        ...route,
+        creator: route.creator
+      })) as unknown as DbRoute[];
     },
   });
 
@@ -82,19 +85,17 @@ export function UserRoutes() {
               position: [ra.attraction.lat, ra.attraction.lng] as [number, number]
             })) || [];
 
-            const creator = route.creator?.[0];
-
             return (
               <div key={route.id} className="relative">
                 <RouteCard
                   route={{
                     ...route,
                     attractions,
-                    creator: creator ? {
-                      id: creator.id,
-                      username: creator.username,
-                      avatar_url: creator.avatar_url
-                    } : undefined
+                    creator: {
+                      id: route.creator.id,
+                      username: route.creator.username,
+                      avatar_url: route.creator.avatar_url
+                    }
                   }}
                   routeStats={{
                     likesCount,
