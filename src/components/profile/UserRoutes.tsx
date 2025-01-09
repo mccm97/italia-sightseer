@@ -4,6 +4,7 @@ import { RouteOff } from 'lucide-react';
 import { Tables } from '@/integrations/supabase/types';
 import { DeleteRouteButton } from './DeleteRouteButton';
 import { RouteCard } from '../route/RouteCard';
+import { useEffect, useState } from 'react';
 
 type DbRoute = Tables<'routes'> & {
   cities: { name: string; lat: number; lng: number; };
@@ -30,6 +31,16 @@ interface UserRoutesProps {
 }
 
 export function UserRoutes({ userId }: UserRoutesProps) {
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUserId(user?.id || null);
+    };
+    getCurrentUser();
+  }, []);
+
   const { data: routes, isLoading, refetch } = useQuery({
     queryKey: ['userRoutes', userId],
     queryFn: async () => {
@@ -110,7 +121,7 @@ export function UserRoutes({ userId }: UserRoutesProps) {
                   }}
                   onRouteClick={() => {}}
                 />
-                {route.creator.id === (supabase.auth.getUser().then(({ data }) => data.user?.id)) && (
+                {route.creator.id === currentUserId && (
                   <div className="absolute top-2 right-2">
                     <DeleteRouteButton routeId={route.id} onDelete={() => refetch()} />
                   </div>
