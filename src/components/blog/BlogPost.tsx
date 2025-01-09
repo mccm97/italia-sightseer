@@ -49,17 +49,20 @@ export function BlogPost({ post, onLike, isLiked }: BlogPostProps) {
     window.open(shareUrl, '_blank', 'noopener,noreferrer');
   };
 
-  const navigateToProfile = (e: React.MouseEvent, userId: string) => {
+  const navigateToProfile = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    navigate(`/profile/${userId}`);
+    if (post.user_id) {
+      console.log('Navigating to profile:', post.user_id);
+      navigate(`/profile/${post.user_id}`);
+    }
   };
 
   return (
     <Card className="mb-6">
       <CardHeader className="flex flex-row items-center gap-4">
         <div 
-          onClick={(e) => navigateToProfile(e, post.user_id)}
+          onClick={navigateToProfile}
           className="cursor-pointer"
         >
           <Avatar>
@@ -70,7 +73,7 @@ export function BlogPost({ post, onLike, isLiked }: BlogPostProps) {
         <div className="flex flex-col">
           <span 
             className="font-semibold cursor-pointer hover:underline"
-            onClick={(e) => navigateToProfile(e, post.user_id)}
+            onClick={navigateToProfile}
           >
             {post.creator?.username}
           </span>
