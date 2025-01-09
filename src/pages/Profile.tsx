@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, ArrowLeft } from 'lucide-react';
@@ -15,46 +15,58 @@ import { UserBlogPosts } from '@/components/profile/UserBlogPosts';
 export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { userId } = useParams(); // Get userId from URL params
 
   useEffect(() => {
     const getProfile = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        console.log('Fetching profile for userId:', userId);
         
-        if (!user) {
+        // Get current authenticated user
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        setCurrentUser(authUser);
+
+        // If no userId in params and user is authenticated, use their ID
+        const targetUserId = userId || authUser?.id;
+
+        if (!targetUserId) {
+          console.log('No target user ID found, redirecting to login');
           navigate('/login');
           return;
         }
 
-        setUser(user);
-
+        // Fetch profile for target user
         const { data: existingProfile, error: fetchError } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', user.id)
+          .eq('id', targetUserId)
           .maybeSingle();
 
-        if (fetchError) throw fetchError;
-
-        if (!existingProfile) {
-          const { data: newProfile, error: insertError } = await supabase
-            .from('profiles')
-            .insert([{ id: user.id }])
-            .select()
-            .maybeSingle();
-
-          if (insertError) throw insertError;
-          setProfile(newProfile);
-        } else {
-          setProfile(existingProfile);
+        if (fetchError) {
+          console.error('Error fetching profile:', fetchError);
+          throw fetchError;
         }
 
+        if (!existingProfile) {
+          console.log('Profile not found');
+          toast({
+            title: "Errore",
+            description: "Profilo non trovato",
+            variant: "destructive",
+          });
+          navigate('/');
+          return;
+        }
+
+        console.log('Profile found:', existingProfile);
+        setProfile(existingProfile);
+
       } catch (error: any) {
-        console.error('Error fetching profile:', error);
+        console.error('Error in getProfile:', error);
         toast({
           title: "Errore",
           description: "Si è verificato un errore durante il caricamento del profilo",
@@ -66,7 +78,7 @@ export default function Profile() {
     };
 
     getProfile();
-  }, [navigate, toast]);
+  }, [navigate, toast, userId]); // Add userId to dependencies
 
   if (loading) {
     return (
@@ -75,6 +87,8 @@ export default function Profile() {
       </div>
     );
   }
+
+  const isOwnProfile = currentUser?.id === profile?.id;
 
   return (
     <div className="container max-w-4xl mx-auto p-4">
@@ -86,7 +100,7 @@ export default function Profile() {
       </div>
       <Card>
         <CardContent className="pt-6">
-          {isEditing ? (
+          {isEditing && isOwnProfile ? (
             <EditProfileForm
               initialProfile={profile}
               onCancel={() => setIsEditing(false)}
@@ -98,9 +112,10 @@ export default function Profile() {
                 username={profile?.username}
                 avatarUrl={profile?.avatar_url}
                 bio={profile?.bio}
-                onEditClick={() => setIsEditing(true)}
+                onEditClick={() => isOwnProfile && setIsEditing(true)}
                 userId={profile?.id}
                 subscriptionLevel={profile?.subscription_level || 'bronze'}
+                showEditButton={isOwnProfile}
               />
               <Tabs defaultValue="routes" className="mt-6">
                 <TabsList className="w-full">
@@ -109,7 +124,7 @@ export default function Profile() {
                   <TabsTrigger value="posts" className="flex-1">Post</TabsTrigger>
                 </TabsList>
                 <TabsContent value="routes">
-                  <UserRoutes />
+                  <UserRoutes userId={profile?.id} />
                 </TabsContent>
                 <TabsContent value="comments">
                   <UserComments userId={profile?.id} />
