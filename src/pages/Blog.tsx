@@ -30,7 +30,9 @@ export default function Blog() {
 
   const fetchPosts = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      let query = supabase
         .from('blog_posts')
         .select(`
           *,
@@ -41,6 +43,13 @@ export default function Blog() {
         `)
         .eq('is_published', true)
         .order('created_at', { ascending: false });
+
+      // Se l'utente è autenticato, includiamo anche i suoi post non pubblicati
+      if (user) {
+        query = query.or(`is_published.eq.true,user_id.eq.${user.id}`);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setPosts(data || []);

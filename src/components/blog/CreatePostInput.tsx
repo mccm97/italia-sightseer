@@ -6,14 +6,17 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export function CreatePostInput() {
+  const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
   const [wordCount, setWordCount] = useState(0);
-  const REQUIRED_WORDS = 50;
+  const REQUIRED_WORDS = 100; // Aumentato a 100 parole
 
   useEffect(() => {
     const getUser = async () => {
@@ -38,6 +41,15 @@ export function CreatePostInput() {
       return;
     }
 
+    if (!title.trim()) {
+      toast({
+        title: "Errore",
+        description: "Inserisci un titolo per il post",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (wordCount < REQUIRED_WORDS) {
       toast({
         title: "Contenuto troppo breve",
@@ -52,8 +64,8 @@ export function CreatePostInput() {
       const { error } = await supabase
         .from('blog_posts')
         .insert({
+          title: title.trim(),
           content,
-          title: content.split('\n')[0].slice(0, 100),
           user_id: user.id,
           is_published: true
         });
@@ -61,6 +73,7 @@ export function CreatePostInput() {
       if (error) throw error;
 
       setContent('');
+      setTitle('');
       toast({
         title: "Post pubblicato",
         description: "Il tuo post è stato pubblicato con successo",
@@ -80,35 +93,52 @@ export function CreatePostInput() {
   if (!user) return null;
 
   const progress = (wordCount / REQUIRED_WORDS) * 100;
+  const remainingWords = Math.max(0, REQUIRED_WORDS - wordCount);
 
   return (
     <Card className="p-4 mb-8">
-      <Textarea
-        placeholder="Cosa vuoi condividere oggi?"
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        className="min-h-[100px] mb-4"
-      />
       <div className="space-y-4">
-        <div className="flex items-center justify-between text-sm text-gray-500">
-          <span>{wordCount} parole</span>
-          <span>{REQUIRED_WORDS - wordCount} parole rimanenti</span>
+        <div>
+          <Label htmlFor="title">Titolo del post</Label>
+          <Input
+            id="title"
+            placeholder="Inserisci il titolo del post"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="mb-4"
+          />
         </div>
-        <Progress value={Math.min(progress, 100)} className="h-2" />
-        <div className="flex justify-end">
-          <Button 
-            onClick={handleSubmit}
-            disabled={isSubmitting || wordCount < REQUIRED_WORDS}
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Pubblicazione...
-              </>
-            ) : (
-              'Pubblica'
-            )}
-          </Button>
+        <div>
+          <Label htmlFor="content">Contenuto</Label>
+          <Textarea
+            id="content"
+            placeholder="Cosa vuoi condividere oggi?"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            className="min-h-[100px]"
+          />
+        </div>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between text-sm text-gray-500">
+            <span>{wordCount} parole</span>
+            <span>{remainingWords} parole rimanenti</span>
+          </div>
+          <Progress value={Math.min(progress, 100)} className="h-2" />
+          <div className="flex justify-end">
+            <Button 
+              onClick={handleSubmit}
+              disabled={isSubmitting || wordCount < REQUIRED_WORDS || !title.trim()}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Pubblicazione...
+                </>
+              ) : (
+                'Pubblica'
+              )}
+            </Button>
+          </div>
         </div>
       </div>
     </Card>
