@@ -24,7 +24,7 @@ export function RouteHeaderWithImage({
           <CardTitle className="flex flex-col">
             <span>{name}</span>
             <div className="flex items-center gap-2 mt-2">
-              {creatorId ? (
+              {creatorId && creatorUsername ? (
                 <Link 
                   to={`/profile/${creatorId}`}
                   className="flex items-center gap-2 hover:opacity-80 transition-opacity"
@@ -33,7 +33,7 @@ export function RouteHeaderWithImage({
                   <Avatar className="h-6 w-6">
                     <AvatarImage src={creatorAvatarUrl} />
                     <AvatarFallback>
-                      {creatorUsername?.[0]?.toUpperCase() || 'U'}
+                      {creatorUsername[0]?.toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
                   <span className="text-sm text-muted-foreground hover:underline">

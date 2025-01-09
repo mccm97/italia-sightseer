@@ -57,7 +57,7 @@ export function UserRoutes() {
       }
 
       console.log('User routes fetched:', routes);
-      return routes as DbRoute[];
+      return routes as unknown as DbRoute[];
     },
   });
 
