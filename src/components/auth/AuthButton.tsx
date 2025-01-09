@@ -21,38 +21,51 @@ export function AuthButton() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    // Configure Supabase to persist session
-    supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN') {
-        console.log('User signed in:', session?.user?.id);
-        setUser(session?.user || null);
-      } else if (event === 'SIGNED_OUT') {
-        console.log('User signed out');
-        setUser(null);
-        queryClient.clear();
-        localStorage.removeItem('sb-shcbdouqszburohgegcb-auth-token');
-      }
-    });
-
-    // Initial session check
-    const checkSession = async () => {
+    // Initial session check and setup
+    const initializeAuth = async () => {
       try {
+        // Clear any stale data first
+        localStorage.removeItem('sb-shcbdouqszburohgegcb-auth-token');
+        queryClient.clear();
+
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
-          console.error('Session check error:', error);
+          console.error('Initial session check error:', error);
           return;
         }
-        console.log('Initial session check:', session?.user?.id || 'No session');
+
+        console.log('Initial session state:', session?.user?.id || 'No session');
         setUser(session?.user || null);
       } catch (error) {
-        console.error('Session check failed:', error);
+        console.error('Session initialization error:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    checkSession();
-  }, [queryClient]);
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state change:', event, session?.user?.id);
+      
+      if (event === 'SIGNED_IN') {
+        console.log('User signed in:', session?.user?.id);
+        setUser(session?.user);
+      } else if (event === 'SIGNED_OUT') {
+        console.log('User signed out');
+        setUser(null);
+        queryClient.clear();
+        localStorage.removeItem('sb-shcbdouqszburohgegcb-auth-token');
+        navigate('/');
+      }
+    });
+
+    initializeAuth();
+
+    // Cleanup subscription on unmount
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate, queryClient]);
 
   const handleSignOut = async () => {
     try {
@@ -64,8 +77,6 @@ export function AuthButton() {
         title: "Logout effettuato",
         description: "Hai effettuato il logout con successo",
       });
-      
-      navigate('/');
     } catch (error) {
       console.error('Logout error:', error);
       toast({
