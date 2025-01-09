@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,6 @@ import { Share2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { BlogPost as BlogPostType } from '@/types/blog';
-import { supabase } from '@/integrations/supabase/client';
 
 interface BlogPostProps {
   post: BlogPostType;
