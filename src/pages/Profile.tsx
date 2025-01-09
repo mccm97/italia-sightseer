@@ -8,6 +8,9 @@ import { EditProfileForm } from '@/components/profile/EditProfileForm';
 import { UserRoutes } from '@/components/profile/UserRoutes';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { UserComments } from '@/components/profile/UserComments';
+import { UserBlogPosts } from '@/components/profile/UserBlogPosts';
 
 export default function Profile() {
   const [loading, setLoading] = useState(true);
@@ -99,7 +102,22 @@ export default function Profile() {
                 userId={profile?.id}
                 subscriptionLevel={profile?.subscription_level || 'bronze'}
               />
-              <UserRoutes />
+              <Tabs defaultValue="routes" className="mt-6">
+                <TabsList className="w-full">
+                  <TabsTrigger value="routes" className="flex-1">Percorsi</TabsTrigger>
+                  <TabsTrigger value="comments" className="flex-1">Commenti</TabsTrigger>
+                  <TabsTrigger value="posts" className="flex-1">Post</TabsTrigger>
+                </TabsList>
+                <TabsContent value="routes">
+                  <UserRoutes />
+                </TabsContent>
+                <TabsContent value="comments">
+                  <UserComments userId={profile?.id} />
+                </TabsContent>
+                <TabsContent value="posts">
+                  <UserBlogPosts userId={profile?.id} />
+                </TabsContent>
+              </Tabs>
             </>
           )}
         </CardContent>
