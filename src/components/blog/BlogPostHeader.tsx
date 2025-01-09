@@ -11,7 +11,7 @@ interface BlogPostHeaderProps {
 }
 
 export function BlogPostHeader({ userId, username, avatarUrl, title, createdAt }: BlogPostHeaderProps) {
-  console.log('BlogPostHeader - Rendering for user:', { userId, username });
+  console.log('BlogPostHeader - Rendering for user:', { userId, username, avatarUrl });
   
   return (
     <div className="flex flex-row items-center gap-4">
