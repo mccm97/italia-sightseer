@@ -24,27 +24,22 @@ export function AuthButton() {
     const initializeAuth = async () => {
       try {
         setLoading(true);
-        // First clear any potentially stale data
-        localStorage.removeItem('supabase.auth.token');
+        // Clear any stale session data
         queryClient.clear();
-
+        localStorage.removeItem('sb-shcbdouqszburohgegcb-auth-token');
+        
         const { data: { session }, error } = await supabase.auth.getSession();
-        console.log('Initial session check:', session?.user?.id || 'No session');
-
+        console.log('Session check:', session?.user?.id || 'No session');
+        
         if (error) {
-          console.error('Session initialization error:', error);
+          console.error('Session error:', error);
           await handleSignOut();
           return;
         }
 
-        if (session?.user) {
-          setUser(session.user);
-        } else {
-          console.log('No active session found');
-          await handleSignOut();
-        }
+        setUser(session?.user || null);
       } catch (error) {
-        console.error('Auth initialization error:', error);
+        console.error('Auth error:', error);
         await handleSignOut();
       } finally {
         setLoading(false);
@@ -54,15 +49,20 @@ export function AuthButton() {
     initializeAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session?.user?.id);
+      console.log('Auth event:', event, session?.user?.id);
       
       switch (event) {
         case 'SIGNED_IN':
-        case 'TOKEN_REFRESHED':
-          setUser(session?.user ?? null);
+          console.log('User signed in:', session?.user?.id);
+          setUser(session?.user || null);
           break;
         case 'SIGNED_OUT':
+          console.log('User signed out');
           await handleSignOut();
+          break;
+        case 'TOKEN_REFRESHED':
+          console.log('Token refreshed for user:', session?.user?.id);
+          setUser(session?.user || null);
           break;
         default:
           console.log('Unhandled auth event:', event);
@@ -78,12 +78,14 @@ export function AuthButton() {
     try {
       setLoading(true);
       
-      // Clear all client-side state first
+      // Clear client state
       setUser(null);
       queryClient.clear();
-      localStorage.clear();
       
-      // Then sign out from Supabase
+      // Clear all storage
+      localStorage.removeItem('sb-shcbdouqszburohgegcb-auth-token');
+      
+      // Sign out from Supabase
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error('Sign out error:', error);
