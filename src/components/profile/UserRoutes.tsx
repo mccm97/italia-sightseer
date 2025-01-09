@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
-import { Route, RouteOff } from 'lucide-react';
+import { RouteOff } from 'lucide-react';
 import { Tables } from '@/integrations/supabase/types';
 import { DeleteRouteButton } from './DeleteRouteButton';
 import { RouteCard } from '../route/RouteCard';
@@ -28,7 +28,8 @@ export function UserRoutes() {
               lat,
               lng
             )
-          )
+          ),
+          creator:profiles(id, username, avatar_url)
         `)
         .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
 
@@ -50,6 +51,11 @@ export function UserRoutes() {
             lat: number;
             lng: number;
           }
+        }[],
+        creator: {
+          id: string;
+          username: string;
+          avatar_url: string;
         }[]
       })[];
     },
@@ -76,13 +82,19 @@ export function UserRoutes() {
               position: [ra.attraction.lat, ra.attraction.lng] as [number, number]
             })) || [];
 
+            const creator = route.creator?.[0];
+
             return (
               <div key={route.id} className="relative">
                 <RouteCard
                   route={{
                     ...route,
                     attractions,
-                    creator: { username: 'Tu' }
+                    creator: creator ? {
+                      id: creator.id,
+                      username: creator.username,
+                      avatar_url: creator.avatar_url
+                    } : undefined
                   }}
                   routeStats={{
                     likesCount,

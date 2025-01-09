@@ -37,7 +37,7 @@ export function RouteHeaderWithImage({
                     </AvatarFallback>
                   </Avatar>
                   <span className="text-sm text-muted-foreground hover:underline">
-                    {creatorUsername || 'Utente anonimo'}
+                    {creatorUsername}
                   </span>
                 </Link>
               ) : (
