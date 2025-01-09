@@ -3,6 +3,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Medal } from 'lucide-react';
 import { FollowButton } from './FollowButton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProfileHeaderProps {
   username?: string | null;
@@ -36,6 +38,50 @@ export function ProfileHeader({
     }
   };
 
+  // Fetch profile stats
+  const { data: stats } = useQuery({
+    queryKey: ['profileStats', profileId],
+    queryFn: async () => {
+      if (!profileId) return null;
+
+      // Get route likes
+      const { data: routeLikes } = await supabase
+        .from('route_likes')
+        .select('id', { count: 'exact' })
+        .eq('user_id', profileId);
+
+      // Get average ratings
+      const { data: ratings } = await supabase
+        .from('route_ratings')
+        .select('rating')
+        .eq('user_id', profileId);
+
+      const averageRating = ratings?.length 
+        ? ratings.reduce((acc, curr) => acc + curr.rating, 0) / ratings.length 
+        : 0;
+
+      // Get followers count
+      const { data: followers } = await supabase
+        .from('user_follows')
+        .select('id', { count: 'exact' })
+        .eq('following_id', profileId);
+
+      // Get following count
+      const { data: following } = await supabase
+        .from('user_follows')
+        .select('id', { count: 'exact' })
+        .eq('follower_id', profileId);
+
+      return {
+        likes: routeLikes?.length || 0,
+        averageRating: Number(averageRating.toFixed(1)),
+        followers: followers?.length || 0,
+        following: following?.length || 0
+      };
+    },
+    enabled: !!profileId
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between">
@@ -63,6 +109,12 @@ export function ProfileHeader({
               </TooltipProvider>
             </div>
             {bio && <p className="text-muted-foreground mt-1">{bio}</p>}
+            <div className="flex space-x-4 mt-2 text-sm text-muted-foreground">
+              <span>{stats?.likes || 0} mi piace</span>
+              <span>{stats?.averageRating || 0} media recensioni</span>
+              <span>{stats?.followers || 0} followers</span>
+              <span>{stats?.following || 0} seguiti</span>
+            </div>
           </div>
         </div>
         <div className="flex space-x-2">
