@@ -52,9 +52,9 @@ export function BlogPost({ post, onLike, isLiked }: BlogPostProps) {
   const navigateToProfile = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (post.user_id) {
-      console.log('Navigating to profile:', post.user_id);
-      navigate(`/profile/${post.user_id}`);
+    if (post.creator?.id) {
+      console.log('Navigating to profile:', post.creator.id);
+      navigate(`/profile/${post.creator.id}`);
     }
   };
 

@@ -22,11 +22,14 @@ export default function Blog() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
+      console.log('Fetching posts...');
+      
       let query = supabase
         .from('blog_posts')
         .select(`
           *,
-          profiles:user_id (
+          creator:user_id (
+            id,
             username,
             avatar_url
           )
@@ -48,10 +51,14 @@ export default function Blog() {
 
       if (error) throw error;
       
+      console.log('Posts fetched:', data);
+      
       const formattedPosts: BlogPost[] = data?.map(post => ({
         ...post,
-        creator: post.profiles
+        creator: post.creator
       })) || [];
+      
+      console.log('Formatted posts:', formattedPosts);
       
       setPosts(formattedPosts);
     } catch (error) {

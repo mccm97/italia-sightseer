@@ -7,6 +7,7 @@ export interface BlogPost {
   cover_image_url: string | null;
   is_published: boolean;
   creator?: {
+    id: string;
     username: string | null;
     avatar_url: string | null;
   };
