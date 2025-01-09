@@ -28,7 +28,7 @@ export function AuthButton() {
         
         if (error) {
           console.error('Session error:', error);
-          await handleSignOut();
+          setUser(null);
           return;
         }
 
@@ -37,12 +37,11 @@ export function AuthButton() {
           setUser(session.user);
         } else {
           console.log('No active session');
-          // Don't sign out here, just clear the user state
           setUser(null);
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
-        await handleSignOut();
+        setUser(null);
       } finally {
         setLoading(false);
       }
@@ -54,11 +53,14 @@ export function AuthButton() {
       if (event === 'SIGNED_IN' && session?.user) {
         console.log('User signed in:', session.user.id);
         setUser(session.user);
-      } else if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
-        console.log('User signed out or deleted');
+      } else if (event === 'SIGNED_OUT') {
+        console.log('User signed out');
         await handleSignOut();
       } else if (event === 'TOKEN_REFRESHED' && session?.user) {
         console.log('Token refreshed for:', session.user.id);
+        setUser(session.user);
+      } else if (event === 'USER_UPDATED' && session?.user) {
+        console.log('User updated:', session.user.id);
         setUser(session.user);
       }
     });
