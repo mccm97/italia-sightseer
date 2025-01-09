@@ -113,7 +113,8 @@ export default function Profile() {
                 avatarUrl={profile?.avatar_url}
                 bio={profile?.bio}
                 onEditClick={() => isOwnProfile && setIsEditing(true)}
-                userId={profile?.id}
+                profileId={profile?.id}
+                currentUserId={currentUser?.id}
                 subscriptionLevel={profile?.subscription_level || 'bronze'}
                 showEditButton={isOwnProfile}
               />
