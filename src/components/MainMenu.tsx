@@ -75,6 +75,7 @@ export function MainMenu() {
         <div className="flex flex-col gap-4 mt-8">
           <Link to="/" className="text-lg hover:underline">Home</Link>
           <Link to="/blog" className="text-lg hover:underline">Blog</Link>
+          <Link to="/blog" className="text-lg hover:underline">Blog</Link>
           <Link to="/profile" className="text-lg hover:underline">Profilo</Link>
           <Link to="/upgrade" className="text-lg hover:underline">Abbonamenti</Link>
           {isAdmin && (
