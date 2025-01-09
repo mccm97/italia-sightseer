@@ -23,7 +23,7 @@ export function AuthButton() {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        console.log('Initializing auth...');
+        console.log('Checking existing session...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -33,10 +33,10 @@ export function AuthButton() {
         }
 
         if (session?.user) {
-          console.log('Valid session found:', session.user.id);
+          console.log('Found existing session for user:', session.user.id);
           setUser(session.user);
         } else {
-          console.log('No active session');
+          console.log('No active session found');
           setUser(null);
         }
       } catch (error) {
@@ -48,24 +48,34 @@ export function AuthButton() {
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state change:', event, session);
+      console.log('Auth state change:', event);
       
-      if (event === 'SIGNED_IN' && session?.user) {
-        console.log('User signed in:', session.user.id);
-        setUser(session.user);
-      } else if (event === 'SIGNED_OUT') {
-        console.log('User signed out');
-        await handleSignOut();
-      } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-        console.log('Token refreshed for:', session.user.id);
-        setUser(session.user);
-      } else if (event === 'USER_UPDATED' && session?.user) {
-        console.log('User updated:', session.user.id);
-        setUser(session.user);
+      switch (event) {
+        case 'SIGNED_IN':
+          if (session?.user) {
+            console.log('User signed in:', session.user.id);
+            setUser(session.user);
+          }
+          break;
+        case 'SIGNED_OUT':
+          console.log('User signed out');
+          await handleSignOut();
+          break;
+        case 'TOKEN_REFRESHED':
+          if (session?.user) {
+            console.log('Token refreshed for user:', session.user.id);
+            setUser(session.user);
+          }
+          break;
+        case 'USER_UPDATED':
+          if (session?.user) {
+            console.log('User updated:', session.user.id);
+            setUser(session.user);
+          }
+          break;
       }
     });
 
-    // Initialize auth state
     initializeAuth();
 
     return () => {
@@ -76,14 +86,13 @@ export function AuthButton() {
   const handleSignOut = async () => {
     try {
       setLoading(true);
+      console.log('Signing out...');
       
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
-      // Clear storage and cache after successful sign out
-      localStorage.clear();
+      console.log('Sign out successful, clearing local data');
       queryClient.clear();
-      
       setUser(null);
       navigate('/');
       
