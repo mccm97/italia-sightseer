@@ -119,6 +119,9 @@ export function BlogPost({ post }: BlogPostProps) {
     window.open(shareUrls[platform as keyof typeof shareUrls], '_blank');
   };
 
+  // Verifica che l'ID dell'utente del post sia presente
+  console.log('Post user ID:', post.user_id);
+
   return (
     <Card className="overflow-hidden">
       {post.cover_image_url && (
@@ -131,23 +134,38 @@ export function BlogPost({ post }: BlogPostProps) {
         </div>
       )}
       <CardHeader className="flex flex-row items-center gap-4">
-        <Link to={`/profile/${post.user_id}`} className="hover:opacity-80 transition-opacity">
-          <Avatar>
-            <AvatarImage src={post.profiles?.avatar_url || undefined} />
-            <AvatarFallback>
-              {post.profiles?.username?.[0]?.toUpperCase() || 'U'}
-            </AvatarFallback>
-          </Avatar>
-        </Link>
+        {post.user_id && (
+          <Link 
+            to={`/profile/${post.user_id}`} 
+            className="hover:opacity-80 transition-opacity"
+            onClick={(e) => {
+              e.stopPropagation();
+              console.log('Navigating to profile:', post.user_id);
+            }}
+          >
+            <Avatar>
+              <AvatarImage src={post.profiles?.avatar_url || undefined} />
+              <AvatarFallback>
+                {post.profiles?.username?.[0]?.toUpperCase() || 'U'}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
+        )}
         <div>
           <h2 className="text-2xl font-bold">{post.title}</h2>
           <div className="flex items-center gap-2 text-sm text-gray-500">
-            <Link 
-              to={`/profile/${post.user_id}`}
-              className="hover:underline hover:text-gray-700 transition-colors"
-            >
-              {post.profiles?.username || 'Utente anonimo'}
-            </Link>
+            {post.user_id && (
+              <Link 
+                to={`/profile/${post.user_id}`}
+                className="hover:underline hover:text-gray-700 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log('Navigating to profile:', post.user_id);
+                }}
+              >
+                {post.profiles?.username || 'Utente anonimo'}
+              </Link>
+            )}
             <span>•</span>
             <span>{formatDate(post.created_at)}</span>
           </div>

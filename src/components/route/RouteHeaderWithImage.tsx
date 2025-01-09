@@ -17,6 +17,9 @@ export function RouteHeaderWithImage({
   creatorAvatarUrl,
   imageUrl
 }: RouteHeaderWithImageProps) {
+  // Log per debugging
+  console.log('Route creator ID:', creatorId);
+
   return (
     <div className="flex items-start gap-4 p-4">
       <div className="flex-1">
@@ -24,20 +27,23 @@ export function RouteHeaderWithImage({
           <CardTitle className="flex flex-col">
             <span>{name}</span>
             <div className="flex items-center gap-2 mt-2">
-              {creatorId && creatorUsername ? (
+              {creatorId ? (
                 <Link 
                   to={`/profile/${creatorId}`}
                   className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    console.log('Navigating to route creator profile:', creatorId);
+                  }}
                 >
                   <Avatar className="h-6 w-6">
                     <AvatarImage src={creatorAvatarUrl} />
                     <AvatarFallback>
-                      {creatorUsername[0]?.toUpperCase() || 'U'}
+                      {creatorUsername?.[0]?.toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
                   <span className="text-sm text-muted-foreground hover:underline">
-                    {creatorUsername}
+                    {creatorUsername || 'Utente anonimo'}
                   </span>
                 </Link>
               ) : (
