@@ -49,40 +49,40 @@ export function AuthButton() {
       }
     };
 
+    // Initialize auth state
+    initializeAuth();
+
+    // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state change:', event);
+      console.log('Auth state change:', event, session);
       
       if (!mounted) return;
 
+      if (session?.user) {
+        console.log('Session user found:', session.user.id);
+        setUser(session.user);
+      } else {
+        console.log('No session user found');
+        setUser(null);
+      }
+
       switch (event) {
         case 'SIGNED_IN':
-          if (session?.user) {
-            console.log('User signed in:', session.user.id);
-            setUser(session.user);
-          }
+          console.log('User signed in');
           break;
         case 'SIGNED_OUT':
           console.log('User signed out');
-          setUser(null);
           queryClient.clear();
           navigate('/');
           break;
         case 'TOKEN_REFRESHED':
-          if (session?.user) {
-            console.log('Token refreshed for user:', session.user.id);
-            setUser(session.user);
-          }
+          console.log('Token refreshed');
           break;
         case 'USER_UPDATED':
-          if (session?.user) {
-            console.log('User updated:', session.user.id);
-            setUser(session.user);
-          }
+          console.log('User updated');
           break;
       }
     });
-
-    initializeAuth();
 
     return () => {
       mounted = false;
