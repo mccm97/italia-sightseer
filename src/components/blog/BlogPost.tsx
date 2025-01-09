@@ -1,18 +1,9 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { formatDate } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { ThumbsUp, Share2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Link } from 'react-router-dom';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { BlogPostHeader } from './BlogPostHeader';
+import { BlogPostActions } from './BlogPostActions';
 
 interface BlogPostProps {
   post: {
@@ -21,7 +12,7 @@ interface BlogPostProps {
     content: string;
     created_at: string;
     cover_image_url: string | null;
-    user_id?: string;
+    user_id: string;
     profiles: {
       username: string | null;
       avatar_url: string | null;
@@ -119,8 +110,8 @@ export function BlogPost({ post }: BlogPostProps) {
     window.open(shareUrls[platform as keyof typeof shareUrls], '_blank');
   };
 
-  // Verifica che l'ID dell'utente del post sia presente
-  console.log('Post user ID:', post.user_id);
+  // Log per debugging
+  console.log('Rendering BlogPost for user:', post.user_id);
 
   return (
     <Card className="overflow-hidden">
@@ -133,82 +124,25 @@ export function BlogPost({ post }: BlogPostProps) {
           />
         </div>
       )}
-      <CardHeader className="flex flex-row items-center gap-4">
-        {post.user_id && (
-          <Link 
-            to={`/profile/${post.user_id}`} 
-            className="hover:opacity-80 transition-opacity"
-            onClick={(e) => {
-              e.stopPropagation();
-              console.log('Navigating to profile:', post.user_id);
-            }}
-          >
-            <Avatar>
-              <AvatarImage src={post.profiles?.avatar_url || undefined} />
-              <AvatarFallback>
-                {post.profiles?.username?.[0]?.toUpperCase() || 'U'}
-              </AvatarFallback>
-            </Avatar>
-          </Link>
-        )}
-        <div>
-          <h2 className="text-2xl font-bold">{post.title}</h2>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            {post.user_id && (
-              <Link 
-                to={`/profile/${post.user_id}`}
-                className="hover:underline hover:text-gray-700 transition-colors"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  console.log('Navigating to profile:', post.user_id);
-                }}
-              >
-                {post.profiles?.username || 'Utente anonimo'}
-              </Link>
-            )}
-            <span>•</span>
-            <span>{formatDate(post.created_at)}</span>
-          </div>
-        </div>
+      <CardHeader>
+        <BlogPostHeader
+          userId={post.user_id}
+          username={post.profiles?.username}
+          avatarUrl={post.profiles?.avatar_url}
+          title={post.title}
+          createdAt={post.created_at}
+        />
       </CardHeader>
       <CardContent>
         <p className="whitespace-pre-wrap mb-6">{post.content}</p>
-        <div className="flex items-center gap-2 border-t pt-4">
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={handleLike}
-            disabled={isLoading}
-            className={`flex-1 ${isLiked ? 'bg-blue-50 hover:bg-blue-100' : ''}`}
-          >
-            <ThumbsUp className={`h-5 w-5 mr-2 ${isLiked ? 'fill-blue-500 text-blue-500' : ''}`} />
-            <span className={`${isLiked ? 'text-blue-500' : ''}`}>
-              {likes} Mi piace
-            </span>
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="flex-1">
-                <Share2 className="h-5 w-5 mr-2" />
-                Condividi
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => handleShare('whatsapp')}>
-                WhatsApp
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleShare('facebook')}>
-                Facebook
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleShare('twitter')}>
-                Twitter
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleShare('linkedin')}>
-                LinkedIn
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        <BlogPostActions
+          postId={post.id}
+          likes={likes}
+          isLiked={isLiked}
+          isLoading={isLoading}
+          onLike={handleLike}
+          onShare={handleShare}
+        />
       </CardContent>
     </Card>
   );
