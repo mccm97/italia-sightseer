@@ -5,7 +5,25 @@ import { Tables } from '@/integrations/supabase/types';
 import { DeleteRouteButton } from './DeleteRouteButton';
 import { RouteCard } from '../route/RouteCard';
 
-type DbRoute = Tables<'routes'>;
+type DbRoute = Tables<'routes'> & {
+  cities: { name: string; lat: number; lng: number; };
+  route_likes: { count: number; }[];
+  route_ratings: { rating: number; }[];
+  route_attractions: {
+    attraction: {
+      name: string;
+      visit_duration: number;
+      price: number;
+      lat: number;
+      lng: number;
+    };
+  }[];
+  creator: {
+    id: string;
+    username: string;
+    avatar_url: string;
+  }[];
+};
 
 export function UserRoutes() {
   const { data: routes, isLoading, refetch } = useQuery({
@@ -39,25 +57,7 @@ export function UserRoutes() {
       }
 
       console.log('User routes fetched:', routes);
-      return routes as (DbRoute & { 
-        cities: { name: string, lat: number, lng: number },
-        route_likes: { count: number }[],
-        route_ratings: { rating: number }[],
-        route_attractions: {
-          attraction: {
-            name: string;
-            visit_duration: number;
-            price: number;
-            lat: number;
-            lng: number;
-          }
-        }[],
-        creator: {
-          id: string;
-          username: string;
-          avatar_url: string;
-        }[]
-      })[];
+      return routes as DbRoute[];
     },
   });
 
