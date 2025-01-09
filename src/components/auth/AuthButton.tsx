@@ -11,6 +11,7 @@ import { LogIn, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 
 export function AuthButton() {
   const [user, setUser] = useState<any>(null);
@@ -18,6 +19,7 @@ export function AuthButton() {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const getInitialSession = async () => {
@@ -53,12 +55,15 @@ export function AuthButton() {
       console.log('Auth state changed:', _event, session ? 'User authenticated' : 'No session');
       setUser(session?.user ?? null);
       setError(null); // Clear any previous errors
+      
+      // Invalidate all queries when auth state changes
+      queryClient.invalidateQueries();
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [toast]);
+  }, [toast, queryClient]);
 
   const handleSignOut = async () => {
     try {
@@ -73,10 +78,16 @@ export function AuthButton() {
         return;
       }
 
+      // Invalidate all queries after logout
+      queryClient.invalidateQueries();
+      
       toast({
         title: "Logout effettuato",
         description: "Hai effettuato il logout con successo",
       });
+      
+      // Navigate to home page after logout
+      navigate('/');
     } catch (err) {
       console.error('Error in handleSignOut:', err);
       toast({

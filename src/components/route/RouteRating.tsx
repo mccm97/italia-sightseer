@@ -1,175 +1,158 @@
-import React from 'react';
-import { Star } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { ScrollArea } from "../ui/scroll-area";
+import { Star } from "lucide-react";
+import { useState } from "react";
+import { Button } from "../ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 interface RouteRatingProps {
   routeId: string;
   initialRating?: number;
 }
 
-export function RouteRating({ routeId, initialRating = 0 }: RouteRatingProps) {
-  const [isRatingOpen, setIsRatingOpen] = React.useState(false);
-  const [selectedRating, setSelectedRating] = React.useState(0);
+export function RouteRating({ routeId, initialRating }: RouteRatingProps) {
+  const [rating, setRating] = useState(0);
+  const [hoveredRating, setHoveredRating] = useState(0);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  // First verify the route exists
-  const { data: routeExists } = useQuery({
-    queryKey: ['routeExists', routeId],
+  const { data: reviews, isLoading } = useQuery({
+    queryKey: ['routeReviews', routeId],
     queryFn: async () => {
-      console.log('Checking if route exists:', routeId);
       const { data, error } = await supabase
-        .from('routes')
-        .select('id')
-        .eq('id', routeId)
-        .maybeSingle();
+        .from('route_ratings')
+        .select(`
+          rating,
+          created_at,
+          profiles (
+            username,
+            avatar_url
+          )
+        `)
+        .eq('route_id', routeId)
+        .order('created_at', { ascending: false });
       
-      if (error) {
-        console.error('Error checking route:', error);
-        return false;
-      }
-      
-      return !!data;
+      if (error) throw error;
+      return data;
     }
   });
 
-  const { data: averageRating = initialRating } = useQuery({
-    queryKey: ['routeRating', routeId],
+  // Check if user has already rated
+  const { data: userRating } = useQuery({
+    queryKey: ['userRating', routeId],
     queryFn: async () => {
-      console.log('Fetching ratings for route:', routeId);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
       const { data, error } = await supabase
         .from('route_ratings')
         .select('rating')
-        .eq('route_id', routeId);
-      
-      if (error) {
-        console.error('Error fetching ratings:', error);
-        throw error;
-      }
-      
-      if (!data?.length) return 0;
-      
-      const average = data.reduce((acc, curr) => acc + curr.rating, 0) / data.length;
-      return Number(average.toFixed(1));
-    },
-    enabled: routeExists
+        .eq('route_id', routeId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data?.rating;
+    }
   });
 
-  const handleRatingSubmit = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    try {
-      // Check if route exists
-      if (!routeExists) {
-        console.error('Cannot rate non-existent route:', routeId);
-        toast({
-          title: "Errore",
-          description: "Questo percorso non esiste più",
-          variant: "destructive",
-        });
-        return;
-      }
+  const handleSubmitReview = async () => {
+    if (rating === 0) return;
 
+    try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast({
           title: "Errore",
-          description: "Devi essere autenticato per lasciare una valutazione",
-          variant: "destructive",
+          description: "Devi essere autenticato per lasciare una recensione",
+          variant: "destructive"
         });
         return;
       }
-
-      console.log('Submitting rating:', {
-        route_id: routeId,
-        user_id: user.id,
-        rating: selectedRating
-      });
 
       const { error } = await supabase
         .from('route_ratings')
-        .upsert(
-          {
-            route_id: routeId,
-            user_id: user.id,
-            rating: selectedRating
-          },
-          {
-            onConflict: 'route_id,user_id'
-          }
-        );
-
-      if (error) {
-        console.error('Error submitting rating:', error);
-        toast({
-          title: "Errore",
-          description: "Si è verificato un errore durante l'invio della valutazione",
-          variant: "destructive",
+        .upsert({
+          route_id: routeId,
+          rating: rating,
+          user_id: user.id
         });
-        return;
-      }
 
-      await queryClient.invalidateQueries({ queryKey: ['routeRating', routeId] });
-      setIsRatingOpen(false);
+      if (error) throw error;
+
       toast({
         title: "Successo",
-        description: "La tua valutazione è stata registrata con successo",
+        description: "Recensione inviata con successo"
       });
+
+      queryClient.invalidateQueries({ queryKey: ['routeReviews', routeId] });
+      queryClient.invalidateQueries({ queryKey: ['userRating', routeId] });
     } catch (error) {
-      console.error('Error submitting rating:', error);
+      console.error('Error submitting review:', error);
       toast({
         title: "Errore",
-        description: "Si è verificato un errore durante l'invio della valutazione",
-        variant: "destructive",
+        description: "Impossibile inviare la recensione",
+        variant: "destructive"
       });
     }
   };
 
-  return (
-    <>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={(e) => {
-          e.stopPropagation();
-          setIsRatingOpen(true);
-        }}
-        className="flex items-center gap-1"
-      >
-        <Star className="w-4 h-4 text-yellow-400" />
-        <span>{averageRating.toFixed(1)}</span>
-      </Button>
+  if (isLoading) return <div>Caricamento recensioni...</div>;
 
-      <Dialog open={isRatingOpen} onOpenChange={(open) => {
-        setIsRatingOpen(open);
-      }}>
-        <DialogContent onClick={(e) => e.stopPropagation()}>
-          <DialogHeader>
-            <DialogTitle>Valuta questo percorso</DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex gap-2">
-              {[1, 2, 3, 4, 5].map((rating) => (
-                <Star
-                  key={rating}
-                  className={`w-8 h-8 cursor-pointer ${
-                    rating <= selectedRating ? 'text-yellow-400' : 'text-gray-300'
-                  }`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedRating(rating);
-                  }}
-                />
-              ))}
-            </div>
-            <Button onClick={handleRatingSubmit}>Invia valutazione</Button>
+  return (
+    <div className="space-y-4">
+      {!userRating && (
+        <div className="flex flex-col items-center gap-2 p-4 border rounded">
+          <div className="flex gap-1">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <Star
+                key={star}
+                className={`w-6 h-6 cursor-pointer ${
+                  star <= (hoveredRating || rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                }`}
+                onClick={() => setRating(star)}
+                onMouseEnter={() => setHoveredRating(star)}
+                onMouseLeave={() => setHoveredRating(0)}
+              />
+            ))}
           </div>
-        </DialogContent>
-      </Dialog>
-    </>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleSubmitReview}
+            disabled={rating === 0}
+          >
+            Invia Recensione
+          </Button>
+        </div>
+      )}
+
+      <ScrollArea className="h-[200px]">
+        <div className="space-y-4">
+          {!reviews?.length ? (
+            <div>Nessuna recensione</div>
+          ) : (
+            reviews.map((review, index) => (
+              <div key={index} className="flex items-start gap-2 p-2 border rounded">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{review.profiles?.username || 'Utente anonimo'}</span>
+                    <div className="flex">
+                      {[...Array(review.rating)].map((_, i) => (
+                        <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {new Date(review.created_at).toLocaleDateString()}
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </ScrollArea>
+    </div>
   );
 }
