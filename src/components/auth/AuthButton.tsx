@@ -23,58 +23,83 @@ export function AuthButton() {
   useEffect(() => {
     let mounted = true;
 
-    async function initializeAuth() {
+    async function checkSession() {
       try {
-        console.log('Checking existing session...');
-        const { data: { session } } = await supabase.auth.getSession();
+        console.log('Verifico la sessione esistente...');
+        const { data: { session }, error } = await supabase.auth.getSession();
         
+        if (error) {
+          console.error('Errore durante il controllo della sessione:', error);
+          if (mounted) {
+            setUser(null);
+            navigate('/login');
+          }
+          return;
+        }
+
         if (session?.user && mounted) {
-          console.log('Found existing session for user:', session.user.id);
+          console.log('Sessione utente trovata:', {
+            id: session.user.id,
+            email: session.user.email,
+            expires_at: session.expires_at
+          });
           setUser(session.user);
         } else {
-          console.log('No active session found');
-          if (mounted) setUser(null);
+          console.log('Nessuna sessione attiva trovata');
+          if (mounted) {
+            setUser(null);
+            // Non reindirizzare automaticamente qui per evitare loop
+          }
         }
       } catch (error) {
-        console.error('Auth initialization error:', error);
+        console.error('Errore durante l\'inizializzazione auth:', error);
         if (mounted) setUser(null);
       } finally {
         if (mounted) setLoading(false);
       }
     }
 
-    // Set up auth state change listener first
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
       
-      console.log('Auth state change:', event, session?.user?.id);
-
-      if (session?.user) {
-        setUser(session.user);
-      } else {
-        setUser(null);
-      }
+      console.log('Cambio stato auth:', event, {
+        session_id: session?.access_token,
+        user_id: session?.user?.id,
+        expires_at: session?.expires_at
+      });
 
       switch (event) {
         case 'SIGNED_IN':
-          console.log('User signed in successfully');
+          console.log('Utente autenticato con successo');
+          if (session?.user) {
+            setUser(session.user);
+            navigate('/');
+          }
           break;
         case 'SIGNED_OUT':
-          console.log('User signed out');
+          console.log('Utente disconnesso');
+          setUser(null);
           queryClient.clear();
           navigate('/');
           break;
         case 'TOKEN_REFRESHED':
-          console.log('Session token refreshed');
+          console.log('Token di sessione aggiornato');
+          if (session?.user) setUser(session.user);
           break;
         case 'USER_UPDATED':
-          console.log('User profile updated');
+          console.log('Profilo utente aggiornato');
+          if (session?.user) setUser(session.user);
+          break;
+        case 'USER_DELETED':
+          console.log('Utente eliminato');
+          setUser(null);
+          navigate('/login');
           break;
       }
     });
 
-    // Then initialize auth
-    initializeAuth();
+    // Verifica iniziale della sessione
+    checkSession();
 
     return () => {
       mounted = false;
@@ -85,17 +110,21 @@ export function AuthButton() {
   const handleSignOut = async () => {
     try {
       setLoading(true);
-      console.log('Signing out...');
+      console.log('Avvio processo di logout...');
       
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      if (error) {
+        console.error('Errore durante il logout:', error);
+        throw error;
+      }
       
+      console.log('Logout completato con successo');
       toast({
         title: "Logout effettuato",
         description: "Hai effettuato il logout con successo",
       });
     } catch (error) {
-      console.error('Sign out error:', error);
+      console.error('Errore durante il processo di logout:', error);
       toast({
         title: "Errore",
         description: "Si è verificato un errore durante il logout",
