@@ -32,6 +32,8 @@ export function AuthButton() {
           console.error('Errore durante il controllo della sessione:', error);
           if (mounted) {
             setUser(null);
+            // Clear any existing session data
+            await supabase.auth.signOut();
           }
           return;
         }
@@ -51,7 +53,11 @@ export function AuthButton() {
         }
       } catch (error) {
         console.error('Errore durante l\'inizializzazione auth:', error);
-        if (mounted) setUser(null);
+        if (mounted) {
+          setUser(null);
+          // Clear any existing session data on error
+          await supabase.auth.signOut();
+        }
       } finally {
         if (mounted) setLoading(false);
       }
@@ -88,6 +94,10 @@ export function AuthButton() {
           console.log('Profilo utente aggiornato');
           if (session?.user) setUser(session.user);
           break;
+        case 'INITIAL_SESSION':
+          console.log('Sessione iniziale caricata');
+          if (session?.user) setUser(session.user);
+          break;
       }
     });
 
@@ -105,10 +115,8 @@ export function AuthButton() {
       setLoading(true);
       console.log('Avvio processo di logout...');
       
-      // Sign out from Supabase
-      const { error } = await supabase.auth.signOut({
-        scope: 'local' // Only clear local session
-      });
+      // Sign out from Supabase and clear all local storage
+      const { error } = await supabase.auth.signOut();
       
       if (error) {
         console.error('Errore durante il logout:', error);
