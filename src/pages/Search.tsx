@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { CitySearchSection } from '@/components/home/CitySearchSection';
 import { useNavigate } from 'react-router-dom';
