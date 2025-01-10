@@ -92,13 +92,13 @@ export function HomeContainer() {
     <div className="container mx-auto p-4 space-y-6">
       <MainMenu />
       <Header user={user} />
-      <HomeHero />
-      <AboutSection />
-
+      
       {!selectedCity ? (
-        <div className="flex justify-center">
+        <>
           <CitySearchSection setSelectedCity={setSelectedCity} />
-        </div>
+          <HomeHero />
+          <AboutSection />
+        </>
       ) : (
         <CityView
           city={selectedCity}
@@ -113,7 +113,6 @@ export function HomeContainer() {
       )}
 
       <CreateRouteDialog />
-
       <RoutePreviewDialog
         showRoutePreview={showRoutePreview}
         setShowRoutePreview={setShowRoutePreview}
@@ -121,7 +120,6 @@ export function HomeContainer() {
         selectedCity={selectedCity}
         routeSummary={routeSummary}
       />
-
       <DirectionsDialog
         isOpen={showDirections}
         onClose={() => setShowDirections(false)}
