@@ -6,6 +6,7 @@ import Blog from './pages/Blog';
 import Statistics from './pages/Statistics';
 import Admin from './pages/Admin';
 import Upgrade from './pages/Upgrade';
+import Search from './pages/Search';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
       <Route path="/statistics" element={<Statistics />} />
       <Route path="/admin" element={<Admin />} />
       <Route path="/upgrade" element={<Upgrade />} />
+      <Route path="/search" element={<Search />} />
     </Routes>
   );
 }

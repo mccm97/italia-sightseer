@@ -1,4 +1,4 @@
-import { Menu, LogOut, Globe, BarChart } from 'lucide-react';
+import { Menu, LogOut, Globe, BarChart, Search } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -74,6 +74,10 @@ export function MainMenu() {
         </SheetHeader>
         <div className="flex flex-col gap-4 mt-8">
           <Link to="/" className="text-lg hover:underline">Home</Link>
+          <Link to="/search" className="text-lg hover:underline flex items-center gap-2">
+            <Search className="h-4 w-4" />
+            Cerca città
+          </Link>
           <Link to="/blog" className="text-lg hover:underline">Blog</Link>
           <Link to="/profile" className="text-lg hover:underline">Profilo</Link>
           <Link to="/upgrade" className="text-lg hover:underline">Abbonamenti</Link>

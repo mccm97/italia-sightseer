@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { HomeHero } from '@/components/home/HomeHero';
 import { AboutSection } from '@/components/home/AboutSection';
-import { CitySearchSection } from '@/components/home/CitySearchSection';
 import { CityView } from '@/components/city/CityView';
 import { CreateRouteDialog } from '@/components/CreateRouteDialog';
 import { DirectionsDialog } from '@/components/route/DirectionsDialog';
@@ -12,6 +11,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Route, DirectionsStep } from '@/types/route';
 import { useRouteManagement } from '@/hooks/useRouteManagement';
+import { useLocation } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Search } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface City {
   id?: string;
@@ -22,11 +25,14 @@ interface City {
 }
 
 export function HomeContainer() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [selectedCity, setSelectedCity] = useState<City | null>(null);
   const [showDirections, setShowDirections] = useState(false);
   const [selectedRouteDirections, setSelectedRouteDirections] = useState<DirectionsStep[]>([]);
   const [user, setUser] = useState<any>(null);
   const { toast } = useToast();
+  
   const { 
     selectedRoute,
     showRoutePreview,
@@ -88,6 +94,14 @@ export function HomeContainer() {
     fetchUser();
   }, [toast]);
 
+  useEffect(() => {
+    if (location.state?.selectedCity) {
+      setSelectedCity(location.state.selectedCity);
+      // Clear the state after using it
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
   return (
     <div className="container mx-auto p-4 space-y-6">
       <MainMenu />
@@ -95,7 +109,16 @@ export function HomeContainer() {
       
       {!selectedCity ? (
         <>
-          <CitySearchSection setSelectedCity={setSelectedCity} />
+          <div className="text-center mb-12">
+            <Button 
+              onClick={() => navigate('/search')}
+              className="inline-flex items-center gap-2"
+              size="lg"
+            >
+              <Search className="h-5 w-5" />
+              Cerca una città
+            </Button>
+          </div>
           <HomeHero />
           <AboutSection />
         </>
