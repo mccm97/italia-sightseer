@@ -62,12 +62,16 @@ export default function Login() {
     };
   }, [navigate]);
 
+  const handleBack = () => {
+    navigate(-1);
+  };
+
   return (
     <div className="container max-w-md mx-auto mt-12 p-4">
       <div className="mb-8">
         <Button
           variant="ghost"
-          onClick={() => navigate(-1)}
+          onClick={handleBack}
           className="mb-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
