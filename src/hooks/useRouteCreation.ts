@@ -47,10 +47,10 @@ export function useRouteCreation() {
             description: "Con il piano Bronze puoi creare solo un percorso al mese. Passa a un piano superiore per crearne di più!",
             variant: "destructive"
           });
-        } else {
+        } else if (profile?.subscription_level === 'silver') {
           toast({
-            title: "Limite raggiunto",
-            description: "Hai raggiunto il limite mensile di percorsi. Passa a un piano superiore per crearne altri.",
+            title: "Limite mensile raggiunto",
+            description: "Con il piano Silver puoi creare solo 10 percorsi al mese. Passa al piano Gold per avere percorsi illimitati!",
             variant: "destructive"
           });
         }
@@ -93,7 +93,7 @@ export function useRouteCreation() {
           country: formData.city?.country,
           image_url: formData.image_url,
           description: formData.description,
-          user_id: userId // Added the missing user_id field
+          user_id: userId
         })
         .select()
         .single();
@@ -112,7 +112,7 @@ export function useRouteCreation() {
 
       // Insert route attractions
       const attractionPromises = formData.attractions.map((attr, index) => {
-        if (!attr.attractionId) { // Check if we have a valid attraction ID
+        if (!attr.attractionId) {
           console.error('Missing attraction ID for:', attr);
           return Promise.reject(new Error('Missing attraction ID'));
         }
@@ -121,7 +121,7 @@ export function useRouteCreation() {
           .from('route_attractions')
           .insert({
             route_id: routeData.id,
-            attraction_id: attr.attractionId, // Use the correct property name
+            attraction_id: attr.attractionId,
             order_index: index,
             transport_mode: 'walking',
             travel_duration: 0,

@@ -7,7 +7,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Check } from "lucide-react";
+import { Check, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const plans = [
   {
@@ -59,8 +60,21 @@ const plans = [
 ];
 
 export default function Upgrade() {
+  const navigate = useNavigate();
+
   return (
     <div className="container mx-auto py-10">
+      <div className="flex items-center mb-6">
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate(-1)} 
+          className="mr-4"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Indietro
+        </Button>
+      </div>
+
       <div className="text-center mb-10">
         <h1 className="text-4xl font-bold mb-4">Scegli il tuo piano</h1>
         <p className="text-xl text-muted-foreground">
