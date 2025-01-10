@@ -39,12 +39,25 @@ export function MainMenu() {
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+
       toast({
         title: "Logout effettuato",
         description: "Hai effettuato il logout con successo",
       });
-      navigate('/');
+      
+      // Close the sheet menu after logout
+      const closeButton = document.querySelector('[data-radix-collection-item]');
+      if (closeButton instanceof HTMLElement) {
+        closeButton.click();
+      }
+
+      // Navigate after a short delay to ensure the sheet closes smoothly
+      setTimeout(() => {
+        navigate('/');
+      }, 100);
+
     } catch (error) {
       console.error('Error signing out:', error);
       toast({
