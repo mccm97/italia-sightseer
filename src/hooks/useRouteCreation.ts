@@ -71,12 +71,84 @@ export function useRouteCreation() {
     }
   };
 
+  const createRoute = async () => {
+    try {
+      if (!formData) {
+        console.error('No form data available');
+        return false;
+      }
+
+      const totalDuration = calculateTotalDuration();
+      const totalDistance = 0; // This would need to be calculated based on the route
+
+      const { data: routeData, error: routeError } = await supabase
+        .from('routes')
+        .insert({
+          name: formData.name,
+          city_id: formData.city?.id,
+          transport_mode: formData.transportMode || 'walking',
+          total_duration: totalDuration,
+          total_distance: totalDistance,
+          is_public: false,
+          country: formData.city?.country,
+          image_url: formData.image_url,
+          description: formData.description
+        })
+        .select()
+        .single();
+
+      if (routeError) {
+        console.error('Error creating route:', routeError);
+        toast({
+          title: "Errore",
+          description: "Impossibile creare il percorso. Riprova più tardi.",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      console.log('Route created successfully:', routeData);
+
+      // Insert route attractions
+      const attractionPromises = formData.attractions.map((attr, index) => {
+        return supabase
+          .from('route_attractions')
+          .insert({
+            route_id: routeData.id,
+            attraction_id: attr.id,
+            order_index: index,
+            transport_mode: 'walking',
+            travel_duration: 0,
+            travel_distance: 0
+          });
+      });
+
+      await Promise.all(attractionPromises);
+
+      toast({
+        title: "Successo",
+        description: "Percorso creato con successo!",
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error in route creation:', error);
+      toast({
+        title: "Errore",
+        description: "Si è verificato un errore durante la creazione del percorso.",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
   return {
     formData,
     setFormData,
     handleFormSubmit,
     calculateTotalDuration,
-    calculateTotalPrice
+    calculateTotalPrice,
+    createRoute // Now we're exporting the createRoute function
   };
 }
 
