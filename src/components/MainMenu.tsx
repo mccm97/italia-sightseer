@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useQueryClient } from '@tanstack/react-query';
 
 export function MainMenu() {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ export function MainMenu() {
   const { t, i18n } = useTranslation();
   const [isAdmin, setIsAdmin] = useState(false);
   const [language, setLanguage] = useState<'it' | 'en'>('it');
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const checkAdminStatus = async () => {
@@ -39,15 +41,24 @@ export function MainMenu() {
 
   const handleLogout = async () => {
     try {
+      console.log('Iniziando il processo di logout...');
+      
+      // Sign out from Supabase
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
 
+      // Clear React Query cache
+      queryClient.clear();
+
+      console.log('Logout completato con successo');
+      
+      // Show success toast
       toast({
         title: "Logout effettuato",
         description: "Hai effettuato il logout con successo",
       });
-      
-      // Close the sheet menu after logout
+
+      // Close the sheet menu
       const closeButton = document.querySelector('[data-radix-collection-item]');
       if (closeButton instanceof HTMLElement) {
         closeButton.click();
@@ -59,7 +70,7 @@ export function MainMenu() {
       }, 100);
 
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error('Errore durante il logout:', error);
       toast({
         title: "Errore",
         description: "Si è verificato un errore durante il logout",
