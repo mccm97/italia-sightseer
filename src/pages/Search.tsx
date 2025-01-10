@@ -5,6 +5,8 @@ import { MainMenu } from '@/components/MainMenu';
 import { Header } from '@/components/layout/Header';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 export default function Search() {
   const navigate = useNavigate();
@@ -67,6 +69,16 @@ export default function Search() {
 
   return (
     <div className="container mx-auto p-4 space-y-6">
+      <div className="flex items-center gap-4">
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Indietro
+        </Button>
+      </div>
       <MainMenu />
       <Header user={user} />
       <CitySearchSection 
