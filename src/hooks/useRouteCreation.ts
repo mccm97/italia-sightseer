@@ -34,11 +34,26 @@ export function useRouteCreation() {
       const { data: canCreate } = await supabase.rpc('can_create_route', { input_user_id: userId });
 
       if (!canCreate) {
-        toast({
-          title: "Limite raggiunto",
-          description: "Hai raggiunto il limite mensile di percorsi. Passa a un piano superiore per crearne altri.",
-          variant: "destructive"
-        });
+        // Migliorato il messaggio di feedback per gli utenti Bronze
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('subscription_level')
+          .eq('id', userId)
+          .single();
+
+        if (profile?.subscription_level === 'bronze') {
+          toast({
+            title: "Limite mensile raggiunto",
+            description: "Con il piano Bronze puoi creare solo un percorso al mese. Passa a un piano superiore per crearne di più!",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Limite raggiunto",
+            description: "Hai raggiunto il limite mensile di percorsi. Passa a un piano superiore per crearne altri.",
+            variant: "destructive"
+          });
+        }
         navigate('/upgrade');
         return false;
       }
