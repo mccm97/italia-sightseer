@@ -84,7 +84,8 @@ export function CreateRouteDialog() {
   };
 
   const handleCreateRoute = async () => {
-    const success = await createRoute();
+    if (!user) return;
+    const success = await createRoute(user.id); // Pass the user.id to createRoute
     if (success) {
       setOpen(false);
       setShowPreview(false);
