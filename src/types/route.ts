@@ -21,6 +21,7 @@ export interface CreateRouteFormData {
     inputType: 'name' | 'address';
     visitDuration: number;
     price: number;
+    attractionId?: string; // Added this field
   }>;
   attractionsCount: number;
   transportMode: 'walking' | 'public';

@@ -71,7 +71,7 @@ export function useRouteCreation() {
     }
   };
 
-  const createRoute = async () => {
+  const createRoute = async (userId: string) => {
     try {
       if (!formData) {
         console.error('No form data available');
@@ -92,7 +92,8 @@ export function useRouteCreation() {
           is_public: false,
           country: formData.city?.country,
           image_url: formData.image_url,
-          description: formData.description
+          description: formData.description,
+          user_id: userId // Added the missing user_id field
         })
         .select()
         .single();
@@ -111,11 +112,16 @@ export function useRouteCreation() {
 
       // Insert route attractions
       const attractionPromises = formData.attractions.map((attr, index) => {
+        if (!attr.attractionId) { // Check if we have a valid attraction ID
+          console.error('Missing attraction ID for:', attr);
+          return Promise.reject(new Error('Missing attraction ID'));
+        }
+        
         return supabase
           .from('route_attractions')
           .insert({
             route_id: routeData.id,
-            attraction_id: attr.id,
+            attraction_id: attr.attractionId, // Use the correct property name
             order_index: index,
             transport_mode: 'walking',
             travel_duration: 0,
@@ -148,7 +154,7 @@ export function useRouteCreation() {
     handleFormSubmit,
     calculateTotalDuration,
     calculateTotalPrice,
-    createRoute // Now we're exporting the createRoute function
+    createRoute
   };
 }
 
