@@ -1,16 +1,9 @@
 import React from 'react';
 import { CitySearchButton } from './CitySearchButton';
-
-interface City {
-  id?: string;
-  name: string;
-  lat: number;
-  lng: number;
-  country?: string;
-}
+import type { City } from '@/components/CitySearch';
 
 interface CitySearchSectionProps {
-  setSelectedCity: (city: City | null) => void;
+  setSelectedCity: React.Dispatch<React.SetStateAction<City | null>>;
 }
 
 export function CitySearchSection({ setSelectedCity }: CitySearchSectionProps) {

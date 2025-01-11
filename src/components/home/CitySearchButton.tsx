@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 import CitySearch from '../CitySearch';
+import type { City } from '@/components/CitySearch';
 
 interface CitySearchButtonProps {
-  onCitySelect: (city: any) => void;
+  onCitySelect: React.Dispatch<React.SetStateAction<City | null>>;
 }
 
 export function CitySearchButton({ onCitySelect }: CitySearchButtonProps) {
