@@ -8,11 +8,61 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Helmet } from 'react-helmet';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CityView } from '@/components/city/CityView';
+import { BlogPost } from '@/components/blog/BlogPost';
+import { useRouteManagement } from '@/hooks/useRouteManagement';
+import { Loader2 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+
+interface City {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  country?: string;
+}
 
 export default function Search() {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
+  const [selectedCity, setSelectedCity] = useState<City | null>(null);
   const { toast } = useToast();
+
+  const { 
+    selectedRoute,
+    cityRoutes,
+    isLoadingRoutes,
+    handleRouteClick
+  } = useRouteManagement(selectedCity, toast);
+
+  const { data: cityPosts, isLoading: isLoadingPosts } = useQuery({
+    queryKey: ['cityPosts', selectedCity?.id],
+    queryFn: async () => {
+      if (!selectedCity?.id) return [];
+      
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select(`
+          *,
+          profiles:user_id (
+            username,
+            avatar_url
+          )
+        `)
+        .eq('city_id', selectedCity.id)
+        .eq('is_published', true)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching city posts:', error);
+        throw error;
+      }
+
+      return data || [];
+    },
+    enabled: !!selectedCity?.id
+  });
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -92,13 +142,57 @@ export default function Search() {
         </div>
         <MainMenu />
         <Header user={user} />
-        <CitySearchSection 
-          setSelectedCity={(city) => {
-            if (city) {
-              navigate('/', { state: { selectedCity: city } });
-            }
-          }} 
-        />
+        
+        {!selectedCity ? (
+          <CitySearchSection setSelectedCity={setSelectedCity} />
+        ) : (
+          <div className="space-y-6">
+            <Button 
+              variant="ghost" 
+              onClick={() => setSelectedCity(null)}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Torna alla ricerca
+            </Button>
+
+            <Tabs defaultValue="routes" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="routes">Percorsi</TabsTrigger>
+                <TabsTrigger value="posts">Blog Posts</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="routes">
+                <CityView
+                  city={selectedCity}
+                  routes={cityRoutes}
+                  isLoadingRoutes={isLoadingRoutes}
+                  selectedRoute={selectedRoute}
+                  onBackClick={() => setSelectedCity(null)}
+                  onRouteClick={handleRouteClick}
+                />
+              </TabsContent>
+
+              <TabsContent value="posts">
+                {isLoadingPosts ? (
+                  <div className="flex justify-center items-center h-64">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                  </div>
+                ) : cityPosts && cityPosts.length > 0 ? (
+                  <div className="space-y-8">
+                    {cityPosts.map((post) => (
+                      <BlogPost key={post.id} post={post} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500">Nessun post pubblicato per questa città</p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          </div>
+        )}
       </div>
     </>
   );
