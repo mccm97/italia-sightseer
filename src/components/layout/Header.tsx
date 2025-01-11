@@ -2,7 +2,7 @@ import React from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { LogIn } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 interface HeaderProps {
   user: any | null;
@@ -14,7 +14,9 @@ export function Header({ user }: HeaderProps) {
   return (
     <div className="flex justify-between items-center">
       <div className="w-[100px]" /> {/* Spacer for centering */}
-      <h1 className="text-2xl font-bold">WayWonder</h1>
+      <Link to="/" className="text-2xl font-bold hover:text-primary transition-colors">
+        WayWonder
+      </Link>
       {user ? (
         <div className="flex items-center gap-3">
           <span className="text-sm font-medium">{user.username}</span>

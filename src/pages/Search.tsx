@@ -125,7 +125,7 @@ export default function Search() {
         <meta property="og:url" content="https://waywonder.com/search" />
       </Helmet>
       <div className="container mx-auto p-4 space-y-6">
-        <div className="flex items-center gap-4">
+        <div className="flex justify-end mb-4">
           <Button 
             variant="ghost" 
             onClick={() => navigate(-1)}
