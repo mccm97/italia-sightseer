@@ -91,18 +91,20 @@ export function useAuthState() {
           console.log('Sessione iniziale caricata');
           if (session?.user) setUser(session.user);
           break;
-        case 'USER_DELETED':
-        case 'TOKEN_REFRESH_FAILED':
-          console.log('Errore di autenticazione, effettuo logout');
-          await supabase.auth.signOut();
-          setUser(null);
-          queryClient.clear();
-          navigate('/');
-          toast({
-            title: "Sessione scaduta",
-            description: "Per favore, effettua nuovamente l'accesso",
-            variant: "destructive",
-          });
+        default:
+          // Handle token refresh failures and user deletion by signing out
+          if (!session) {
+            console.log('Errore di autenticazione, effettuo logout');
+            await supabase.auth.signOut();
+            setUser(null);
+            queryClient.clear();
+            navigate('/');
+            toast({
+              title: "Sessione scaduta",
+              description: "Per favore, effettua nuovamente l'accesso",
+              variant: "destructive",
+            });
+          }
           break;
       }
     });
