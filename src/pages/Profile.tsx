@@ -97,10 +97,10 @@ export default function Profile() {
         <title>Profilo Utente - WayWonder</title>
         <meta name="description" content="Gestisci il tuo profilo su WayWonder. Visualizza i tuoi percorsi salvati, commenti e post del blog." />
         <meta name="keywords" content="profilo utente, percorsi salvati, gestione profilo, WayWonder" />
-        <link rel="canonical" href="https://waywonder.com/profile" />
+        <link rel="canonical" href="https://www.waywonder.info/profile" />
         <meta property="og:title" content="Profilo Utente - WayWonder" />
         <meta property="og:description" content="Gestisci il tuo profilo e visualizza i tuoi contenuti su WayWonder." />
-        <meta property="og:url" content="https://waywonder.com/profile" />
+        <meta property="og:url" content="https://www.waywonder.info/profile" />
       </Helmet>
       <div className="container max-w-4xl mx-auto p-4">
         <div className="flex justify-start mb-4">

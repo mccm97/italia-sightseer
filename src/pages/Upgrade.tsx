@@ -76,10 +76,10 @@ export default function Upgrade() {
         <title>Abbonamenti Premium - WayWonder</title>
         <meta name="description" content="Scopri i nostri piani di abbonamento premium. Sblocca funzionalità esclusive e migliora la tua esperienza di viaggio con WayWonder." />
         <meta name="keywords" content="abbonamento premium, piani WayWonder, funzionalità esclusive, upgrade account" />
-        <link rel="canonical" href="https://waywonder.com/upgrade" />
+        <link rel="canonical" href="https://www.waywonder.info/upgrade" />
         <meta property="og:title" content="Abbonamenti Premium - WayWonder" />
         <meta property="og:description" content="Sblocca tutte le funzionalità con un piano premium su WayWonder." />
-        <meta property="og:url" content="https://waywonder.com/upgrade" />
+        <meta property="og:url" content="https://www.waywonder.info/upgrade" />
       </Helmet>
       <div className="container mx-auto py-10">
         <div className="flex items-center mb-6">

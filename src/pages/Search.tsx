@@ -120,10 +120,10 @@ export default function Search() {
         <title>Cerca Città e Itinerari in Italia - WayWonder</title>
         <meta name="description" content="Cerca e scopri le città italiane più belle. Trova percorsi personalizzati, leggi esperienze di viaggio e pianifica il tuo prossimo itinerario con WayWonder." />
         <meta name="keywords" content="cerca città Italia, itinerari personalizzati, percorsi turistici, blog viaggio, pianificazione viaggi" />
-        <link rel="canonical" href="https://waywonder.com/search" />
+        <link rel="canonical" href="https://www.waywonder.info/search" />
         <meta property="og:title" content="Cerca Città e Itinerari in Italia - WayWonder" />
         <meta property="og:description" content="Cerca e scopri le città italiane più belle. Trova percorsi personalizzati e pianifica il tuo viaggio." />
-        <meta property="og:url" content="https://waywonder.com/search" />
+        <meta property="og:url" content="https://www.waywonder.info/search" />
         <meta property="og:type" content="website" />
         <meta name="robots" content="index, follow" />
       </Helmet>

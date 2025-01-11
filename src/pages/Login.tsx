@@ -73,10 +73,10 @@ export default function Login() {
         <title>Accedi o Registrati - WayWonder</title>
         <meta name="description" content="Accedi al tuo account WayWonder o creane uno nuovo per iniziare a pianificare i tuoi viaggi in Italia." />
         <meta name="keywords" content="login, registrazione, accesso, account WayWonder" />
-        <link rel="canonical" href="https://waywonder.com/login" />
+        <link rel="canonical" href="https://www.waywonder.info/login" />
         <meta property="og:title" content="Accedi o Registrati - WayWonder" />
         <meta property="og:description" content="Accedi o crea un account per iniziare la tua avventura con WayWonder." />
-        <meta property="og:url" content="https://waywonder.com/login" />
+        <meta property="og:url" content="https://www.waywonder.info/login" />
       </Helmet>
       <div className="container max-w-md mx-auto mt-12 p-4">
         <div className="mb-8">
