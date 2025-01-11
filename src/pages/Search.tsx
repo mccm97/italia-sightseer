@@ -106,6 +106,8 @@ export default function Search() {
     };
   }, [toast]);
 
+  console.log('Selected city:', selectedCity); // Added for debugging
+
   return (
     <>
       <Helmet>
@@ -118,10 +120,11 @@ export default function Search() {
         <meta property="og:url" content="https://waywonder.com/search" />
       </Helmet>
       <div className="container mx-auto p-4">
-        <SearchHeader user={user} />
-        
         {!selectedCity ? (
-          <CitySearchSection setSelectedCity={setSelectedCity} />
+          <>
+            <SearchHeader user={user} setSelectedCity={setSelectedCity} />
+            <CitySearchSection setSelectedCity={setSelectedCity} />
+          </>
         ) : (
           <div className="space-y-6">
             <CityBanner city={selectedCity} onBackClick={() => setSelectedCity(null)} />

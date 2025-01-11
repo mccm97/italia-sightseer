@@ -1,30 +1,23 @@
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
-import { MainMenu } from '@/components/MainMenu';
-import { Header } from '@/components/layout/Header';
-import { useNavigate } from 'react-router-dom';
+import { CitySearchButton } from '@/components/home/CitySearchButton';
+import type { City } from '@/components/CitySearch';
 
 interface SearchHeaderProps {
   user: any;
+  setSelectedCity: React.Dispatch<React.SetStateAction<City | null>>;
 }
 
-export function SearchHeader({ user }: SearchHeaderProps) {
-  const navigate = useNavigate();
-  
+export function SearchHeader({ user, setSelectedCity }: SearchHeaderProps) {
   return (
-    <>
-      <div className="flex items-center gap-4 mb-6">
-        <MainMenu />
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Indietro
-        </Button>
+    <div className="mb-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Cerca</h1>
+        {user && (
+          <div className="text-sm">
+            Benvenuto, {user.username || 'Utente'}
+          </div>
+        )}
       </div>
-      <Header user={user} />
-    </>
+      <CitySearchButton onCitySelect={setSelectedCity} />
+    </div>
   );
 }
