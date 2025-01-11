@@ -64,7 +64,14 @@ export function CreateRouteDialog() {
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <CreateRouteForm onSuccess={() => setIsDialogOpen(false)} />
+          <CreateRouteForm 
+            onSubmit={() => {}} 
+            countries={[]} 
+            cities={[]} 
+            selectedCountry="" 
+            onCountrySelect={() => {}}
+            onSuccess={() => setIsDialogOpen(false)} 
+          />
         </DialogContent>
       </Dialog>
     </>

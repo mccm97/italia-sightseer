@@ -17,6 +17,7 @@ interface CreateRouteFormProps {
   cities: any[];
   selectedCountry: string;
   onCountrySelect: (country: string) => void;
+  onSuccess?: () => void; // Added this prop
 }
 
 export function CreateRouteForm({
@@ -25,6 +26,7 @@ export function CreateRouteForm({
   cities,
   selectedCountry,
   onCountrySelect,
+  onSuccess,
 }: CreateRouteFormProps) {
   const form = useForm<CreateRouteFormData>({
     defaultValues: {
@@ -52,9 +54,14 @@ export function CreateRouteForm({
     form.setValue('image_url', url);
   };
 
+  const handleSubmit = async (data: CreateRouteFormData) => {
+    await onSubmit(data);
+    onSuccess?.(); // Call onSuccess if provided
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <CountrySelector 
           form={form}
           countries={countries}
