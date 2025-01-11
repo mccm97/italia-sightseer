@@ -6,14 +6,13 @@ import { Header } from '@/components/layout/Header';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2, MapPin } from 'lucide-react';
 import { Helmet } from 'react-helmet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CityView } from '@/components/city/CityView';
 import { BlogPost } from '@/components/blog/BlogPost';
 import { useRouteManagement } from '@/hooks/useRouteManagement';
-import { Loader2 } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { RouteCard } from '@/components/route/RouteCard';
 import type { City } from '@/components/CitySearch';
 import { CityBanner } from '@/components/city/CityBanner';
 
