@@ -15,13 +15,8 @@ import { useRouteManagement } from '@/hooks/useRouteManagement';
 import { Loader2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 
-interface City {
-  id: string;
-  name: string;
-  lat: number;
-  lng: number;
-  country?: string;
-}
+// Remove the local City interface and use the one from CitySearch component
+import type { City } from '@/components/CitySearch';
 
 export default function Search() {
   const navigate = useNavigate();
