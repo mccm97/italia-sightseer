@@ -1,5 +1,6 @@
 import CookieConsent from 'react-cookie-consent';
 import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 export function CookieBanner() {
   // Funzione per gestire l'accettazione dei cookie
@@ -57,7 +58,10 @@ export function CookieBanner() {
     >
       Questo sito utilizza i cookie per migliorare la tua esperienza di navigazione.{" "}
       <span style={{ fontSize: "10px" }}>
-        Continuando ad utilizzare questo sito accetti la nostra politica sui cookie.
+        Continuando ad utilizzare questo sito accetti la nostra{" "}
+        <Link to="/cookie-policy" style={{ color: "#4CAF50" }}>politica sui cookie</Link>{" "}
+        e la nostra{" "}
+        <Link to="/privacy-policy" style={{ color: "#4CAF50" }}>informativa sulla privacy</Link>.
       </span>
     </CookieConsent>
   );

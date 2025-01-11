@@ -7,6 +7,8 @@ import Statistics from './pages/Statistics';
 import Admin from './pages/Admin';
 import Upgrade from './pages/Upgrade';
 import Search from './pages/Search';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import CookiePolicy from './pages/CookiePolicy';
 import { CookieBanner } from './components/CookieConsent';
 
 function App() {
@@ -21,6 +23,8 @@ function App() {
         <Route path="/admin" element={<Admin />} />
         <Route path="/upgrade" element={<Upgrade />} />
         <Route path="/search" element={<Search />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/cookie-policy" element={<CookiePolicy />} />
       </Routes>
       <CookieBanner />
     </>
