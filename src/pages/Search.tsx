@@ -15,6 +15,7 @@ import { useRouteManagement } from '@/hooks/useRouteManagement';
 import { RouteCard } from '@/components/route/RouteCard';
 import type { City } from '@/components/CitySearch';
 import { CityBanner } from '@/components/city/CityBanner';
+import { useQuery } from '@tanstack/react-query';
 
 export default function Search() {
   const navigate = useNavigate();
@@ -206,3 +207,4 @@ export default function Search() {
     </>
   );
 }
+
