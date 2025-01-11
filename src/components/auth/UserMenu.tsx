@@ -9,8 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { User as UserIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useLogout } from '@/hooks/useLogout';
 
 interface UserMenuProps {
   user: User;
@@ -18,31 +17,7 @@ interface UserMenuProps {
 
 export function UserMenu({ user }: UserMenuProps) {
   const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const handleSignOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        console.error('Errore durante il logout:', error);
-        throw error;
-      }
-      
-      console.log('Logout completato con successo');
-      toast({
-        title: "Logout effettuato",
-        description: "Hai effettuato il logout con successo",
-      });
-    } catch (error) {
-      console.error('Errore durante il processo di logout:', error);
-      toast({
-        title: "Errore",
-        description: "Si è verificato un errore durante il logout",
-        variant: "destructive",
-      });
-    }
-  };
+  const { handleLogout } = useLogout();
 
   return (
     <DropdownMenu>
@@ -61,7 +36,7 @@ export function UserMenu({ user }: UserMenuProps) {
           <UserIcon className="mr-2 h-4 w-4" />
           Profilo
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleSignOut}>
+        <DropdownMenuItem onClick={handleLogout}>
           Logout
         </DropdownMenuItem>
       </DropdownMenuContent>
