@@ -7,6 +7,7 @@ import { CreatePostInput } from '@/components/blog/CreatePostInput';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 
 interface BlogPost {
   id: string;
@@ -69,39 +70,50 @@ export default function Blog() {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex items-center gap-4 mb-4">
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Indietro
-        </Button>
+    <>
+      <Helmet>
+        <title>Blog di Viaggio - WayWonder</title>
+        <meta name="description" content="Scopri storie di viaggio, consigli e destinazioni attraverso il nostro blog. Leggi le esperienze dei viaggiatori e trova ispirazione per il tuo prossimo viaggio." />
+        <meta name="keywords" content="blog viaggio, storie di viaggio, consigli viaggio, destinazioni Italia, WayWonder blog" />
+        <link rel="canonical" href="https://waywonder.com/blog" />
+        <meta property="og:title" content="Blog di Viaggio - WayWonder" />
+        <meta property="og:description" content="Scopri storie di viaggio, consigli e destinazioni attraverso il nostro blog." />
+        <meta property="og:url" content="https://waywonder.com/blog" />
+      </Helmet>
+      <div className="container mx-auto p-4">
+        <div className="flex items-center gap-4 mb-4">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Indietro
+          </Button>
+        </div>
+        <MainMenu />
+        <div className="max-w-2xl mx-auto">
+          <h1 className="text-3xl font-bold mb-8">Blog</h1>
+          
+          <CreatePostInput />
+          
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+          ) : posts.length > 0 ? (
+            <div className="space-y-8">
+              {posts.map((post) => (
+                <BlogPost key={post.id} post={post} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-500">Nessun post pubblicato</p>
+            </div>
+          )}
+        </div>
       </div>
-      <MainMenu />
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">Blog</h1>
-        
-        <CreatePostInput />
-        
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin" />
-          </div>
-        ) : posts.length > 0 ? (
-          <div className="space-y-8">
-            {posts.map((post) => (
-              <BlogPost key={post.id} post={post} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-gray-500">Nessun post pubblicato</p>
-          </div>
-        )}
-      </div>
-    </div>
+    </>
   );
 }
