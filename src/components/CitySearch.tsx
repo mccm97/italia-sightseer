@@ -4,7 +4,7 @@ import { ScrollArea } from './ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './ui/use-toast';
 
-interface City {
+export interface City {
   id: string;
   name: string;
   lat: number;
