@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import zxcvbn from 'zxcvbn';
+import { Helmet } from 'react-helmet';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -67,39 +68,50 @@ export default function Login() {
   };
 
   return (
-    <div className="container max-w-md mx-auto mt-12 p-4">
-      <div className="mb-8">
-        <Button
-          variant="ghost"
-          onClick={handleBack}
-          className="mb-4"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Indietro
-        </Button>
-        <h1 className="text-2xl font-bold text-center">Accedi o Registrati</h1>
+    <>
+      <Helmet>
+        <title>Accedi o Registrati - WayWonder</title>
+        <meta name="description" content="Accedi al tuo account WayWonder o creane uno nuovo per iniziare a pianificare i tuoi viaggi in Italia." />
+        <meta name="keywords" content="login, registrazione, accesso, account WayWonder" />
+        <link rel="canonical" href="https://waywonder.com/login" />
+        <meta property="og:title" content="Accedi o Registrati - WayWonder" />
+        <meta property="og:description" content="Accedi o crea un account per iniziare la tua avventura con WayWonder." />
+        <meta property="og:url" content="https://waywonder.com/login" />
+      </Helmet>
+      <div className="container max-w-md mx-auto mt-12 p-4">
+        <div className="mb-8">
+          <Button
+            variant="ghost"
+            onClick={handleBack}
+            className="mb-4"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Indietro
+          </Button>
+          <h1 className="text-2xl font-bold text-center">Accedi o Registrati</h1>
+        </div>
+        <Auth
+          supabaseClient={supabase}
+          appearance={{ theme: ThemeSupa }}
+          providers={[]}
+          localization={{
+            variables: {
+              sign_in: {
+                email_label: 'Email',
+                password_label: 'Password',
+                button_label: 'Accedi',
+                loading_button_label: 'Accesso in corso...',
+              },
+              sign_up: {
+                email_label: 'Email',
+                password_label: 'Password',
+                button_label: 'Registrati',
+                loading_button_label: 'Registrazione in corso...',
+              },
+            },
+          }}
+        />
       </div>
-      <Auth
-        supabaseClient={supabase}
-        appearance={{ theme: ThemeSupa }}
-        providers={[]}
-        localization={{
-          variables: {
-            sign_in: {
-              email_label: 'Email',
-              password_label: 'Password',
-              button_label: 'Accedi',
-              loading_button_label: 'Accesso in corso...',
-            },
-            sign_up: {
-              email_label: 'Email',
-              password_label: 'Password',
-              button_label: 'Registrati',
-              loading_button_label: 'Registrazione in corso...',
-            },
-          },
-        }}
-      />
-    </div>
+    </>
   );
 }
