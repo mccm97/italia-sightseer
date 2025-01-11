@@ -12,8 +12,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CityView } from '@/components/city/CityView';
 import { BlogPost } from '@/components/blog/BlogPost';
 import { useRouteManagement } from '@/hooks/useRouteManagement';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MapPin } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { RouteCard } from '@/components/route/RouteCard';
 
 // Remove the local City interface and use the one from CitySearch component
 import type { City } from '@/components/CitySearch';
@@ -116,16 +117,18 @@ export default function Search() {
   return (
     <>
       <Helmet>
-        <title>Cerca Città - WayWonder</title>
-        <meta name="description" content="Cerca e scopri le città italiane più belle. Trova la tua prossima destinazione e crea itinerari personalizzati con WayWonder." />
-        <meta name="keywords" content="cerca città, destinazioni Italia, itinerari personalizzati, pianifica viaggio" />
+        <title>Cerca Città e Itinerari in Italia - WayWonder</title>
+        <meta name="description" content="Cerca e scopri le città italiane più belle. Trova percorsi personalizzati, leggi esperienze di viaggio e pianifica il tuo prossimo itinerario con WayWonder." />
+        <meta name="keywords" content="cerca città Italia, itinerari personalizzati, percorsi turistici, blog viaggio, pianificazione viaggi" />
         <link rel="canonical" href="https://waywonder.com/search" />
-        <meta property="og:title" content="Cerca Città - WayWonder" />
-        <meta property="og:description" content="Cerca e scopri le città italiane più belle. Crea il tuo itinerario personalizzato." />
+        <meta property="og:title" content="Cerca Città e Itinerari in Italia - WayWonder" />
+        <meta property="og:description" content="Cerca e scopri le città italiane più belle. Trova percorsi personalizzati e pianifica il tuo viaggio." />
         <meta property="og:url" content="https://waywonder.com/search" />
+        <meta property="og:type" content="website" />
+        <meta name="robots" content="index, follow" />
       </Helmet>
       <div className="container mx-auto p-4 space-y-6">
-        <div className="flex justify-end mb-4">
+        <div className="flex justify-between items-center mb-4">
           <Button 
             variant="ghost" 
             onClick={() => navigate(-1)}
@@ -134,8 +137,9 @@ export default function Search() {
             <ArrowLeft className="h-4 w-4" />
             Indietro
           </Button>
+          <MainMenu />
         </div>
-        <MainMenu />
+        
         <Header user={user} />
         
         {!selectedCity ? (

@@ -71,13 +71,15 @@ export default function Blog() {
   return (
     <>
       <Helmet>
-        <title>Blog di Viaggio - WayWonder</title>
-        <meta name="description" content="Scopri storie di viaggio, consigli e destinazioni attraverso il nostro blog. Leggi le esperienze dei viaggiatori e trova ispirazione per il tuo prossimo viaggio." />
-        <meta name="keywords" content="blog viaggio, storie di viaggio, consigli viaggio, destinazioni Italia, WayWonder blog" />
+        <title>Blog di Viaggio - Esperienze e Itinerari in Italia | WayWonder</title>
+        <meta name="description" content="Scopri storie di viaggio autentiche, consigli pratici e destinazioni imperdibili attraverso il nostro blog. Leggi le esperienze dei viaggiatori e trova ispirazione per il tuo prossimo viaggio in Italia." />
+        <meta name="keywords" content="blog viaggio Italia, storie di viaggio, consigli viaggio, destinazioni Italia, esperienze turistiche, itinerari personalizzati" />
         <link rel="canonical" href="https://waywonder.com/blog" />
-        <meta property="og:title" content="Blog di Viaggio - WayWonder" />
-        <meta property="og:description" content="Scopri storie di viaggio, consigli e destinazioni attraverso il nostro blog." />
+        <meta property="og:title" content="Blog di Viaggio - Esperienze e Itinerari in Italia | WayWonder" />
+        <meta property="og:description" content="Scopri storie di viaggio autentiche e trova ispirazione per il tuo prossimo viaggio in Italia." />
         <meta property="og:url" content="https://waywonder.com/blog" />
+        <meta property="og:type" content="blog" />
+        <meta name="robots" content="index, follow" />
       </Helmet>
       <div className="container mx-auto p-4">
         <MainMenu />
