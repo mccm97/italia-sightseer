@@ -32,5 +32,12 @@ export default defineConfig(({ mode }) => ({
         bypass: (req) => req.headers.accept?.includes('text/html') ? '/index.html' : null
       }
     }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: undefined
+      }
+    }
   }
 }))
