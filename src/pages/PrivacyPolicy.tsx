@@ -51,8 +51,8 @@ export default function PrivacyPolicy() {
 
         <h2 className="text-2xl font-semibold mt-8 mb-4">6. Contatti</h2>
         <p>
-          Per qualsiasi domanda sulla nostra Informativa sulla Privacy, contattaci all'indirizzo: 
-          privacy@waywonder.info
+          Per qualsiasi domanda sulla nostra Informativa sulla Privacy, puoi contattarci attraverso 
+          il nostro modulo di contatto sul sito o attraverso i nostri canali social ufficiali.
         </p>
       </div>
 
