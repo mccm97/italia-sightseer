@@ -135,6 +135,7 @@ export type Database = {
       }
       blog_posts: {
         Row: {
+          city_id: string | null
           content: string
           cover_image_url: string | null
           created_at: string
@@ -145,6 +146,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          city_id?: string | null
           content: string
           cover_image_url?: string | null
           created_at?: string
@@ -155,6 +157,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          city_id?: string | null
           content?: string
           cover_image_url?: string | null
           created_at?: string
@@ -165,6 +168,13 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "blog_posts_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "blog_posts_user_id_fkey"
             columns: ["user_id"]

@@ -4,11 +4,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MapPin } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ImageUpload } from '@/components/ImageUpload';
+import { CitySearch } from '@/components/CitySearch';
+import { Switch } from '@/components/ui/switch';
 
 export function CreatePostInput() {
   const [title, setTitle] = useState('');
@@ -18,6 +20,8 @@ export function CreatePostInput() {
   const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
   const [wordCount, setWordCount] = useState(0);
+  const [isAboutCity, setIsAboutCity] = useState(false);
+  const [selectedCity, setSelectedCity] = useState<any>(null);
   const REQUIRED_WORDS = 100;
 
   useEffect(() => {
@@ -70,7 +74,8 @@ export function CreatePostInput() {
           content,
           user_id: user.id,
           is_published: true,
-          cover_image_url: coverImage
+          cover_image_url: coverImage,
+          city_id: isAboutCity ? selectedCity?.id : null
         })
         .select()
         .single();
@@ -80,6 +85,8 @@ export function CreatePostInput() {
       setContent('');
       setTitle('');
       setCoverImage(null);
+      setIsAboutCity(false);
+      setSelectedCity(null);
       toast({
         title: "Post pubblicato",
         description: "Il tuo post è stato pubblicato con successo",
@@ -126,6 +133,29 @@ export function CreatePostInput() {
           />
         </div>
 
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="city-mode"
+            checked={isAboutCity}
+            onCheckedChange={setIsAboutCity}
+          />
+          <Label htmlFor="city-mode" className="flex items-center space-x-2">
+            <MapPin className="h-4 w-4" />
+            <span>Parli di una città specifica?</span>
+          </Label>
+        </div>
+
+        {isAboutCity && (
+          <div className="mt-4">
+            <Label>Seleziona la città</Label>
+            <CitySearch
+              onCitySelect={setSelectedCity}
+              selectedCity={selectedCity}
+              placeholder="Cerca una città..."
+            />
+          </div>
+        )}
+
         <div>
           <Label htmlFor="content">Contenuto</Label>
           <Textarea
@@ -146,7 +176,7 @@ export function CreatePostInput() {
           <div className="flex justify-end">
             <Button 
               onClick={handleSubmit}
-              disabled={isSubmitting || wordCount < REQUIRED_WORDS || !title.trim()}
+              disabled={isSubmitting || wordCount < REQUIRED_WORDS || !title.trim() || (isAboutCity && !selectedCity)}
             >
               {isSubmitting ? (
                 <>
