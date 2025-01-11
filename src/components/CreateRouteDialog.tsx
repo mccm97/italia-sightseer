@@ -13,11 +13,23 @@ export function CreateRouteDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
+  const handleCreatePost = () => {
+    console.log('Navigating to create post page');
+    setIsOpen(false);
+    navigate('/blog/new');
+  };
+
+  const handleCreateRoute = () => {
+    console.log('Opening route creation dialog');
+    setIsOpen(false);
+    navigate('/routes/new');
+  };
+
   return (
-    <DropdownMenu>
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button 
-          className="fixed bottom-6 right-6 rounded-full w-12 h-12 p-0 hover:scale-105 transition-transform"
+          className="fixed bottom-6 right-6 rounded-full w-12 h-12 p-0 hover:scale-105 transition-transform shadow-lg"
           size="icon"
         >
           <Plus className="h-6 w-6" />
@@ -26,13 +38,20 @@ export function CreateRouteDialog() {
       <DropdownMenuContent 
         align="end" 
         side="top" 
-        className="mb-2 animate-slide-up"
+        className="mb-2"
+        sideOffset={16}
       >
-        <DropdownMenuItem onClick={() => navigate('/blog/new')}>
+        <DropdownMenuItem 
+          onClick={handleCreatePost}
+          className="cursor-pointer hover:bg-accent focus:bg-accent"
+        >
           <PenLine className="mr-2 h-4 w-4" />
           Nuovo Post
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setIsOpen(true)}>
+        <DropdownMenuItem 
+          onClick={handleCreateRoute}
+          className="cursor-pointer hover:bg-accent focus:bg-accent"
+        >
           <MapPin className="mr-2 h-4 w-4" />
           Nuovo Percorso
         </DropdownMenuItem>
