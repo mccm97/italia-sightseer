@@ -48,7 +48,6 @@ export default function Blog() {
         .eq('is_published', true)
         .order('created_at', { ascending: false });
 
-      // Se l'utente è autenticato, includiamo anche i suoi post non pubblicati
       if (user) {
         query = query.or(`is_published.eq.true,user_id.eq.${user.id}`);
       }
@@ -81,18 +80,19 @@ export default function Blog() {
         <meta property="og:url" content="https://waywonder.com/blog" />
       </Helmet>
       <div className="container mx-auto p-4">
-        <div className="flex items-center gap-4 mb-4">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Indietro
-          </Button>
-        </div>
         <MainMenu />
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto mt-16">
+          <div className="flex items-center gap-4 mb-8">
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Indietro
+            </Button>
+          </div>
+          
           <h1 className="text-3xl font-bold mb-8">Blog</h1>
           
           <CreatePostInput />

@@ -1,16 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, MapPin } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { ImageUpload } from '@/components/ImageUpload';
-import CitySearch from '@/components/CitySearch';
-import { Switch } from '@/components/ui/switch';
+import { Loader2 } from 'lucide-react';
+import { PostTitleInput } from './PostTitleInput';
+import { PostCoverImage } from './PostCoverImage';
+import { CitySelector } from './CitySelector';
+import { PostContent } from './PostContent';
+
+const REQUIRED_WORDS = 100;
 
 export function CreatePostInput() {
   const [title, setTitle] = useState('');
@@ -22,7 +21,6 @@ export function CreatePostInput() {
   const [wordCount, setWordCount] = useState(0);
   const [isAboutCity, setIsAboutCity] = useState(false);
   const [selectedCity, setSelectedCity] = useState<any>(null);
-  const REQUIRED_WORDS = 100;
 
   useEffect(() => {
     const getUser = async () => {
@@ -112,80 +110,35 @@ export function CreatePostInput() {
   return (
     <Card className="p-4 mb-8">
       <div className="space-y-4">
-        <div>
-          <Label htmlFor="title">Titolo del post</Label>
-          <Input
-            id="title"
-            placeholder="Inserisci il titolo del post"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="mb-4"
-          />
-        </div>
-
-        <div>
-          <Label>Immagine di copertina</Label>
-          <ImageUpload
-            onImageUploaded={setCoverImage}
-            bucketName="blog-images"
-            currentImage={coverImage}
-            className="mb-4"
-          />
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="city-mode"
-            checked={isAboutCity}
-            onCheckedChange={setIsAboutCity}
-          />
-          <Label htmlFor="city-mode" className="flex items-center space-x-2">
-            <MapPin className="h-4 w-4" />
-            <span>Parli di una città specifica?</span>
-          </Label>
-        </div>
-
-        {isAboutCity && (
-          <div className="mt-4">
-            <Label>Seleziona la città</Label>
-            <CitySearch
-              onCitySelect={setSelectedCity}
-            />
-          </div>
-        )}
-
-        <div>
-          <Label htmlFor="content">Contenuto</Label>
-          <Textarea
-            id="content"
-            placeholder="Cosa vuoi condividere oggi?"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="min-h-[100px]"
-          />
-        </div>
-
-        <div className="space-y-4">
-          <div className="flex items-center justify-between text-sm text-gray-500">
-            <span>{wordCount} parole</span>
-            <span>{remainingWords} parole rimanenti</span>
-          </div>
-          <Progress value={Math.min(progress, 100)} className="h-2" />
-          <div className="flex justify-end">
-            <Button 
-              onClick={handleSubmit}
-              disabled={isSubmitting || wordCount < REQUIRED_WORDS || !title.trim() || (isAboutCity && !selectedCity)}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Pubblicazione...
-                </>
-              ) : (
-                'Pubblica'
-              )}
-            </Button>
-          </div>
+        <PostTitleInput title={title} setTitle={setTitle} />
+        <PostCoverImage coverImage={coverImage} setCoverImage={setCoverImage} />
+        <CitySelector 
+          isAboutCity={isAboutCity}
+          setIsAboutCity={setIsAboutCity}
+          selectedCity={selectedCity}
+          setSelectedCity={setSelectedCity}
+        />
+        <PostContent 
+          content={content}
+          setContent={setContent}
+          wordCount={wordCount}
+          remainingWords={remainingWords}
+          progress={progress}
+        />
+        <div className="flex justify-end">
+          <Button 
+            onClick={handleSubmit}
+            disabled={isSubmitting || wordCount < REQUIRED_WORDS || !title.trim() || (isAboutCity && !selectedCity)}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Pubblicazione...
+              </>
+            ) : (
+              'Pubblica'
+            )}
+          </Button>
         </div>
       </div>
     </Card>
