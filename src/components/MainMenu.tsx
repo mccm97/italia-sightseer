@@ -54,8 +54,10 @@ export function MainMenu() {
       
       // Show success toast
       toast({
-        title: "Logout effettuato",
-        description: "Hai effettuato il logout con successo",
+        title: "Logout effettuato con successo",
+        description: "La tua sessione è stata chiusa correttamente",
+        variant: "default",
+        duration: 3000,
       });
 
       // Close the sheet menu
@@ -72,9 +74,10 @@ export function MainMenu() {
     } catch (error) {
       console.error('Errore durante il logout:', error);
       toast({
-        title: "Errore",
-        description: "Si è verificato un errore durante il logout",
+        title: "Errore durante il logout",
+        description: "Si è verificato un errore durante la chiusura della sessione",
         variant: "destructive",
+        duration: 5000,
       });
     }
   };
