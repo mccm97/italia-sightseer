@@ -1,21 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { CitySearchSection } from '@/components/home/CitySearchSection';
 import { useNavigate } from 'react-router-dom';
-import { MainMenu } from '@/components/MainMenu';
-import { Header } from '@/components/layout/Header';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, MapPin } from 'lucide-react';
 import { Helmet } from 'react-helmet';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CityView } from '@/components/city/CityView';
-import { BlogPost } from '@/components/blog/BlogPost';
 import { useRouteManagement } from '@/hooks/useRouteManagement';
-import { RouteCard } from '@/components/route/RouteCard';
 import type { City } from '@/components/CitySearch';
 import { CityBanner } from '@/components/city/CityBanner';
 import { useQuery } from '@tanstack/react-query';
+import { SearchHeader } from '@/components/search/SearchHeader';
+import { SearchContent } from '@/components/search/SearchContent';
 
 export default function Search() {
   const navigate = useNavigate();
@@ -124,19 +118,7 @@ export default function Search() {
         <meta property="og:url" content="https://waywonder.com/search" />
       </Helmet>
       <div className="container mx-auto p-4">
-        <div className="flex items-center gap-4 mb-6">
-          <MainMenu />
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Indietro
-          </Button>
-        </div>
-        
-        <Header user={user} />
+        <SearchHeader user={user} />
         
         {!selectedCity ? (
           <CitySearchSection setSelectedCity={setSelectedCity} />
@@ -144,67 +126,17 @@ export default function Search() {
           <div className="space-y-6">
             <CityBanner city={selectedCity} onBackClick={() => setSelectedCity(null)} />
             
-            <Tabs defaultValue="routes" className="w-full mt-6">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="routes">Percorsi</TabsTrigger>
-                <TabsTrigger value="posts">Blog Posts</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="routes">
-                <div className="mt-6">
-                  <h2 className="text-2xl font-semibold mb-4">Percorsi Disponibili</h2>
-                  {isLoadingRoutes ? (
-                    <div className="flex flex-col items-center justify-center py-8">
-                      <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
-                      <p className="text-muted-foreground">Caricamento percorsi...</p>
-                    </div>
-                  ) : cityRoutes.length > 0 ? (
-                    cityRoutes.map((route) => (
-                      <RouteCard
-                        key={route.id}
-                        route={route}
-                        onRouteClick={() => handleRouteClick(route)}
-                      />
-                    ))
-                  ) : (
-                    <div className="flex flex-col items-center justify-center py-8 text-center">
-                      <MapPin className="h-12 w-12 text-muted-foreground mb-4" />
-                      <p className="text-lg font-medium text-muted-foreground">
-                        Nessun percorso disponibile per {selectedCity.name}
-                      </p>
-                      <p className="text-sm text-muted-foreground mt-2 max-w-md">
-                        Al momento non ci sono percorsi disponibili per questa città. Sii il primo a crearne uno!
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="posts">
-                <div className="mt-6">
-                  <h2 className="text-2xl font-semibold mb-4">Post del Blog</h2>
-                  {isLoadingPosts ? (
-                    <div className="flex justify-center items-center h-64">
-                      <Loader2 className="h-8 w-8 animate-spin" />
-                    </div>
-                  ) : cityPosts && cityPosts.length > 0 ? (
-                    <div className="space-y-8">
-                      {cityPosts.map((post) => (
-                        <BlogPost key={post.id} post={post} />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-12">
-                      <p className="text-gray-500">Nessun post pubblicato per questa città</p>
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-            </Tabs>
+            <SearchContent 
+              selectedCity={selectedCity}
+              cityRoutes={cityRoutes}
+              isLoadingRoutes={isLoadingRoutes}
+              handleRouteClick={handleRouteClick}
+              cityPosts={cityPosts || []}
+              isLoadingPosts={isLoadingPosts}
+            />
           </div>
         )}
       </div>
     </>
   );
 }
-
