@@ -1,5 +1,11 @@
 import CookieConsent from 'react-cookie-consent';
 
+declare global {
+  interface Window {
+    gtag: (...args: any[]) => void;
+  }
+}
+
 export function CookieBanner() {
   return (
     <CookieConsent
