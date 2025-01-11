@@ -6,14 +6,7 @@ import { componentTagger } from "lovable-tagger"
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
-    port: 8080,
-    proxy: {
-      // Fallback for client-side routing
-      '*': {
-        target: '/',
-        bypass: (req) => req.headers.accept?.includes('text/html') ? '/index.html' : null
-      }
-    }
+    port: 8080
   },
   plugins: [
     react(),
@@ -24,16 +17,8 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  preview: {
-    port: 8080,
-    proxy: {
-      '*': {
-        target: '/',
-        bypass: (req) => req.headers.accept?.includes('text/html') ? '/index.html' : null
-      }
-    }
-  },
   build: {
+    outDir: 'dist',
     rollupOptions: {
       output: {
         manualChunks: undefined
