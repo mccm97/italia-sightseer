@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Google tag (gtag.js) - Caricato condizionalmente -->
+    <script>
+      // Funzione per inizializzare GA
+      function initGA() {
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = 'https://www.googletagmanager.com/gtag/js?id=G-304J5E7MQ9';
+        document.head.appendChild(script);
+
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-304J5E7MQ9');
+      }
+
+      // Controlla se i cookie sono stati accettati
+      const consent = localStorage.getItem('waywonder-cookie-consent');
+      if (consent === 'true') {
+        initGA();
+      }
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="google-site-verification" content="Il715jJenSaqLCMBMD2cdTeHbrq27D6SRGcZGn-xRZ8" />
+    <title>WayWonder - Scopri e Pianifica i Tuoi Percorsi in Italia</title>
+    <meta name="description" content="WayWonder ti aiuta a scoprire e pianificare percorsi personalizzati in Italia. Esplora le città più belle del paese e crea itinerari su misura." />
+    <meta name="keywords" content="WayWonder, itinerari Italia, percorsi turistici, pianificazione viaggi, turismo Italia" />
+    <meta name="author" content="WayWonder" />
+    <meta property="og:title" content="WayWonder - Scopri l'Italia" />
+    <meta property="og:description" content="Crea e condividi percorsi personalizzati nelle più belle città italiane" />
+    <meta property="og:image" content="https://www.waywonder.info/og-image.png" />
+    <meta property="og:url" content="https://www.waywonder.info" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="canonical" href="https://www.waywonder.info" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1267663470456742" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

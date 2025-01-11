@@ -1,6 +1,34 @@
 import CookieConsent from 'react-cookie-consent';
+import { useEffect } from 'react';
 
 export function CookieBanner() {
+  // Funzione per gestire l'accettazione dei cookie
+  const handleAccept = () => {
+    // Inizializza GA
+    if (typeof window !== 'undefined' && (window as any).initGA) {
+      (window as any).initGA();
+    }
+    // Salva il consenso
+    localStorage.setItem('waywonder-cookie-consent', 'true');
+  };
+
+  // Funzione per gestire il rifiuto dei cookie
+  const handleDecline = () => {
+    localStorage.setItem('waywonder-cookie-consent', 'false');
+    // Rimuovi eventuali cookie esistenti
+    document.cookie.split(";").forEach(function(c) { 
+      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+    });
+  };
+
+  // Controlla lo stato del consenso all'avvio
+  useEffect(() => {
+    const consent = localStorage.getItem('waywonder-cookie-consent');
+    if (consent === 'true') {
+      handleAccept();
+    }
+  }, []);
+
   return (
     <CookieConsent
       location="bottom"
@@ -24,6 +52,8 @@ export function CookieBanner() {
       }}
       expires={150}
       enableDeclineButton
+      onAccept={handleAccept}
+      onDecline={handleDecline}
     >
       Questo sito utilizza i cookie per migliorare la tua esperienza di navigazione.{" "}
       <span style={{ fontSize: "10px" }}>
