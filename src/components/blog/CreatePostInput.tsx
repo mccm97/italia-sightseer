@@ -9,7 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ImageUpload } from '@/components/ImageUpload';
-import { CitySearch } from '@/components/CitySearch';
+import CitySearch from '@/components/CitySearch';
 import { Switch } from '@/components/ui/switch';
 
 export function CreatePostInput() {
@@ -150,8 +150,6 @@ export function CreatePostInput() {
             <Label>Seleziona la città</Label>
             <CitySearch
               onCitySelect={setSelectedCity}
-              selectedCity={selectedCity}
-              placeholder="Cerca una città..."
             />
           </div>
         )}
