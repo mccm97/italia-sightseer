@@ -1,15 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { CitySearchSection } from '@/components/home/CitySearchSection';
 import { useNavigate } from 'react-router-dom';
+import { MainMenu } from '@/components/MainMenu';
+import { Header } from '@/components/layout/Header';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 import { Helmet } from 'react-helmet';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CityView } from '@/components/city/CityView';
+import { BlogPost } from '@/components/blog/BlogPost';
 import { useRouteManagement } from '@/hooks/useRouteManagement';
-import type { City } from '@/components/CitySearch';
-import { CityBanner } from '@/components/city/CityBanner';
+import { Loader2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { SearchHeader } from '@/components/search/SearchHeader';
-import { SearchContent } from '@/components/search/SearchContent';
+
+// Remove the local City interface and use the one from CitySearch component
+import type { City } from '@/components/CitySearch';
 
 export default function Search() {
   const navigate = useNavigate();
@@ -106,8 +113,6 @@ export default function Search() {
     };
   }, [toast]);
 
-  console.log('Selected city:', selectedCity); // Added for debugging
-
   return (
     <>
       <Helmet>
@@ -119,24 +124,68 @@ export default function Search() {
         <meta property="og:description" content="Cerca e scopri le città italiane più belle. Crea il tuo itinerario personalizzato." />
         <meta property="og:url" content="https://waywonder.com/search" />
       </Helmet>
-      <div className="container mx-auto p-4">
+      <div className="container mx-auto p-4 space-y-6">
+        <div className="flex justify-end mb-4">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Indietro
+          </Button>
+        </div>
+        <MainMenu />
+        <Header user={user} />
+        
         {!selectedCity ? (
-          <>
-            <SearchHeader user={user} setSelectedCity={setSelectedCity} />
-            <CitySearchSection setSelectedCity={setSelectedCity} />
-          </>
+          <CitySearchSection setSelectedCity={setSelectedCity} />
         ) : (
           <div className="space-y-6">
-            <CityBanner city={selectedCity} onBackClick={() => setSelectedCity(null)} />
-            
-            <SearchContent 
-              selectedCity={selectedCity}
-              cityRoutes={cityRoutes}
-              isLoadingRoutes={isLoadingRoutes}
-              handleRouteClick={handleRouteClick}
-              cityPosts={cityPosts || []}
-              isLoadingPosts={isLoadingPosts}
-            />
+            <Button 
+              variant="ghost" 
+              onClick={() => setSelectedCity(null)}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Torna alla ricerca
+            </Button>
+
+            <Tabs defaultValue="routes" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="routes">Percorsi</TabsTrigger>
+                <TabsTrigger value="posts">Blog Posts</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="routes">
+                <CityView
+                  city={selectedCity}
+                  routes={cityRoutes}
+                  isLoadingRoutes={isLoadingRoutes}
+                  selectedRoute={selectedRoute}
+                  onBackClick={() => setSelectedCity(null)}
+                  onRouteClick={handleRouteClick}
+                />
+              </TabsContent>
+
+              <TabsContent value="posts">
+                {isLoadingPosts ? (
+                  <div className="flex justify-center items-center h-64">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                  </div>
+                ) : cityPosts && cityPosts.length > 0 ? (
+                  <div className="space-y-8">
+                    {cityPosts.map((post) => (
+                      <BlogPost key={post.id} post={post} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500">Nessun post pubblicato per questa città</p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           </div>
         )}
       </div>
