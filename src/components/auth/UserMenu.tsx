@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { User as UserIcon } from 'lucide-react';
+import { User as UserIcon, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLogout } from '@/hooks/useLogout';
 
@@ -31,12 +31,13 @@ export function UserMenu({ user }: UserMenuProps) {
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="animate-slide-up">
         <DropdownMenuItem onClick={() => navigate('/profile')}>
           <UserIcon className="mr-2 h-4 w-4" />
           Profilo
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleLogout}>
+          <LogOut className="mr-2 h-4 w-4" />
           Logout
         </DropdownMenuItem>
       </DropdownMenuContent>

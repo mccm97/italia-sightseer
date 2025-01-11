@@ -1,150 +1,42 @@
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
-import { CreateRouteFormData } from '@/types/route';
-import { RoutePreview } from './RoutePreview';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
+import { Plus, PenLine, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { CreateRouteForm } from './route/CreateRouteForm';
-import { RouteCreationSummary } from './route/RouteCreationSummary';
-import { useRouteCreation } from '@/hooks/useRouteCreation';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 
 export function CreateRouteDialog() {
-  const [open, setOpen] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
-  const [showSummary, setShowSummary] = useState(false);
-  const [cities, setCities] = useState([]);
-  const [countries, setCountries] = useState([]);
-  const [selectedCountry, setSelectedCountry] = useState('');
-  const [user, setUser] = useState<any>(null);
-  const { toast } = useToast();
+  const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
-  const { 
-    formData,
-    setFormData,
-    handleFormSubmit,
-    createRoute,
-    calculateTotalDuration,
-    calculateTotalPrice
-  } = useRouteCreation();
-
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-    };
-    getUser();
-  }, []);
-
-  useEffect(() => {
-    const fetchCities = async () => {
-      const { data, error } = await supabase.from('cities').select('*');
-      if (error) {
-        console.error('Error fetching cities:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load cities. Please try again.",
-          variant: "destructive"
-        });
-      } else {
-        setCities(data);
-        const uniqueCountries = [...new Set(data.map(city => city.country))];
-        setCountries(uniqueCountries);
-      }
-    };
-    fetchCities();
-  }, [toast]);
-
-  const handleOpenChange = (newOpen: boolean) => {
-    if (newOpen && !user) {
-      toast({
-        title: "Accesso richiesto",
-        description: "Devi essere autenticato per creare un percorso",
-        variant: "destructive"
-      });
-      navigate('/login');
-      return;
-    }
-    if (!newOpen) {
-      setShowPreview(false);
-      setShowSummary(false);
-      setFormData(null);
-    }
-    setOpen(newOpen);
-  };
-
-  const onFormSubmit = async (data: CreateRouteFormData) => {
-    if (!user) return;
-    const success = await handleFormSubmit(data, user.id);
-    if (success) {
-      setShowPreview(true);
-    }
-  };
-
-  const handleCreateRoute = async () => {
-    if (!user) return;
-    const success = await createRoute(user.id); // Pass the user.id to createRoute
-    if (success) {
-      setOpen(false);
-      setShowPreview(false);
-      setShowSummary(false);
-      setFormData(null);
-    }
-  };
-
-  const handleBack = () => {
-    if (showSummary) {
-      setShowSummary(false);
-      setShowPreview(true);
-    } else if (showPreview) {
-      setShowPreview(false);
-    }
-  };
-
-  const handleContinueToSummary = () => {
-    console.log("Continuing to summary...");
-    setShowPreview(false);
-    setShowSummary(true);
-  };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button className="fixed bottom-6 right-6 rounded-full w-12 h-12 p-0">
-          <Plus className="w-6 h-6" />
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button 
+          className="fixed bottom-6 right-6 rounded-full w-12 h-12 p-0 hover:scale-105 transition-transform"
+          size="icon"
+        >
+          <Plus className="h-6 w-6" />
         </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Crea Nuovo Percorso</DialogTitle>
-        </DialogHeader>
-        
-        {!showPreview && !showSummary ? (
-          <CreateRouteForm
-            onSubmit={onFormSubmit}
-            countries={countries}
-            cities={cities}
-            selectedCountry={selectedCountry}
-            onCountrySelect={setSelectedCountry}
-          />
-        ) : showPreview ? (
-          <RoutePreview
-            formData={formData!}
-            onBack={handleBack}
-            onContinue={handleContinueToSummary}
-          />
-        ) : (
-          <RouteCreationSummary
-            formData={formData!}
-            onBack={handleBack}
-            onCreateRoute={handleCreateRoute}
-            calculateTotalDuration={calculateTotalDuration}
-            calculateTotalPrice={calculateTotalPrice}
-          />
-        )}
-      </DialogContent>
-    </Dialog>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent 
+        align="end" 
+        side="top" 
+        className="mb-2 animate-slide-up"
+      >
+        <DropdownMenuItem onClick={() => navigate('/blog/new')}>
+          <PenLine className="mr-2 h-4 w-4" />
+          Nuovo Post
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setIsOpen(true)}>
+          <MapPin className="mr-2 h-4 w-4" />
+          Nuovo Percorso
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

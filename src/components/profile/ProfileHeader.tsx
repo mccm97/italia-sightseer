@@ -5,6 +5,7 @@ import { FollowButton } from './FollowButton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useLogout } from '@/hooks/useLogout';
 
 interface ProfileHeaderProps {
   username?: string | null;
@@ -82,6 +83,8 @@ export function ProfileHeader({
     enabled: !!profileId
   });
 
+  const { handleLogout } = useLogout();
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between">
@@ -123,8 +126,16 @@ export function ProfileHeader({
               Modifica Profilo
             </Button>
           )}
-          {profileId && currentUserId && profileId !== currentUserId && (
+          {profileId && currentUserId && profileId !== currentUserId ? (
             <FollowButton profileId={profileId} currentUserId={currentUserId} />
+          ) : showEditButton && (
+            <Button 
+              variant="outline" 
+              onClick={handleLogout}
+              className="text-red-500 hover:text-red-600"
+            >
+              Logout
+            </Button>
           )}
         </div>
       </div>
