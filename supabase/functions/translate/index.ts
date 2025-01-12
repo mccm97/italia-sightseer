@@ -26,35 +26,55 @@ serve(async (req) => {
 
     const response = await fetch(LIBRE_TRANSLATE_API, {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({
         q: text,
         source: source,
         target: target,
-        format: "text"
+        format: "text",
+        api_key: "" // LibreTranslate allows empty API key for their demo server
       }),
-      headers: {
-        'Content-Type': 'application/json'
-      }
     });
+
+    if (!response.ok) {
+      console.error('LibreTranslate API error:', await response.text());
+      throw new Error(`LibreTranslate API returned ${response.status}`);
+    }
 
     const data = await response.json();
     console.log('Translation response:', data);
 
+    if (!data.translatedText) {
+      throw new Error('No translation returned');
+    }
+
     return new Response(
       JSON.stringify({ translation: data.translatedText }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json'
+        },
         status: 200 
       }
     );
 
   } catch (error) {
     console.error('Translation error:', error);
+    
     return new Response(
-      JSON.stringify({ error: 'Translation failed' }),
+      JSON.stringify({ 
+        error: 'Translation failed',
+        details: error.message 
+      }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json'
+        },
+        status: 500
       }
     );
   }
