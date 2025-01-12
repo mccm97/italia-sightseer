@@ -13,12 +13,14 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useLogout } from '@/hooks/useLogout';
 
+// Componente per i link del menu
 const MenuLink = ({ to, children }: { to: string; children: React.ReactNode }) => (
   <Link to={to} className="text-lg hover:underline">
     {children}
   </Link>
 );
 
+// Componente per i link admin
 const AdminLinks = () => (
   <>
     <MenuLink to="/admin">
@@ -34,28 +36,18 @@ const AdminLinks = () => (
 );
 
 // Componente per il pulsante di cambio lingua
-const LanguageToggle = ({ language, onToggle }: { language: 'it' | 'en'; onToggle: () => void }) => {
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const handleClick = async () => {
-    setIsLoading(true);
-    await onToggle();
-    setIsLoading(false);
-  };
+const LanguageToggle = ({ language, onToggle }: { language: 'it' | 'en'; onToggle: () => void }) => (
+  <Button
+    variant="ghost"
+    className="flex items-center justify-start gap-2 text-lg px-0"
+    onClick={onToggle}
+  >
+    <Globe className="h-4 w-4" />
+    {language === 'it' ? 'English' : 'Italiano'}
+  </Button>
+);
 
-  return (
-    <Button
-      variant="ghost"
-      className="flex items-center justify-start gap-2 text-lg px-0"
-      onClick={handleClick}
-      disabled={isLoading}
-    >
-      <Globe className="h-4 w-4" />
-      {isLoading ? 'Traducendo...' : (language === 'it' ? 'English' : 'Italiano')}
-    </Button>
-  );
-};
-
+// Componente per il pulsante di logout
 const LogoutButton = ({ onLogout }: { onLogout: () => void }) => (
   <Button 
     variant="ghost" 
@@ -90,10 +82,10 @@ export function MainMenu() {
     checkAdminStatus();
   }, []);
 
-  const toggleLanguage = async () => {
+  const toggleLanguage = () => {
     const newLanguage = language === 'it' ? 'en' : 'it';
     setLanguage(newLanguage);
-    await i18n.loadAndSetLanguage(newLanguage);
+    i18n.changeLanguage(newLanguage);
   };
 
   const handleLogoutClick = () => {
@@ -121,16 +113,16 @@ export function MainMenu() {
           <SheetTitle>Menu</SheetTitle>
         </SheetHeader>
         <div className="flex flex-col gap-4 mt-8">
-          <MenuLink to="/">{t('menu.home')}</MenuLink>
+          <MenuLink to="/">Home</MenuLink>
           <MenuLink to="/search">
             <div className="flex items-center gap-2">
               <Search className="h-4 w-4" />
-              {t('menu.search')}
+              Cerca città
             </div>
           </MenuLink>
-          <MenuLink to="/blog">{t('menu.blog')}</MenuLink>
-          <MenuLink to="/profile">{t('menu.profile')}</MenuLink>
-          <MenuLink to="/upgrade">{t('menu.subscriptions')}</MenuLink>
+          <MenuLink to="/blog">Blog</MenuLink>
+          <MenuLink to="/profile">Profilo</MenuLink>
+          <MenuLink to="/upgrade">Abbonamenti</MenuLink>
           
           {isAdmin && <AdminLinks />}
           
