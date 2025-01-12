@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 
 interface CookiePreferences {
   essential: boolean;
@@ -21,8 +22,8 @@ export function CookieBanner() {
     social: false
   });
 
-  // Funzione per gestire l'accettazione dei cookie
-  const handleAccept = () => {
+  // Funzione per gestire l'accettazione dei cookie selezionati
+  const handleAcceptSelected = () => {
     localStorage.setItem('waywonder-cookie-consent', 'true');
     localStorage.setItem('waywonder-cookie-preferences', JSON.stringify(preferences));
     
@@ -36,6 +37,26 @@ export function CookieBanner() {
     if (preferences.social) {
       initializeSocialFeatures();
     }
+
+    setShowPreferences(false);
+  };
+
+  // Funzione per gestire l'accettazione di tutti i cookie
+  const handleAcceptAll = () => {
+    const allPreferences = {
+      essential: true,
+      analytics: true,
+      marketing: true,
+      social: true
+    };
+    
+    localStorage.setItem('waywonder-cookie-consent', 'true');
+    localStorage.setItem('waywonder-cookie-preferences', JSON.stringify(allPreferences));
+    
+    // Inizializza tutti i servizi
+    initializeAnalytics();
+    initializeMarketing();
+    initializeSocialFeatures();
   };
 
   // Funzione per gestire il rifiuto dei cookie
@@ -65,13 +86,11 @@ export function CookieBanner() {
 
   // Inizializza servizi di marketing
   const initializeMarketing = () => {
-    // Implementa l'inizializzazione dei servizi di marketing
     console.log('Inizializzazione servizi marketing');
   };
 
   // Inizializza funzionalità social
   const initializeSocialFeatures = () => {
-    // Implementa l'inizializzazione delle funzionalità social
     console.log('Inizializzazione funzionalità social');
   };
 
@@ -114,7 +133,7 @@ export function CookieBanner() {
           padding: "5px 15px"
         }}
         enableDeclineButton
-        onAccept={handleAccept}
+        onAccept={handleAcceptAll}
         onDecline={handleDecline}
       >
         <div className="flex flex-col gap-2">
@@ -198,6 +217,14 @@ export function CookieBanner() {
                   setPreferences(prev => ({ ...prev, social: checked }))
                 }
               />
+            </div>
+            <div className="flex justify-end gap-2 mt-4">
+              <Button variant="outline" onClick={() => setShowPreferences(false)}>
+                Annulla
+              </Button>
+              <Button onClick={handleAcceptSelected}>
+                Accetta selezionati
+              </Button>
             </div>
           </div>
         </DialogContent>
