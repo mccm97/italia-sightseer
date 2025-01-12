@@ -11,7 +11,11 @@ import { PostContent } from './PostContent';
 
 const REQUIRED_WORDS = 100;
 
-export function CreatePostInput() {
+interface CreatePostInputProps {
+  onPostCreated?: () => Promise<void>;
+}
+
+export function CreatePostInput({ onPostCreated }: CreatePostInputProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -85,6 +89,11 @@ export function CreatePostInput() {
       setCoverImage(null);
       setIsAboutCity(false);
       setSelectedCity(null);
+      
+      if (onPostCreated) {
+        await onPostCreated();
+      }
+
       toast({
         title: "Post pubblicato",
         description: "Il tuo post è stato pubblicato con successo",
