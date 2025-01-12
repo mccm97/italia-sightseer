@@ -14,9 +14,10 @@ interface CookiePreferences {
 }
 
 export function CookieBanner() {
+  const [showBanner, setShowBanner] = useState(true);
   const [showPreferences, setShowPreferences] = useState(false);
   const [preferences, setPreferences] = useState<CookiePreferences>({
-    essential: true, // Sempre attivo e non modificabile
+    essential: true,
     analytics: false,
     marketing: false,
     social: false
@@ -39,6 +40,7 @@ export function CookieBanner() {
     }
 
     setShowPreferences(false);
+    setShowBanner(false);
   };
 
   // Funzione per gestire l'accettazione di tutti i cookie
@@ -57,6 +59,8 @@ export function CookieBanner() {
     initializeAnalytics();
     initializeMarketing();
     initializeSocialFeatures();
+
+    setShowBanner(false);
   };
 
   // Funzione per gestire il rifiuto dei cookie
@@ -75,6 +79,8 @@ export function CookieBanner() {
     document.cookie.split(";").forEach(function(c) { 
       document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
     });
+
+    setShowBanner(false);
   };
 
   // Inizializza Google Analytics
@@ -102,6 +108,7 @@ export function CookieBanner() {
     if (savedConsent === 'true' && savedPreferences) {
       const parsedPreferences = JSON.parse(savedPreferences);
       setPreferences(parsedPreferences);
+      setShowBanner(false);
       
       // Inizializza i servizi in base alle preferenze salvate
       if (parsedPreferences.analytics) initializeAnalytics();
@@ -109,6 +116,8 @@ export function CookieBanner() {
       if (parsedPreferences.social) initializeSocialFeatures();
     }
   }, []);
+
+  if (!showBanner) return null;
 
   return (
     <>
