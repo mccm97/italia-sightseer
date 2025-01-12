@@ -48,13 +48,21 @@ const resources = {
         subscriptions: 'Abbonamenti',
         administration: 'Amministrazione',
         logout: 'Logout',
-        blog: 'Blog'
+        blog: 'Blog',
+        search: 'Cerca'
       }
     }
   }
 };
 
-i18n
+// Estendi l'interfaccia di i18n per includere il nostro metodo personalizzato
+declare module 'i18next' {
+  interface i18n {
+    loadAndSetLanguage(language: string): Promise<void>;
+  }
+}
+
+const i18nInstance = i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
@@ -65,7 +73,7 @@ i18n
     }
   });
 
-// Aggiungiamo un metodo per cambiare la lingua con traduzione automatica
+// Aggiungiamo il metodo per cambiare la lingua con traduzione automatica
 i18n.loadAndSetLanguage = async (language: string) => {
   console.log(`Changing language to ${language}`);
   
