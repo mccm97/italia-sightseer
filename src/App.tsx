@@ -3,6 +3,7 @@ import Index from './pages/Index';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
 import Blog from './pages/Blog';
+import BlogPost from './pages/BlogPost';
 import Statistics from './pages/Statistics';
 import Admin from './pages/Admin';
 import Upgrade from './pages/Upgrade';
@@ -19,6 +20,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:postId" element={<BlogPost />} />
         <Route path="/statistics" element={<Statistics />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/upgrade" element={<Upgrade />} />
