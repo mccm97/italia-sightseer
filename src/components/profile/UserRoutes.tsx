@@ -5,6 +5,7 @@ import { Tables } from '@/integrations/supabase/types';
 import { DeleteRouteButton } from './DeleteRouteButton';
 import { RouteCard } from '../route/RouteCard';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 type DbRoute = Tables<'routes'> & {
   cities: { name: string; lat: number; lng: number; };
@@ -32,6 +33,7 @@ interface UserRoutesProps {
 
 export function UserRoutes({ userId }: UserRoutesProps) {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const getCurrentUser = async () => {
@@ -82,11 +84,11 @@ export function UserRoutes({ userId }: UserRoutesProps) {
     },
   });
 
-  if (isLoading) return <div>Caricamento percorsi...</div>;
+  if (isLoading) return <div>{t('common.loading')}</div>;
 
   return (
     <div className="mt-8">
-      <h2 className="text-xl font-semibold mb-4">I percorsi</h2>
+      <h2 className="text-xl font-semibold mb-4">{t('profile.routes')}</h2>
       {routes && routes.length > 0 ? (
         <div className="grid grid-cols-1 gap-4">
           {routes.map((route) => {
@@ -133,7 +135,7 @@ export function UserRoutes({ userId }: UserRoutesProps) {
       ) : (
         <div className="text-center py-8 text-muted-foreground">
           <RouteOff className="mx-auto h-12 w-12 mb-4" />
-          <p>Nessun percorso trovato</p>
+          <p>{t('profile.noRoutes')}</p>
         </div>
       )}
     </div>

@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useLogout } from '@/hooks/useLogout';
+import { useTranslation } from 'react-i18next';
 
 interface ProfileHeaderProps {
   username?: string | null;
@@ -28,6 +29,8 @@ export function ProfileHeader({
   subscriptionLevel = 'bronze',
   showEditButton = false,
 }: ProfileHeaderProps) {
+  const { t } = useTranslation();
+  
   const getSubscriptionColor = (level: string) => {
     switch (level.toLowerCase()) {
       case 'gold':
@@ -95,35 +98,35 @@ export function ProfileHeader({
           </Avatar>
           <div>
             <div className="flex items-center space-x-2">
-              <h2 className="text-2xl font-bold">{username || 'Utente Anonimo'}</h2>
+              <h2 className="text-2xl font-bold">{username || t('profile.anonymous')}</h2>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger>
                     <Medal 
                       className="h-6 w-6" 
                       style={{ color: getSubscriptionColor(subscriptionLevel) }}
-                      aria-label={`Livello ${subscriptionLevel.charAt(0).toUpperCase() + subscriptionLevel.slice(1)}`}
+                      aria-label={`Level ${subscriptionLevel.charAt(0).toUpperCase() + subscriptionLevel.slice(1)}`}
                     />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Livello {subscriptionLevel.charAt(0).toUpperCase() + subscriptionLevel.slice(1)}</p>
+                    <p>Level {subscriptionLevel.charAt(0).toUpperCase() + subscriptionLevel.slice(1)}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
             {bio && <p className="text-muted-foreground mt-1">{bio}</p>}
             <div className="flex space-x-4 mt-2 text-sm text-muted-foreground">
-              <span>{stats?.likes || 0} mi piace</span>
-              <span>{stats?.averageRating || 0} media recensioni</span>
-              <span>{stats?.followers || 0} followers</span>
-              <span>{stats?.following || 0} seguiti</span>
+              <span>{stats?.likes || 0} {t('profile.likes')}</span>
+              <span>{stats?.averageRating || 0} {t('profile.avgRating')}</span>
+              <span>{stats?.followers || 0} {t('profile.followers')}</span>
+              <span>{stats?.following || 0} {t('profile.following')}</span>
             </div>
           </div>
         </div>
         <div className="flex space-x-2">
           {showEditButton && (
             <Button onClick={onEditClick} variant="outline">
-              Modifica Profilo
+              {t('profile.edit')}
             </Button>
           )}
           {profileId && currentUserId && profileId !== currentUserId ? (
@@ -134,7 +137,7 @@ export function ProfileHeader({
               onClick={handleLogout}
               className="text-red-500 hover:text-red-600"
             >
-              Logout
+              {t('profile.logout')}
             </Button>
           )}
         </div>
