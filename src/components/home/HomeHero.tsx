@@ -2,9 +2,11 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Compass, Map, Heart, BookOpen, Crown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export const HomeHero = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <div className="relative overflow-hidden bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800">
@@ -15,13 +17,13 @@ export const HomeHero = () => {
         className="max-w-4xl mx-auto space-y-8 py-24 px-4 text-center"
       >
         <h1 className="text-5xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
-          WayWonder - Esplora il Mondo
+          {t('home.hero.title')}
         </h1>
         <h2 className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
-          Scopri e pianifica i tuoi percorsi personalizzati nelle più belle città del mondo
+          {t('home.hero.subtitle')}
         </h2>
         <p className="text-lg text-muted-foreground">
-          La piattaforma definitiva per esplorare le meraviglie del mondo attraverso itinerari su misura
+          {t('home.hero.description')}
         </p>
       </motion.div>
       
@@ -36,9 +38,9 @@ export const HomeHero = () => {
           <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto">
             <Compass className="h-6 w-6 text-blue-600 dark:text-blue-400" />
           </div>
-          <h3 className="font-semibold text-lg">Pianifica Percorsi</h3>
+          <h3 className="font-semibold text-lg">{t('home.features.planRoutes.title')}</h3>
           <p className="text-muted-foreground">
-            Crea itinerari personalizzati per le tue visite, ottimizzati per tempo e budget
+            {t('home.features.planRoutes.description')}
           </p>
         </motion.article>
         
@@ -52,9 +54,9 @@ export const HomeHero = () => {
           <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mx-auto">
             <Map className="h-6 w-6 text-purple-600 dark:text-purple-400" />
           </div>
-          <h3 className="font-semibold text-lg">Esplora il Mondo</h3>
+          <h3 className="font-semibold text-lg">{t('home.features.exploreWorld.title')}</h3>
           <p className="text-muted-foreground">
-            Scopri le destinazioni più affascinanti e i tesori nascosti di ogni angolo del pianeta
+            {t('home.features.exploreWorld.description')}
           </p>
         </motion.article>
         
@@ -68,9 +70,9 @@ export const HomeHero = () => {
           <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto">
             <Heart className="h-6 w-6 text-green-600 dark:text-green-400" />
           </div>
-          <h3 className="font-semibold text-lg">Salva i Preferiti</h3>
+          <h3 className="font-semibold text-lg">{t('home.features.saveFavorites.title')}</h3>
           <p className="text-muted-foreground">
-            Conserva e condividi i tuoi itinerari preferiti con altri viaggiatori
+            {t('home.features.saveFavorites.description')}
           </p>
         </motion.article>
       </div>
@@ -86,9 +88,9 @@ export const HomeHero = () => {
           <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900 rounded-full flex items-center justify-center mx-auto">
             <BookOpen className="h-6 w-6 text-amber-600 dark:text-amber-400" />
           </div>
-          <h3 className="font-semibold text-lg">Blog di Viaggio</h3>
+          <h3 className="font-semibold text-lg">{t('home.features.travelBlog.title')}</h3>
           <p className="text-muted-foreground">
-            Condividi le tue esperienze di viaggio e scopri i racconti di altri viaggiatori attraverso il nostro blog integrato
+            {t('home.features.travelBlog.description')}
           </p>
         </motion.article>
 
@@ -102,34 +104,21 @@ export const HomeHero = () => {
           <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900 rounded-full flex items-center justify-center mx-auto">
             <Crown className="h-6 w-6 text-rose-600 dark:text-rose-400" />
           </div>
-          <h3 className="font-semibold text-lg">Abbonamenti Premium</h3>
+          <h3 className="font-semibold text-lg">{t('home.features.premiumSubscriptions.title')}</h3>
           <p className="text-muted-foreground">
-            Sblocca funzionalità avanzate con i nostri piani Silver e Gold per creare più percorsi e accedere a strumenti esclusivi
+            {t('home.features.premiumSubscriptions.description')}
           </p>
         </motion.article>
       </div>
 
       <section className="max-w-4xl mx-auto px-4 pb-12 text-center">
         <h2 className="text-3xl font-semibold mb-6">
-          Perché Scegliere WayWonder?
+          {t('home.why.title')}
         </h2>
         <div className="prose prose-lg mx-auto dark:prose-invert space-y-6">
-          <p>
-            WayWonder è la soluzione ideale per chi desidera esplorare il mondo in modo intelligente e personalizzato.
-            La nostra piattaforma offre strumenti avanzati per la pianificazione di itinerari, 
-            consentendoti di ottimizzare i tuoi viaggi in base a tempo, budget e interessi.
-          </p>
-          <p>
-            Con WayWonder, ogni viaggio diventa un'avventura su misura. La nostra piattaforma ti permette di scoprire 
-            le meraviglie di ogni città, dai monumenti più famosi ai luoghi meno conosciuti ma altrettanto affascinanti.
-            Che tu sia un viaggiatore esperto o alle prime armi, troverai gli strumenti perfetti per pianificare 
-            il tuo prossimo viaggio indimenticabile.
-          </p>
-          <p>
-            La community di WayWonder è composta da appassionati viaggiatori provenienti da tutto il mondo, 
-            pronti a condividere esperienze, consigli e itinerari personalizzati. Unisciti a noi per scoprire 
-            nuove destinazioni, culture e tradizioni, creando ricordi che dureranno per sempre.
-          </p>
+          <p>{t('home.why.description1')}</p>
+          <p>{t('home.why.description2')}</p>
+          <p>{t('home.why.description3')}</p>
         </div>
       </section>
     </div>
