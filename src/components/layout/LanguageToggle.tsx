@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Languages } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface LanguageToggleProps {
   language: string;
@@ -7,6 +8,7 @@ interface LanguageToggleProps {
 }
 
 export const LanguageToggle = ({ language, onToggle }: LanguageToggleProps) => {
+  const { t } = useTranslation();
   const buttonText = language === 'it' ? 'English' : 'Italiano';
   
   return (
