@@ -4,6 +4,7 @@ export const subscriptionsTranslations = {
     description: 'Sblocca tutte le funzionalità e crea percorsi illimitati',
     monthly: 'Mensile',
     yearly: 'Annuale',
+    back: 'Indietro',
     features: {
       routes: 'Percorsi al mese',
       support: 'Supporto prioritario',
@@ -16,6 +17,7 @@ export const subscriptionsTranslations = {
     description: 'Unlock all features and create unlimited routes',
     monthly: 'Monthly',
     yearly: 'Yearly',
+    back: 'Back',
     features: {
       routes: 'Routes per month',
       support: 'Priority support',

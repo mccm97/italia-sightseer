@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 interface PlanFeature {
   feature: string;
@@ -24,6 +25,8 @@ interface PlanProps {
 }
 
 export function PlanCard({ name, description, price, color, features, limitations }: PlanProps) {
+  const { t } = useTranslation();
+
   return (
     <Card className={`relative overflow-hidden ${
       name === "Silver" ? "border-primary" : ""
@@ -37,7 +40,7 @@ export function PlanCard({ name, description, price, color, features, limitation
         <div className="text-3xl font-bold mb-6">{price}</div>
         <div className="space-y-4">
           <div>
-            <h4 className="font-medium mb-2">Include:</h4>
+            <h4 className="font-medium mb-2">{t('subscriptions.includes')}:</h4>
             <ul className="space-y-2">
               {features.map((feature) => (
                 <li key={feature} className="flex items-center gap-2">
@@ -50,7 +53,7 @@ export function PlanCard({ name, description, price, color, features, limitation
           {limitations.length > 0 && (
             <div>
               <h4 className="font-medium mb-2 text-muted-foreground">
-                Non include:
+                {t('subscriptions.notIncludes')}:
               </h4>
               <ul className="space-y-2">
                 {limitations.map((limitation) => (
@@ -65,7 +68,7 @@ export function PlanCard({ name, description, price, color, features, limitation
       </CardContent>
       <CardFooter>
         <Button className="w-full" disabled>
-          {name === "Bronze" ? "Piano Attuale" : "Presto Disponibile"}
+          {name === "Bronze" ? t('subscriptions.currentPlan') : t('subscriptions.comingSoon')}
         </Button>
       </CardFooter>
     </Card>
