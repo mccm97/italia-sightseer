@@ -1,11 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { useAuthState } from './useAuthState';
+import { useAuth } from '@/hooks/useAuth';
 import { UserMenu } from './UserMenu';
 import { LogIn } from 'lucide-react';
 
 export function AuthButton() {
-  const { user, loading } = useAuthState();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
 
   if (loading) {
