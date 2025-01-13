@@ -34,8 +34,8 @@ export function HomeFeatureCard({
       <div className={`w-12 h-12 ${bgColor} rounded-full flex items-center justify-center mx-auto`}>
         <Icon className={`h-6 w-6 ${iconColor}`} />
       </div>
-      <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100">{title}</h3>
-      <p className="text-gray-600 dark:text-gray-300">
+      <h3 className="font-semibold text-lg">{title}</h3>
+      <p className="text-muted-foreground">
         {description}
       </p>
     </motion.article>
