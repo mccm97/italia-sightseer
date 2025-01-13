@@ -83,6 +83,8 @@ export default function Blog() {
         <div className="max-w-2xl mx-auto mt-16">
           <h1 className="text-3xl font-bold mb-8">Blog</h1>
           
+          <CreatePostInput onPostCreated={fetchPosts} />
+          
           <div className="mb-8">
             <CitySelector
               isAboutCity={isAboutCity}
@@ -91,8 +93,6 @@ export default function Blog() {
               setSelectedCity={setSelectedCity}
             />
           </div>
-
-          <CreatePostInput onPostCreated={fetchPosts} />
           
           {loading ? (
             <div className="flex justify-center items-center h-64">
