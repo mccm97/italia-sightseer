@@ -1,12 +1,15 @@
 import React from 'react';
 import { CitySearchButton } from './CitySearchButton';
 import type { City } from '@/components/CitySearch';
+import { useTranslation } from 'react-i18next';
 
 interface CitySearchSectionProps {
   setSelectedCity: React.Dispatch<React.SetStateAction<City | null>>;
 }
 
 export function CitySearchSection({ setSelectedCity }: CitySearchSectionProps) {
+  const { t } = useTranslation();
+  
   return (
     <div className="relative w-full h-[500px] rounded-xl overflow-hidden mb-12">
       <img 
@@ -17,7 +20,7 @@ export function CitySearchSection({ setSelectedCity }: CitySearchSectionProps) {
       <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center p-6">
         <div className="max-w-2xl w-full mx-auto text-center">
           <h1 className="text-4xl font-bold text-white mb-8">
-            Scopri la Tua Prossima Avventura
+            {t('search.title')}
           </h1>
           <div className="w-full max-w-xl mx-auto">
             <CitySearchButton onCitySelect={setSelectedCity} />
