@@ -1,8 +1,11 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
-import { enTranslations } from './i18n/en';
-import { itTranslations } from './i18n/it';
+import { homeTranslations } from './i18n/translations/home';
+import { blogTranslations } from './i18n/translations/blog';
+import { searchTranslations } from './i18n/translations/search';
+import { subscriptionsTranslations } from './i18n/translations/subscriptions';
+import { menuTranslations } from './i18n/translations/menu';
 
 i18n
   .use(LanguageDetector)
@@ -10,10 +13,22 @@ i18n
   .init({
     resources: {
       en: {
-        translation: enTranslations
+        translation: {
+          menu: menuTranslations.en,
+          home: homeTranslations.en,
+          blog: blogTranslations.en,
+          search: searchTranslations.en,
+          subscriptions: subscriptionsTranslations.en
+        }
       },
       it: {
-        translation: itTranslations
+        translation: {
+          menu: menuTranslations.it,
+          home: homeTranslations.it,
+          blog: blogTranslations.it,
+          search: searchTranslations.it,
+          subscriptions: subscriptionsTranslations.it
+        }
       }
     },
     fallbackLng: 'it',
