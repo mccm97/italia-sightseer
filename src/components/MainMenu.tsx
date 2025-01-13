@@ -13,14 +13,12 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useLogout } from '@/hooks/useLogout';
 
-// Componente per i link del menu
 const MenuLink = ({ to, children }: { to: string; children: React.ReactNode }) => (
   <Link to={to} className="text-lg hover:underline">
     {children}
   </Link>
 );
 
-// Componente per i link admin
 const AdminLinks = () => (
   <>
     <MenuLink to="/admin">
@@ -36,18 +34,21 @@ const AdminLinks = () => (
 );
 
 // Componente per il pulsante di cambio lingua
-const LanguageToggle = ({ language, onToggle }: { language: 'it' | 'en'; onToggle: () => void }) => (
-  <Button
-    variant="ghost"
-    className="flex items-center justify-start gap-2 text-lg px-0"
-    onClick={onToggle}
-  >
-    <Globe className="h-4 w-4" />
-    {language === 'it' ? 'English' : 'Italiano'}
-  </Button>
-);
+const LanguageToggle = ({ language, onToggle }: { language: 'it' | 'en'; onToggle: () => void }) => {
+  const buttonText = language === 'it' ? 'English' : 'Italiano';
+  
+  return (
+    <Button
+      variant="ghost"
+      className="flex items-center justify-start gap-2 text-lg px-0"
+      onClick={onToggle}
+    >
+      <Globe className="h-4 w-4" />
+      {buttonText}
+    </Button>
+  );
+};
 
-// Componente per il pulsante di logout
 const LogoutButton = ({ onLogout }: { onLogout: () => void }) => (
   <Button 
     variant="ghost" 
@@ -62,7 +63,7 @@ const LogoutButton = ({ onLogout }: { onLogout: () => void }) => (
 export function MainMenu() {
   const { t, i18n } = useTranslation();
   const [isAdmin, setIsAdmin] = useState(false);
-  const [language, setLanguage] = useState<'it' | 'en'>('it');
+  const [language, setLanguage] = useState<'it' | 'en'>(i18n.language as 'it' | 'en' || 'it');
   const { handleLogout } = useLogout();
 
   useEffect(() => {
@@ -83,9 +84,11 @@ export function MainMenu() {
   }, []);
 
   const toggleLanguage = () => {
+    console.log('Current language:', language);
     const newLanguage = language === 'it' ? 'en' : 'it';
     setLanguage(newLanguage);
     i18n.changeLanguage(newLanguage);
+    console.log('Switching to language:', newLanguage);
   };
 
   const handleLogoutClick = () => {
