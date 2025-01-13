@@ -15,6 +15,7 @@ import { useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 interface City {
   id?: string;
@@ -27,6 +28,7 @@ interface City {
 export function HomeContainer() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [selectedCity, setSelectedCity] = useState<City | null>(null);
   const [showDirections, setShowDirections] = useState(false);
   const [selectedRouteDirections, setSelectedRouteDirections] = useState<DirectionsStep[]>([]);
@@ -116,7 +118,7 @@ export function HomeContainer() {
               size="lg"
             >
               <Search className="h-5 w-5" />
-              Cerca una città
+              {t('search.searchPlaceholder')}
             </Button>
           </div>
           <HomeHero />
