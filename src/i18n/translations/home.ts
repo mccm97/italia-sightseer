@@ -23,6 +23,14 @@ export const homeTranslations = {
       saveFavorites: {
         title: 'Salva i Preferiti',
         description: 'Conserva e condividi i tuoi itinerari preferiti con altri viaggiatori'
+      },
+      travelBlog: {
+        title: 'Blog di Viaggio',
+        description: 'Condividi le tue esperienze di viaggio e scopri i racconti di altri viaggiatori attraverso il nostro blog integrato'
+      },
+      premiumSubscriptions: {
+        title: 'Abbonamenti Premium',
+        description: 'Sblocca funzionalità avanzate con i nostri piani Silver e Gold per creare più percorsi e accedere a strumenti esclusivi'
       }
     }
   },
@@ -50,6 +58,14 @@ export const homeTranslations = {
       saveFavorites: {
         title: 'Save Favorites',
         description: 'Save and share your favorite itineraries with other travelers'
+      },
+      travelBlog: {
+        title: 'Travel Blog',
+        description: 'Share your travel experiences and discover stories from other travelers through our integrated blog'
+      },
+      premiumSubscriptions: {
+        title: 'Premium Subscriptions',
+        description: 'Unlock advanced features with our Silver and Gold plans to create more routes and access exclusive tools'
       }
     }
   }
