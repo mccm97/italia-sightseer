@@ -21,7 +21,6 @@ export function useAuthState() {
         
         if (error) {
           console.error('Errore durante il controllo della sessione:', error);
-          // Clear the invalid session
           await supabase.auth.signOut();
           if (mounted) {
             setUser(null);
@@ -44,7 +43,6 @@ export function useAuthState() {
         }
       } catch (error) {
         console.error('Errore durante l\'inizializzazione auth:', error);
-        // Clear any invalid session state
         await supabase.auth.signOut();
         if (mounted) {
           setUser(null);
@@ -92,7 +90,6 @@ export function useAuthState() {
           if (session?.user) setUser(session.user);
           break;
         default:
-          // Handle token refresh failures and user deletion by signing out
           if (!session) {
             console.log('Errore di autenticazione, effettuo logout');
             await supabase.auth.signOut();
