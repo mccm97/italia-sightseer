@@ -15,7 +15,9 @@ i18n
             subscriptions: 'Subscriptions',
             administration: 'Administration',
             logout: 'Logout',
-            blog: 'Blog'
+            blog: 'Blog',
+            search: 'Search cities',
+            statistics: 'Statistics'
           }
         }
       },
@@ -27,7 +29,9 @@ i18n
             subscriptions: 'Abbonamenti',
             administration: 'Amministrazione',
             logout: 'Logout',
-            blog: 'Blog'
+            blog: 'Blog',
+            search: 'Cerca città',
+            statistics: 'Statistiche'
           }
         }
       }
@@ -35,6 +39,10 @@ i18n
     fallbackLng: 'it',
     interpolation: {
       escapeValue: false
+    },
+    detection: {
+      order: ['localStorage', 'navigator'],
+      caches: ['localStorage']
     }
   });
 

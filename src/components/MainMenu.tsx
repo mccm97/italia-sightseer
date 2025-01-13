@@ -19,22 +19,24 @@ const MenuLink = ({ to, children }: { to: string; children: React.ReactNode }) =
   </Link>
 );
 
-const AdminLinks = () => (
-  <>
-    <MenuLink to="/admin">
-      Amministrazione
-    </MenuLink>
-    <MenuLink to="/statistics">
-      <div className="flex items-center gap-2">
-        <BarChart className="h-4 w-4" />
-        Statistiche
-      </div>
-    </MenuLink>
-  </>
-);
+const AdminLinks = () => {
+  const { t } = useTranslation();
+  return (
+    <>
+      <MenuLink to="/admin">
+        {t('menu.administration')}
+      </MenuLink>
+      <MenuLink to="/statistics">
+        <div className="flex items-center gap-2">
+          <BarChart className="h-4 w-4" />
+          {t('menu.statistics')}
+        </div>
+      </MenuLink>
+    </>
+  );
+};
 
-// Componente per il pulsante di cambio lingua
-const LanguageToggle = ({ language, onToggle }: { language: 'it' | 'en'; onToggle: () => void }) => {
+const LanguageToggle = ({ language, onToggle }: { language: string; onToggle: () => void }) => {
   const buttonText = language === 'it' ? 'English' : 'Italiano';
   
   return (
@@ -49,21 +51,24 @@ const LanguageToggle = ({ language, onToggle }: { language: 'it' | 'en'; onToggl
   );
 };
 
-const LogoutButton = ({ onLogout }: { onLogout: () => void }) => (
-  <Button 
-    variant="ghost" 
-    className="flex items-center justify-start gap-2 text-lg text-red-600 hover:text-red-700 px-0"
-    onClick={onLogout}
-  >
-    <LogOut className="h-4 w-4" />
-    Logout
-  </Button>
-);
+const LogoutButton = ({ onLogout }: { onLogout: () => void }) => {
+  const { t } = useTranslation();
+  return (
+    <Button 
+      variant="ghost" 
+      className="flex items-center justify-start gap-2 text-lg text-red-600 hover:text-red-700 px-0"
+      onClick={onLogout}
+    >
+      <LogOut className="h-4 w-4" />
+      {t('menu.logout')}
+    </Button>
+  );
+};
 
 export function MainMenu() {
   const { t, i18n } = useTranslation();
   const [isAdmin, setIsAdmin] = useState(false);
-  const [language, setLanguage] = useState<'it' | 'en'>(i18n.language as 'it' | 'en' || 'it');
+  const [language, setLanguage] = useState(i18n.language || 'it');
   const { handleLogout } = useLogout();
 
   useEffect(() => {
@@ -86,19 +91,18 @@ export function MainMenu() {
   const toggleLanguage = () => {
     console.log('Current language:', language);
     const newLanguage = language === 'it' ? 'en' : 'it';
-    setLanguage(newLanguage);
-    i18n.changeLanguage(newLanguage);
-    console.log('Switching to language:', newLanguage);
+    i18n.changeLanguage(newLanguage).then(() => {
+      setLanguage(newLanguage);
+      console.log('Language switched to:', newLanguage);
+    });
   };
 
   const handleLogoutClick = () => {
-    // Close the sheet menu first
     const closeButton = document.querySelector('[data-radix-collection-item]');
     if (closeButton instanceof HTMLElement) {
       closeButton.click();
     }
 
-    // Small delay to ensure smooth sheet closing
     setTimeout(() => {
       handleLogout();
     }, 100);
@@ -116,16 +120,16 @@ export function MainMenu() {
           <SheetTitle>Menu</SheetTitle>
         </SheetHeader>
         <div className="flex flex-col gap-4 mt-8">
-          <MenuLink to="/">Home</MenuLink>
+          <MenuLink to="/">{t('menu.home')}</MenuLink>
           <MenuLink to="/search">
             <div className="flex items-center gap-2">
               <Search className="h-4 w-4" />
-              Cerca città
+              {t('menu.search')}
             </div>
           </MenuLink>
-          <MenuLink to="/blog">Blog</MenuLink>
-          <MenuLink to="/profile">Profilo</MenuLink>
-          <MenuLink to="/upgrade">Abbonamenti</MenuLink>
+          <MenuLink to="/blog">{t('menu.blog')}</MenuLink>
+          <MenuLink to="/profile">{t('menu.profile')}</MenuLink>
+          <MenuLink to="/upgrade">{t('menu.subscriptions')}</MenuLink>
           
           {isAdmin && <AdminLinks />}
           
