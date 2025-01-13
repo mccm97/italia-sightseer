@@ -27,6 +27,13 @@ interface PlanProps {
 export function PlanCard({ name, description, price, color, features, limitations }: PlanProps) {
   const { t } = useTranslation();
 
+  const getButtonText = (planName: string) => {
+    if (planName === "Bronze") {
+      return t('subscriptions.currentPlan');
+    }
+    return t('subscriptions.comingSoon');
+  };
+
   return (
     <Card className={`relative overflow-hidden ${
       name === "Silver" ? "border-primary" : ""
@@ -68,7 +75,7 @@ export function PlanCard({ name, description, price, color, features, limitation
       </CardContent>
       <CardFooter>
         <Button className="w-full" disabled>
-          {name === "Bronze" ? t('subscriptions.currentPlan') : t('subscriptions.comingSoon')}
+          {getButtonText(name)}
         </Button>
       </CardFooter>
     </Card>

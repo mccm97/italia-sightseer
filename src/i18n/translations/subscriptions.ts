@@ -5,6 +5,10 @@ export const subscriptionsTranslations = {
     monthly: 'Mensile',
     yearly: 'Annuale',
     back: 'Indietro',
+    currentPlan: 'Piano Attuale',
+    comingSoon: 'Presto Disponibile',
+    includes: 'Include:',
+    notIncludes: 'Non include:',
     features: {
       routes: 'Percorsi al mese',
       support: 'Supporto prioritario',
@@ -18,6 +22,10 @@ export const subscriptionsTranslations = {
     monthly: 'Monthly',
     yearly: 'Yearly',
     back: 'Back',
+    currentPlan: 'Current Plan',
+    comingSoon: 'Coming Soon',
+    includes: 'Includes:',
+    notIncludes: 'Does not include:',
     features: {
       routes: 'Routes per month',
       support: 'Priority support',
