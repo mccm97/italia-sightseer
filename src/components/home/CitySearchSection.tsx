@@ -18,12 +18,14 @@ export function CitySearchSection({ setSelectedCity }: CitySearchSectionProps) {
         className="absolute inset-0 w-full h-full object-cover"
       />
       <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center p-6">
-        <div className="max-w-2xl w-full mx-auto text-center">
+        <div className="max-w-3xl w-full mx-auto text-center">
           <h1 className="text-4xl font-bold text-white mb-8">
             {t('search.title')}
           </h1>
-          <div className="w-full max-w-xl mx-auto">
-            <CitySearchButton onCitySelect={setSelectedCity} />
+          <div className="w-full flex justify-center">
+            <div className="w-full max-w-md">
+              <CitySearchButton onCitySelect={setSelectedCity} />
+            </div>
           </div>
         </div>
       </div>
