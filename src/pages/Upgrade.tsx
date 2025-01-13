@@ -5,64 +5,64 @@ import { PlanCard } from "@/components/upgrade/PlanCard";
 import { Helmet } from 'react-helmet';
 import { useTranslation } from "react-i18next";
 
-const plans = [
+const getPlans = (t: (key: string) => string) => [
   {
-    name: "Bronze",
-    description: "Free plan to get started",
+    name: t('subscriptions.plans.bronze.name'),
+    description: t('subscriptions.plans.bronze.description'),
     price: "€0/month",
     color: "bg-amber-600",
     features: [
-      "2 routes per month",
-      "Basic route creation",
-      "View public routes",
-      "Basic user profile",
-      "Email support",
+      t('subscriptions.plans.bronze.features.routes'),
+      t('subscriptions.plans.bronze.features.basic'),
+      t('subscriptions.plans.bronze.features.public'),
+      t('subscriptions.plans.bronze.features.profile'),
+      t('subscriptions.plans.bronze.features.support'),
     ],
     limitations: [
-      "No detailed directions",
-      "No priority support",
-      "No advanced features",
-      "No advanced customization",
-      "No API access",
+      t('subscriptions.plans.bronze.limitations.directions'),
+      t('subscriptions.plans.bronze.limitations.support'),
+      t('subscriptions.plans.bronze.limitations.features'),
+      t('subscriptions.plans.bronze.limitations.customization'),
+      t('subscriptions.plans.bronze.limitations.api'),
     ],
   },
   {
-    name: "Silver",
-    description: "For frequent explorers",
+    name: t('subscriptions.plans.silver.name'),
+    description: t('subscriptions.plans.silver.description'),
     price: "€29.99/month",
     color: "bg-gray-400",
     features: [
-      "10 routes per month",
-      "Detailed directions",
-      "Priority support",
-      "Advanced user profile",
-      "Advanced route customization",
-      "Detailed statistics",
-      "Export routes",
-      "Access to beta features",
+      t('subscriptions.plans.silver.features.routes'),
+      t('subscriptions.plans.silver.features.directions'),
+      t('subscriptions.plans.silver.features.support'),
+      t('subscriptions.plans.silver.features.profile'),
+      t('subscriptions.plans.silver.features.customization'),
+      t('subscriptions.plans.silver.features.statistics'),
+      t('subscriptions.plans.silver.features.export'),
+      t('subscriptions.plans.silver.features.beta'),
     ],
     limitations: [
-      "Monthly route limit",
-      "No API access",
-      "No unlimited private routes",
+      t('subscriptions.plans.silver.limitations.monthly'),
+      t('subscriptions.plans.silver.limitations.api'),
+      t('subscriptions.plans.silver.limitations.private'),
     ],
   },
   {
-    name: "Gold",
-    description: "For true enthusiasts",
+    name: t('subscriptions.plans.gold.name'),
+    description: t('subscriptions.plans.gold.description'),
     price: "€39.99/month",
     color: "bg-yellow-400",
     features: [
-      "Unlimited routes",
-      "All Silver features included",
-      "24/7 priority support",
-      "Full API access",
-      "Unlimited private routes",
-      "Exclusive preview features",
-      "Custom dashboard",
-      "Advanced route analytics",
-      "Advanced data export",
-      "Priority for new features",
+      t('subscriptions.plans.gold.features.unlimited'),
+      t('subscriptions.plans.gold.features.silver'),
+      t('subscriptions.plans.gold.features.support'),
+      t('subscriptions.plans.gold.features.api'),
+      t('subscriptions.plans.gold.features.private'),
+      t('subscriptions.plans.gold.features.preview'),
+      t('subscriptions.plans.gold.features.dashboard'),
+      t('subscriptions.plans.gold.features.analytics'),
+      t('subscriptions.plans.gold.features.export'),
+      t('subscriptions.plans.gold.features.priority'),
     ],
     limitations: [],
   },
@@ -71,6 +71,7 @@ const plans = [
 export default function Upgrade() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const plans = getPlans(t);
 
   return (
     <>
