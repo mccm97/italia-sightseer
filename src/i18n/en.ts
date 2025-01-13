@@ -55,30 +55,54 @@ export const enTranslations = {
       citySearch: 'Looking for a specific city?',
       coverImage: 'Cover Image',
       wordCount: 'words',
-      remainingWords: 'remaining words'
+      remainingWords: 'remaining words',
+      aboutCity: 'Is this post about a specific city?',
+      selectCity: 'Select a city'
     },
     noPosts: 'No posts published',
     readMore: 'Read more',
     loading: 'Loading posts...'
   },
-  search: {
-    title: 'Search Cities and Itineraries in Italy',
-    subtitle: 'Search and discover the most beautiful Italian cities. Find personalized routes, read travel experiences, and plan your next itinerary with WayWonder.',
-    searchPlaceholder: 'Search a city...',
-    loading: 'Loading cities...',
-    noResults: 'No cities found',
-    backToSearch: 'Back to search'
+  profile: {
+    edit: 'Edit Profile',
+    save: 'Save Changes',
+    cancel: 'Cancel',
+    avatar: 'Profile Picture',
+    username: 'Username',
+    bio: 'Bio',
+    posts: 'Posts',
+    routes: 'Routes',
+    comments: 'Comments',
+    followers: 'Followers',
+    following: 'Following',
+    likes: 'Likes',
+    avgRating: 'Average Rating',
+    noRoutes: 'No routes created yet',
+    noPosts: 'No posts published yet',
+    noComments: 'No comments yet',
+    deletePost: 'Delete Post',
+    deleteConfirm: 'Are you sure?',
+    deleteWarning: 'This action cannot be undone. The post will be permanently deleted.',
+    back: 'Back'
   },
   subscriptions: {
     title: 'Choose Your Plan',
     description: 'Unlock all features and create unlimited routes',
     monthly: 'Monthly',
     yearly: 'Yearly',
+    currentPlan: 'Current Plan',
+    comingSoon: 'Coming Soon',
     features: {
       routes: 'Routes per month',
       support: 'Priority support',
       analytics: 'Advanced analytics',
-      export: 'Export routes'
-    }
+      export: 'Export routes',
+      unlimited: 'Unlimited routes',
+      priority: 'Priority support',
+      advanced: 'Advanced features',
+      api: 'API access'
+    },
+    includes: 'Includes:',
+    notIncludes: 'Does not include:'
   }
 };

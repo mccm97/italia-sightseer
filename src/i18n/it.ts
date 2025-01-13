@@ -55,30 +55,54 @@ export const itTranslations = {
       citySearch: 'Cerchi una città specifica?',
       coverImage: 'Immagine di copertina',
       wordCount: 'parole',
-      remainingWords: 'parole rimanenti'
+      remainingWords: 'parole rimanenti',
+      aboutCity: 'Questo post riguarda una città specifica?',
+      selectCity: 'Seleziona una città'
     },
     noPosts: 'Nessun post pubblicato',
     readMore: 'Leggi di più',
     loading: 'Caricamento post...'
   },
-  search: {
-    title: 'Cerca Città e Itinerari in Italia',
-    subtitle: 'Cerca e scopri le città italiane più belle. Trova percorsi personalizzati, leggi esperienze di viaggio e pianifica il tuo prossimo itinerario con WayWonder.',
-    searchPlaceholder: 'Cerca una città...',
-    loading: 'Caricamento città...',
-    noResults: 'Nessuna città trovata',
-    backToSearch: 'Torna alla ricerca'
+  profile: {
+    edit: 'Modifica Profilo',
+    save: 'Salva Modifiche',
+    cancel: 'Annulla',
+    avatar: 'Immagine Profilo',
+    username: 'Nome Utente',
+    bio: 'Biografia',
+    posts: 'Post',
+    routes: 'Percorsi',
+    comments: 'Commenti',
+    followers: 'Followers',
+    following: 'Seguiti',
+    likes: 'Mi piace',
+    avgRating: 'Media Recensioni',
+    noRoutes: 'Nessun percorso creato',
+    noPosts: 'Nessun post pubblicato',
+    noComments: 'Nessun commento',
+    deletePost: 'Elimina Post',
+    deleteConfirm: 'Sei sicuro?',
+    deleteWarning: 'Questa azione non può essere annullata. Il post verrà eliminato permanentemente.',
+    back: 'Indietro'
   },
   subscriptions: {
     title: 'Scegli il Tuo Piano',
     description: 'Sblocca tutte le funzionalità e crea percorsi illimitati',
     monthly: 'Mensile',
     yearly: 'Annuale',
+    currentPlan: 'Piano Attuale',
+    comingSoon: 'Presto Disponibile',
     features: {
       routes: 'Percorsi al mese',
       support: 'Supporto prioritario',
       analytics: 'Analisi avanzate',
-      export: 'Esporta percorsi'
-    }
+      export: 'Esporta percorsi',
+      unlimited: 'Percorsi illimitati',
+      priority: 'Supporto prioritario',
+      advanced: 'Funzionalità avanzate',
+      api: 'Accesso API'
+    },
+    includes: 'Include:',
+    notIncludes: 'Non include:'
   }
 };
