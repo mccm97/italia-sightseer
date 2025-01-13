@@ -1,69 +1,14 @@
-import { Menu, LogOut, Globe, BarChart, Search } from 'lucide-react';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '@/integrations/supabase/client';
+import { Search } from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
 import { useLogout } from '@/hooks/useLogout';
-
-const MenuLink = ({ to, children }: { to: string; children: React.ReactNode }) => (
-  <Link to={to} className="text-lg hover:underline">
-    {children}
-  </Link>
-);
-
-const AdminLinks = () => {
-  const { t } = useTranslation();
-  return (
-    <>
-      <MenuLink to="/admin">
-        {t('menu.administration')}
-      </MenuLink>
-      <MenuLink to="/statistics">
-        <div className="flex items-center gap-2">
-          <BarChart className="h-4 w-4" />
-          {t('menu.statistics')}
-        </div>
-      </MenuLink>
-    </>
-  );
-};
-
-const LanguageToggle = ({ language, onToggle }: { language: string; onToggle: () => void }) => {
-  const buttonText = language === 'it' ? 'English' : 'Italiano';
-  
-  return (
-    <Button
-      variant="ghost"
-      className="flex items-center justify-start gap-2 text-lg px-0"
-      onClick={onToggle}
-    >
-      <Globe className="h-4 w-4" />
-      {buttonText}
-    </Button>
-  );
-};
-
-const LogoutButton = ({ onLogout }: { onLogout: () => void }) => {
-  const { t } = useTranslation();
-  return (
-    <Button 
-      variant="ghost" 
-      className="flex items-center justify-start gap-2 text-lg text-red-600 hover:text-red-700 px-0"
-      onClick={onLogout}
-    >
-      <LogOut className="h-4 w-4" />
-      {t('menu.logout')}
-    </Button>
-  );
-};
+import { supabase } from '@/integrations/supabase/client';
+import { MenuLink } from './layout/MenuLink';
+import { AdminLinks } from './layout/AdminLinks';
+import { LanguageToggle } from './layout/LanguageToggle';
+import { LogoutButton } from './layout/LogoutButton';
 
 export function MainMenu() {
   const { t, i18n } = useTranslation();
@@ -74,15 +19,15 @@ export function MainMenu() {
   useEffect(() => {
     const checkAdminStatus = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: adminUser } = await supabase
-        .from('admin_users')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      setIsAdmin(!!adminUser);
+      if (user) {
+        const { data: adminUser } = await supabase
+          .from('admin_users')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+        
+        setIsAdmin(!!adminUser);
+      }
     };
 
     checkAdminStatus();
@@ -111,11 +56,12 @@ export function MainMenu() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="fixed top-2 left-4 z-50">
-          <Menu className="h-6 w-6" />
+        <Button variant="ghost" size="icon">
+          <span className="sr-only">Open menu</span>
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 3C1.22386 3 1 3.22386 1 3.5C1 3.77614 1.22386 4 1.5 4H13.5C13.7761 4 14 3.77614 14 3.5C14 3.22386 13.7761 3 13.5 3H1.5ZM1 7.5C1 7.22386 1.22386 7 1.5 7H13.5C13.7761 7 14 7.22386 14 7.5C14 7.77614 13.7761 8 13.5 8H1.5C1.22386 8 1 7.77614 1 7.5ZM1 11.5C1 11.2239 1.22386 11 1.5 11H13.5C13.7761 11 14 11.2239 14 11.5C14 11.7761 13.7761 12 13.5 12H1.5C1.22386 12 1 11.7761 1 11.5Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path></svg>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left">
+      <SheetContent>
         <SheetHeader>
           <SheetTitle>Menu</SheetTitle>
         </SheetHeader>
