@@ -137,7 +137,7 @@ export function ProfileHeader({
               onClick={handleLogout}
               className="text-red-500 hover:text-red-600"
             >
-              {t('profile.logout')}
+              Logout
             </Button>
           )}
         </div>
