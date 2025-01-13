@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserComments } from '@/components/profile/UserComments';
 import { UserBlogPosts } from '@/components/profile/UserBlogPosts';
 import { Helmet } from 'react-helmet';
+import { useTranslation } from 'react-i18next';
 
 export default function Profile() {
   const [loading, setLoading] = useState(true);
@@ -21,6 +22,7 @@ export default function Profile() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { id: userId } = useParams();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const getProfile = async () => {
@@ -94,19 +96,19 @@ export default function Profile() {
   return (
     <>
       <Helmet>
-        <title>Profilo Utente - WayWonder</title>
-        <meta name="description" content="Gestisci il tuo profilo su WayWonder. Visualizza i tuoi percorsi salvati, commenti e post del blog." />
-        <meta name="keywords" content="profilo utente, percorsi salvati, gestione profilo, WayWonder" />
+        <title>{t('profile.title')} - WayWonder</title>
+        <meta name="description" content={t('profile.metaDescription')} />
+        <meta name="keywords" content={t('profile.metaKeywords')} />
         <link rel="canonical" href="https://www.waywonder.info/profile" />
-        <meta property="og:title" content="Profilo Utente - WayWonder" />
-        <meta property="og:description" content="Gestisci il tuo profilo e visualizza i tuoi contenuti su WayWonder." />
+        <meta property="og:title" content={`${t('profile.title')} - WayWonder`} />
+        <meta property="og:description" content={t('profile.metaDescription')} />
         <meta property="og:url" content="https://www.waywonder.info/profile" />
       </Helmet>
       <div className="container max-w-4xl mx-auto p-4">
         <div className="flex justify-start mb-4">
           <Button variant="ghost" onClick={() => navigate('/')}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Indietro
+            {t('profile.back')}
           </Button>
         </div>
         <Card>
@@ -131,9 +133,9 @@ export default function Profile() {
                 />
                 <Tabs defaultValue="routes" className="mt-6">
                   <TabsList className="w-full">
-                    <TabsTrigger value="routes" className="flex-1">Percorsi</TabsTrigger>
-                    <TabsTrigger value="comments" className="flex-1">Commenti</TabsTrigger>
-                    <TabsTrigger value="posts" className="flex-1">Post</TabsTrigger>
+                    <TabsTrigger value="routes" className="flex-1">{t('profile.routes')}</TabsTrigger>
+                    <TabsTrigger value="comments" className="flex-1">{t('profile.comments')}</TabsTrigger>
+                    <TabsTrigger value="posts" className="flex-1">{t('profile.posts')}</TabsTrigger>
                   </TabsList>
                   <TabsContent value="routes">
                     <UserRoutes userId={profile?.id} />
