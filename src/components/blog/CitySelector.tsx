@@ -2,6 +2,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { MapPin } from "lucide-react";
 import CitySearch from "@/components/CitySearch";
+import { useTranslation } from "react-i18next";
 
 interface CitySelectorProps {
   isAboutCity: boolean;
@@ -16,6 +17,8 @@ export function CitySelector({
   selectedCity, 
   setSelectedCity 
 }: CitySelectorProps) {
+  const { t } = useTranslation();
+
   return (
     <>
       <div className="flex items-center space-x-2">
@@ -26,7 +29,7 @@ export function CitySelector({
         />
         <Label htmlFor="city-mode" className="flex items-center space-x-2">
           <MapPin className="h-4 w-4" />
-          <span>Cerchi una città specifica?</span>
+          <span>{t('blog.writePost.citySearch')}</span>
         </Label>
       </div>
 

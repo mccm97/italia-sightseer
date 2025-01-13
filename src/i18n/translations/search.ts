@@ -5,16 +5,7 @@ export const searchTranslations = {
     searchPlaceholder: 'Cerca una città...',
     loading: 'Caricamento città...',
     noResults: 'Nessuna città trovata',
-    backToSearch: 'Torna alla ricerca',
-    filters: {
-      title: 'Filtri',
-      country: 'Paese',
-      reset: 'Resetta filtri'
-    },
-    tabs: {
-      routes: 'Percorsi',
-      posts: 'Blog Posts'
-    }
+    backToSearch: 'Torna alla ricerca'
   },
   en: {
     title: 'Search Cities and Itineraries in Italy',
@@ -22,15 +13,6 @@ export const searchTranslations = {
     searchPlaceholder: 'Search a city...',
     loading: 'Loading cities...',
     noResults: 'No cities found',
-    backToSearch: 'Back to search',
-    filters: {
-      title: 'Filters',
-      country: 'Country',
-      reset: 'Reset filters'
-    },
-    tabs: {
-      routes: 'Routes',
-      posts: 'Blog Posts'
-    }
+    backToSearch: 'Back to search'
   }
 };

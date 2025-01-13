@@ -8,6 +8,7 @@ import { PostTitleInput } from './PostTitleInput';
 import { PostCoverImage } from './PostCoverImage';
 import { CitySelector } from './CitySelector';
 import { PostContent } from './PostContent';
+import { useTranslation } from 'react-i18next';
 
 const REQUIRED_WORDS = 100;
 
@@ -25,6 +26,7 @@ export function CreatePostInput({ onPostCreated }: CreatePostInputProps) {
   const [wordCount, setWordCount] = useState(0);
   const [isAboutCity, setIsAboutCity] = useState(false);
   const [selectedCity, setSelectedCity] = useState<any>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const getUser = async () => {
@@ -142,10 +144,10 @@ export function CreatePostInput({ onPostCreated }: CreatePostInputProps) {
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Pubblicazione...
+                {t('blog.writePost.publishing')}
               </>
             ) : (
-              'Pubblica'
+              t('blog.writePost.publish')
             )}
           </Button>
         </div>

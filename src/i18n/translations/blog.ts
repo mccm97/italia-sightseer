@@ -14,15 +14,7 @@ export const blogTranslations = {
     },
     noPosts: 'Nessun post pubblicato',
     readMore: 'Leggi di più',
-    loading: 'Caricamento post...',
-    comments: {
-      title: 'Commenti',
-      write: 'Scrivi un commento...',
-      publish: 'Pubblica commento',
-      noComments: 'Nessun commento',
-      delete: 'Elimina',
-      edit: 'Modifica'
-    }
+    loading: 'Caricamento post...'
   },
   en: {
     title: 'Blog',
@@ -39,14 +31,6 @@ export const blogTranslations = {
     },
     noPosts: 'No posts published',
     readMore: 'Read more',
-    loading: 'Loading posts...',
-    comments: {
-      title: 'Comments',
-      write: 'Write a comment...',
-      publish: 'Publish comment',
-      noComments: 'No comments',
-      delete: 'Delete',
-      edit: 'Edit'
-    }
+    loading: 'Loading posts...'
   }
 };
