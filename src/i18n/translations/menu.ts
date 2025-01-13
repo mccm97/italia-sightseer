@@ -4,7 +4,7 @@ export const menuTranslations = {
     profile: 'Profilo',
     subscriptions: 'Abbonamenti',
     administration: 'Amministrazione',
-    logout: 'Esci',
+    logout: 'Logout',
     blog: 'Blog',
     search: 'Cerca città',
     statistics: 'Statistiche'
