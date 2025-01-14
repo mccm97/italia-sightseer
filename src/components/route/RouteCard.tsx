@@ -58,7 +58,6 @@ export function RouteCard({
   const [cityCoordinates, setCityCoordinates] = useState<[number, number] | null>(null);
   const { handleLike } = useLikeManagement();
 
-  // Query to check if the route is saved
   const { data: isSaved, refetch: refetchSavedStatus } = useQuery({
     queryKey: ['routeSaved', route.id],
     queryFn: async () => {
@@ -184,7 +183,7 @@ export function RouteCard({
               routeId={route.id}
               initialLikesCount={routeStats?.likesCount || 0}
               initialAverageRating={routeStats?.averageRating}
-              onLikeClick={handleLike}
+              onLikeClick={handleLikeClick}
             />
             <Button
               variant="ghost"
