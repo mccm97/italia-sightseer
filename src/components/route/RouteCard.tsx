@@ -9,6 +9,7 @@ import { RouteHeaderWithImage } from './RouteHeaderWithImage';
 import { RouteRating } from './RouteRating';
 import { SaveRouteButton } from './SaveRouteButton';
 import { RouteMapView } from './RouteMapView';
+import { useLikeManagement } from '@/hooks/useLikeManagement';
 
 interface RouteCardProps {
   route: {
@@ -49,6 +50,7 @@ export function RouteCard({
   const [showComments, setShowComments] = useState(false);
   const [showReviews, setShowReviews] = useState(false);
   const [showMap, setShowMap] = useState(false);
+  const { handleLike } = useLikeManagement();
 
   const handleLikeClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
