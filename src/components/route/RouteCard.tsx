@@ -15,6 +15,7 @@ import { RouteRating } from './RouteRating';
 import { BookmarkPlus, BookmarkCheck } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 
 interface RouteCardProps {
   route: {
@@ -57,6 +58,7 @@ export function RouteCard({
   const [showMap, setShowMap] = useState(false);
   const [cityCoordinates, setCityCoordinates] = useState<[number, number] | null>(null);
   const { handleLike } = useLikeManagement();
+  const { t } = useTranslation();
 
   const { data: isSaved, refetch: refetchSavedStatus } = useQuery({
     queryKey: ['routeSaved', route.id],
@@ -80,8 +82,8 @@ export function RouteCard({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast({
-          title: "Errore",
-          description: "Devi essere autenticato per salvare un percorso",
+          title: t("common.error"),
+          description: t("common.authRequired"),
           variant: "destructive",
         });
         return;
@@ -96,8 +98,8 @@ export function RouteCard({
           .eq('user_id', user.id);
 
         toast({
-          title: "Percorso rimosso",
-          description: "Il percorso è stato rimosso dai preferiti",
+          title: t("routes.unsaved"),
+          description: t("routes.unsavedDescription"),
         });
       } else {
         // Add to saved routes
@@ -109,8 +111,8 @@ export function RouteCard({
           });
 
         toast({
-          title: "Percorso salvato",
-          description: "Il percorso è stato aggiunto ai preferiti",
+          title: t("routes.saved"),
+          description: t("routes.savedDescription"),
         });
       }
 
@@ -118,8 +120,8 @@ export function RouteCard({
     } catch (error) {
       console.error('Error saving route:', error);
       toast({
-        title: "Errore",
-        description: "Si è verificato un errore durante il salvataggio del percorso",
+        title: t("common.error"),
+        description: t("routes.saveError"),
         variant: "destructive",
       });
     }
