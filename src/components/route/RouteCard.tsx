@@ -12,6 +12,9 @@ import { toast } from '@/components/ui/use-toast';
 import { useLikeManagement } from '@/hooks/useLikeManagement';
 import { Link } from 'react-router-dom';
 import { RouteRating } from './RouteRating';
+import { BookmarkPlus, BookmarkCheck } from 'lucide-react';
+import { Button } from '../ui/button';
+import { useQuery } from '@tanstack/react-query';
 
 interface RouteCardProps {
   route: {
@@ -54,6 +57,74 @@ export function RouteCard({
   const [showMap, setShowMap] = useState(false);
   const [cityCoordinates, setCityCoordinates] = useState<[number, number] | null>(null);
   const { handleLike } = useLikeManagement();
+
+  // Query to check if the route is saved
+  const { data: isSaved, refetch: refetchSavedStatus } = useQuery({
+    queryKey: ['routeSaved', route.id],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+
+      const { data } = await supabase
+        .from('saved_routes')
+        .select('id')
+        .eq('route_id', route.id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      return !!data;
+    },
+  });
+
+  const handleSave = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Errore",
+          description: "Devi essere autenticato per salvare un percorso",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (isSaved) {
+        // Remove from saved routes
+        await supabase
+          .from('saved_routes')
+          .delete()
+          .eq('route_id', route.id)
+          .eq('user_id', user.id);
+
+        toast({
+          title: "Percorso rimosso",
+          description: "Il percorso è stato rimosso dai preferiti",
+        });
+      } else {
+        // Add to saved routes
+        await supabase
+          .from('saved_routes')
+          .insert({
+            route_id: route.id,
+            user_id: user.id,
+          });
+
+        toast({
+          title: "Percorso salvato",
+          description: "Il percorso è stato aggiunto ai preferiti",
+        });
+      }
+
+      refetchSavedStatus();
+    } catch (error) {
+      console.error('Error saving route:', error);
+      toast({
+        title: "Errore",
+        description: "Si è verificato un errore durante il salvataggio del percorso",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleMapClick = async () => {
     if (!route.city_id && !showMap) {
@@ -108,13 +179,27 @@ export function RouteCard({
         />
 
         <div className="p-4">
-          <RouteStats
-            routeId={route.id}
-            initialLikesCount={routeStats?.likesCount || 0}
-            initialAverageRating={routeStats?.averageRating}
-            onLikeClick={handleLikeClick}
-          />
-          
+          <div className="flex justify-between items-center mb-4">
+            <RouteStats
+              routeId={route.id}
+              initialLikesCount={routeStats?.likesCount || 0}
+              initialAverageRating={routeStats?.averageRating}
+              onLikeClick={handleLike}
+            />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSave}
+              className="ml-2"
+            >
+              {isSaved ? (
+                <BookmarkCheck className="h-5 w-5 text-primary" />
+              ) : (
+                <BookmarkPlus className="h-5 w-5" />
+              )}
+            </Button>
+          </div>
+
           <RouteCardContent
             duration={route.total_duration}
             attractionsCount={route.attractions?.length || 0}

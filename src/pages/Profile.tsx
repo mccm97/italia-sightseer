@@ -13,6 +13,7 @@ import { UserComments } from '@/components/profile/UserComments';
 import { UserBlogPosts } from '@/components/profile/UserBlogPosts';
 import { Helmet } from 'react-helmet';
 import { useTranslation } from 'react-i18next';
+import { SavedRoutes } from '@/components/profile/SavedRoutes';
 
 export default function Profile() {
   const [loading, setLoading] = useState(true);
@@ -134,11 +135,15 @@ export default function Profile() {
                 <Tabs defaultValue="routes" className="mt-6">
                   <TabsList className="w-full">
                     <TabsTrigger value="routes" className="flex-1">{t('profile.routes')}</TabsTrigger>
+                    <TabsTrigger value="saved" className="flex-1">{t('profile.savedRoutes')}</TabsTrigger>
                     <TabsTrigger value="comments" className="flex-1">{t('profile.comments')}</TabsTrigger>
                     <TabsTrigger value="posts" className="flex-1">{t('profile.posts')}</TabsTrigger>
                   </TabsList>
                   <TabsContent value="routes">
                     <UserRoutes userId={profile?.id} />
+                  </TabsContent>
+                  <TabsContent value="saved">
+                    <SavedRoutes userId={profile?.id} />
                   </TabsContent>
                   <TabsContent value="comments">
                     <UserComments userId={profile?.id} />
