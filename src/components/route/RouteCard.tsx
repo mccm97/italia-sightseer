@@ -6,16 +6,9 @@ import { CommentSection } from './CommentSection';
 import { RouteStats } from './RouteStats';
 import { RouteActions } from './RouteActions';
 import { RouteHeaderWithImage } from './RouteHeaderWithImage';
-import { supabase } from '@/integrations/supabase/client';
-import CityMap from '../CityMap';
-import { toast } from '@/components/ui/use-toast';
-import { useLikeManagement } from '@/hooks/useLikeManagement';
-import { Link } from 'react-router-dom';
 import { RouteRating } from './RouteRating';
-import { BookmarkPlus, BookmarkCheck } from 'lucide-react';
-import { Button } from '../ui/button';
-import { useQuery } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
+import { SaveRouteButton } from './SaveRouteButton';
+import { RouteMapView } from './RouteMapView';
 
 interface RouteCardProps {
   route: {
@@ -56,112 +49,6 @@ export function RouteCard({
   const [showComments, setShowComments] = useState(false);
   const [showReviews, setShowReviews] = useState(false);
   const [showMap, setShowMap] = useState(false);
-  const [cityCoordinates, setCityCoordinates] = useState<[number, number] | null>(null);
-  const { handleLike } = useLikeManagement();
-  const { t } = useTranslation();
-
-  const { data: isSaved, refetch: refetchSavedStatus } = useQuery({
-    queryKey: ['routeSaved', route.id],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return false;
-
-      const { data } = await supabase
-        .from('saved_routes')
-        .select('id')
-        .eq('route_id', route.id)
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      return !!data;
-    },
-  });
-
-  const handleSave = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast({
-          title: t("common.error"),
-          description: t("common.authRequired"),
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (isSaved) {
-        // Remove from saved routes
-        await supabase
-          .from('saved_routes')
-          .delete()
-          .eq('route_id', route.id)
-          .eq('user_id', user.id);
-
-        toast({
-          title: t("routes.unsaved"),
-          description: t("routes.unsavedDescription"),
-        });
-      } else {
-        // Add to saved routes
-        await supabase
-          .from('saved_routes')
-          .insert({
-            route_id: route.id,
-            user_id: user.id,
-          });
-
-        toast({
-          title: t("routes.saved"),
-          description: t("routes.savedDescription"),
-        });
-      }
-
-      refetchSavedStatus();
-    } catch (error) {
-      console.error('Error saving route:', error);
-      toast({
-        title: t("common.error"),
-        description: t("routes.saveError"),
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleMapClick = async () => {
-    if (!route.city_id && !showMap) {
-      toast({
-        title: "Errore",
-        description: "Impossibile caricare le coordinate della città",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (showMap) {
-      setShowMap(false);
-      return;
-    }
-
-    try {
-      const { data: city } = await supabase
-        .from('cities')
-        .select('lat, lng')
-        .eq('id', route.city_id)
-        .single();
-
-      if (city) {
-        setCityCoordinates([city.lat, city.lng]);
-        setShowMap(true);
-      }
-    } catch (error) {
-      console.error('Error fetching city coordinates:', error);
-      toast({
-        title: "Errore",
-        description: "Impossibile caricare le coordinate della città",
-        variant: "destructive"
-      });
-    }
-  };
 
   const handleLikeClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -187,18 +74,7 @@ export function RouteCard({
               initialAverageRating={routeStats?.averageRating}
               onLikeClick={handleLikeClick}
             />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSave}
-              className="ml-2"
-            >
-              {isSaved ? (
-                <BookmarkCheck className="h-5 w-5 text-primary" />
-              ) : (
-                <BookmarkPlus className="h-5 w-5" />
-              )}
-            </Button>
+            <SaveRouteButton routeId={route.id} />
           </div>
 
           <RouteCardContent
@@ -209,21 +85,16 @@ export function RouteCard({
             summary={route.description || ''}
           />
 
-          {showMap && cityCoordinates && (
-            <div className="mt-4 h-[300px] rounded-lg overflow-hidden">
-              <CityMap
-                center={cityCoordinates}
-                attractions={route.attractions}
-                showWalkingPath={true}
-              />
-            </div>
-          )}
+          <RouteMapView 
+            cityId={route.city_id}
+            attractions={route.attractions}
+          />
 
           <RouteActions
             onCommentsClick={() => setShowComments(!showComments)}
             onAttractionsClick={() => setShowAttractions(true)}
             onDescriptionToggle={() => setShowDescription(!showDescription)}
-            onMapClick={handleMapClick}
+            onMapClick={() => setShowMap(!showMap)}
             onReviewsClick={() => setShowReviews(!showReviews)}
             showDescription={showDescription}
             showMap={showMap}
