@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ChevronDown, Search } from 'lucide-react';
 
 interface CitySelectorProps {
   form: UseFormReturn<CreateRouteFormData>;
@@ -35,17 +37,33 @@ export function CitySelector({ form, cities, selectedCountry }: CitySelectorProp
           <FormLabel>Città</FormLabel>
           <FormControl>
             <div className="relative">
-              <Input
-                type="text"
-                placeholder="Cerca una città..."
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setShowSuggestions(true);
-                }}
-                onFocus={() => setShowSuggestions(true)}
-                disabled={!selectedCountry}
-              />
+              <div className="relative flex items-center">
+                <div className="absolute left-3 text-gray-400">
+                  <Search className="h-4 w-4" />
+                </div>
+                <Input
+                  type="text"
+                  placeholder="Cerca una città..."
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setShowSuggestions(true);
+                  }}
+                  onFocus={() => setShowSuggestions(true)}
+                  disabled={!selectedCountry}
+                  className="pl-10 pr-10 border-2 focus:border-primary focus:ring-2 focus:ring-primary/20"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 h-full px-3 hover:bg-transparent"
+                  onClick={() => setShowSuggestions(!showSuggestions)}
+                  disabled={!selectedCountry}
+                >
+                  <ChevronDown className={`h-4 w-4 opacity-50 transition-transform duration-200 ${showSuggestions ? 'rotate-180' : ''}`} />
+                </Button>
+              </div>
               
               {showSuggestions && search && selectedCountry && (
                 <Card className="absolute z-50 w-full mt-1 shadow-lg">
@@ -55,7 +73,7 @@ export function CitySelector({ form, cities, selectedCountry }: CitySelectorProp
                         filteredCities.map((city) => (
                           <button
                             key={city.id}
-                            className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-md"
+                            className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-md transition-colors duration-150"
                             onClick={() => {
                               field.onChange(city);
                               setSearch(city.name);
@@ -67,7 +85,9 @@ export function CitySelector({ form, cities, selectedCountry }: CitySelectorProp
                         ))
                       ) : (
                         <div className="p-2 text-center text-gray-500">
-                          Nessuna città trovata
+                          {search.length < 2 ? 
+                            "Digita almeno 2 caratteri per cercare" : 
+                            "Nessuna città trovata"}
                         </div>
                       )}
                     </div>

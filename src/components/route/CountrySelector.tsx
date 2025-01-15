@@ -6,7 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useRef, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, Search } from 'lucide-react';
+import { ChevronDown, Search, Loader2 } from 'lucide-react';
 
 interface CountrySelectorProps {
   form: UseFormReturn<CreateRouteFormData>;
@@ -70,14 +70,14 @@ export function CountrySelector({ form, countries, onCountrySelect }: CountrySel
               </div>
               
               {showSuggestions && (
-                <Card className="absolute z-50 w-full mt-1 shadow-lg border border-gray-200">
-                  <ScrollArea className="max-h-[200px] overflow-y-auto">
-                    <div className="p-1">
-                      {filteredCountries.length > 0 ? (
+                <Card className="absolute z-50 w-full mt-1 shadow-lg">
+                  <ScrollArea className="max-h-[200px]">
+                    <div className="p-2 space-y-1">
+                      {countries.length > 0 ? (
                         filteredCountries.map((country, index) => (
                           <button
                             key={`${country}-${index}`}
-                            className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-md transition-colors duration-150 text-sm"
+                            className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-md transition-colors duration-150"
                             onClick={() => {
                               field.onChange(country);
                               onCountrySelect(country);
@@ -89,8 +89,10 @@ export function CountrySelector({ form, countries, onCountrySelect }: CountrySel
                           </button>
                         ))
                       ) : (
-                        <div className="p-2 text-center text-gray-500 text-sm">
-                          Nessun paese trovato
+                        <div className="p-2 text-center text-gray-500">
+                          {search.length < 2 ? 
+                            "Digita almeno 2 caratteri per cercare" : 
+                            "Nessun paese trovato"}
                         </div>
                       )}
                     </div>
