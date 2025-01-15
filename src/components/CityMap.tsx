@@ -28,7 +28,7 @@ interface CityMapProps {
 
 const isValidCoordinate = (coord: [number, number]): boolean => {
   if (!coord || !Array.isArray(coord) || coord.length !== 2) {
-    console.warn('Invalid coordinate format for coordinate:', coord);
+    console.warn('Invalid coordinate format:', coord);
     return false;
   }
 
@@ -59,6 +59,10 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
       return;
     }
 
+    console.log('Map instance:', map);
+    console.log('Current map center:', map.getCenter());
+    console.log('Current zoom level:', map.getZoom());
+
     const layers: L.Polyline[] = [];
     
     const validPoints = points.filter(point => {
@@ -78,7 +82,7 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
 
     const fetchWalkingPath = async () => {
       try {
-        // Mostra subito una linea diretta temporanea
+        // Temporary direct path
         const directPath = L.polyline(validPoints, {
           color: 'purple',
           weight: 2,
@@ -87,7 +91,6 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
         }).addTo(map);
         layers.push(directPath);
 
-        // Costruisci il percorso tra ogni coppia di punti consecutivi
         for (let i = 0; i < validPoints.length - 1; i++) {
           const start = validPoints[i];
           const end = validPoints[i + 1];
@@ -110,7 +113,6 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
               throw new Error('No route coordinates found in response');
             }
             
-            // Converti le coordinate [lng, lat] in [lat, lng] per Leaflet
             const pathCoords = data.routes[0].geometry.coordinates.map(
               (coord: [number, number]) => [coord[1], coord[0]] as [number, number]
             );
@@ -124,7 +126,6 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
             layers.push(pathLayer);
           } catch (error) {
             console.error('Error fetching path segment:', error);
-            // In caso di errore, crea una linea diretta tra i punti
             const fallbackLayer = L.polyline([start, end], {
               color: 'red',
               weight: 2,
@@ -135,10 +136,7 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
           }
         }
 
-        // Rimuovi la linea diretta temporanea dopo aver caricato tutti i segmenti
         directPath.remove();
-
-        // Fit della mappa per mostrare tutto il percorso
         const bounds = L.latLngBounds(validPoints);
         map.fitBounds(bounds, { padding: [50, 50] });
       } catch (error) {
@@ -168,9 +166,9 @@ const CityMap = ({
   onRouteClick, 
   showWalkingPath = false 
 }: CityMapProps) => {
+  console.log('CityMap rendering with center:', center);
   console.log('CityMap rendering with attractions:', attractions);
   
-  // Filtra e valida le attrazioni prima di renderizzarle
   const validAttractions = attractions.filter(attr => {
     if (!attr.position) {
       console.warn('Missing position for attraction:', attr.name);
@@ -187,13 +185,15 @@ const CityMap = ({
 
   return (
     <MapContainer
+      key={`map-${center[0]}-${center[1]}`}
       center={center}
       zoom={zoom}
       className="w-full h-full rounded-lg"
     >
       <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        maxZoom={19}
       />
       
       {validAttractions.map((attraction, index) => (
