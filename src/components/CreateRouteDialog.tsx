@@ -68,7 +68,6 @@ export function CreateRouteDialog() {
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <CreateRouteForm 
             onSubmit={() => {}} 
-            countries={[]} 
             cities={[]} 
             selectedCountry="" 
             onCountrySelect={() => {}}
