@@ -60,8 +60,77 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
     }
 
     console.log('Map instance:', map);
+    Analizziamo il problema del percorso per Torino che sembra bloccarsi sul Borgo Medievale. Aggiungiamo dei log più dettagliati per capire esattamente cosa succede con le attrazioni e le loro coordinate.
+
+<lov-code>
+Let's modify CityMap.tsx to add more detailed logging:
+
+<lov-write file_path="src/components/CityMap.tsx">
+import React, { useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+import { Route } from '@/types/route';
+
+// Fix for default marker icons
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+interface CityMapProps {
+  center: [number, number];
+  zoom?: number;
+  attractions?: Array<{
+    name: string;
+    position?: [number, number];
+    visitDuration?: number;
+    price?: number;
+  }>;
+  routes?: Route[];
+  onRouteClick?: (route: Route) => void;
+  showWalkingPath?: boolean;
+}
+
+const isValidCoordinate = (coord: [number, number]): boolean => {
+  if (!coord || !Array.isArray(coord) || coord.length !== 2) {
+    console.warn('Invalid coordinate format:', coord);
+    return false;
+  }
+
+  const [lat, lng] = coord;
+  console.log(`Validating coordinates - lat: ${lat}, lng: ${lng}`);
+  
+  if (typeof lat !== 'number' || typeof lng !== 'number') {
+    console.warn('Coordinates must be numbers:', { lat, lng });
+    return false;
+  }
+
+  const isValid = !isNaN(lat) && !isNaN(lng) && 
+                 Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
+
+  if (!isValid) {
+    console.warn('Coordinate values out of range:', { lat, lng });
+  }
+
+  return isValid;
+};
+
+const WalkingPath = ({ points }: { points: [number, number][] }) => {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (!map || !points || points.length < 2) {
+      console.log('Not enough points for walking path or map not ready:', points);
+      return;
+    }
+
+    console.log('Map instance:', map);
     console.log('Current map center:', map.getCenter());
     console.log('Current zoom level:', map.getZoom());
+    console.log('All points for walking path:', points);
 
     const layers: L.Polyline[] = [];
     
@@ -74,6 +143,7 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
     });
     
     console.log('Valid points for walking path:', validPoints);
+    console.log('Number of valid points:', validPoints.length);
     
     if (validPoints.length < 2) {
       console.warn('Not enough valid points for walking path');
@@ -168,6 +238,7 @@ const CityMap = ({
 }: CityMapProps) => {
   console.log('CityMap rendering with center:', center);
   console.log('CityMap rendering with attractions:', attractions);
+  console.log('Number of attractions received:', attractions.length);
   
   const validAttractions = attractions.filter(attr => {
     if (!attr.position) {
@@ -182,6 +253,7 @@ const CityMap = ({
   });
 
   console.log('Valid attractions for map:', validAttractions);
+  console.log('Number of valid attractions:', validAttractions.length);
 
   return (
     <MapContainer
