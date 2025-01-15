@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { PenLine } from 'lucide-react';
+import { PenLine, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useEffect, useState } from 'react';
@@ -19,12 +19,22 @@ export function CreatePostButton() {
     checkAuth();
   }, []);
 
-  if (!isAuthenticated) return null;
-
   return (
-    <Button onClick={() => navigate('/blog/new')} className="gap-2">
-      <PenLine className="h-4 w-4" />
-      {t('blog.newPost')}
-    </Button>
+    <div className="flex gap-2">
+      <Button 
+        variant="outline" 
+        onClick={() => navigate(-1)}
+        className="gap-2"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        {t('blog.back')}
+      </Button>
+      {isAuthenticated && (
+        <Button onClick={() => navigate('/blog/new')} className="gap-2">
+          <PenLine className="h-4 w-4" />
+          {t('blog.newPost')}
+        </Button>
+      )}
+    </div>
   );
 }

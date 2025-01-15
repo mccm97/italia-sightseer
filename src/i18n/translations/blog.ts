@@ -10,11 +10,14 @@ export const blogTranslations = {
       citySearch: 'Cerchi una città specifica?',
       coverImage: 'Immagine di copertina',
       wordCount: 'parole',
-      remainingWords: 'parole rimanenti'
+      remainingWords: 'parole rimanenti',
+      aboutCity: 'Questo post riguarda una città specifica?',
+      selectCity: 'Seleziona una città'
     },
     noPosts: 'Nessun post pubblicato',
     readMore: 'Leggi di più',
-    loading: 'Caricamento post...'
+    loading: 'Caricamento post...',
+    back: 'Indietro'
   },
   en: {
     title: 'Blog',
@@ -27,10 +30,13 @@ export const blogTranslations = {
       citySearch: 'Looking for a specific city?',
       coverImage: 'Cover Image',
       wordCount: 'words',
-      remainingWords: 'remaining words'
+      remainingWords: 'remaining words',
+      aboutCity: 'Is this post about a specific city?',
+      selectCity: 'Select a city'
     },
     noPosts: 'No posts published',
     readMore: 'Read more',
-    loading: 'Loading posts...'
+    loading: 'Loading posts...',
+    back: 'Back'
   }
 };
