@@ -2,6 +2,7 @@ import { FormControl, FormField, FormItem, FormLabel } from '@/components/ui/for
 import { UseFormReturn } from 'react-hook-form';
 import { CreateRouteFormData } from '@/types/route';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface CitySelectorProps {
   form: UseFormReturn<CreateRouteFormData>;
@@ -28,23 +29,25 @@ export function CitySelector({ form, cities, selectedCountry }: CitySelectorProp
           <FormControl>
             <Select
               disabled={!selectedCountry}
+              value={field.value?.id || ''}
               onValueChange={(value) => {
                 const selectedCity = filteredCities.find(city => city.id === value);
                 if (selectedCity) {
                   field.onChange(selectedCity);
                 }
               }}
-              value={field.value?.id || ''}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Seleziona una città" />
               </SelectTrigger>
               <SelectContent>
-                {filteredCities.map((city) => (
-                  <SelectItem key={city.id} value={city.id}>
-                    {city.name}
-                  </SelectItem>
-                ))}
+                <ScrollArea className="h-[200px]">
+                  {filteredCities.map((city) => (
+                    <SelectItem key={city.id} value={city.id}>
+                      {city.name}
+                    </SelectItem>
+                  ))}
+                </ScrollArea>
               </SelectContent>
             </Select>
           </FormControl>
