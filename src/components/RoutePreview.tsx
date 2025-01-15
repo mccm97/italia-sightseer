@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import CityMap from './CityMap';
 import { RouteHeader } from './route/RouteHeader';
+import { RouteCreationSummary } from './route/RouteCreationSummary';
 import { CreateRouteFormData } from '@/types/route';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -21,38 +22,49 @@ export function RoutePreview({
 
   useEffect(() => {
     const fetchAttractionCoordinates = async () => {
-      if (!formData?.city?.id) return;
+      if (!formData?.city?.id) {
+        console.warn('No city ID provided');
+        return;
+      }
 
       try {
+        console.log('Fetching coordinates for attractions:', formData.attractions);
+        
         const attractionPromises = formData.attractions.map(async (attr) => {
-          if (attr.inputType === 'name') {
-            const { data, error } = await supabase
-              .from('attractions')
-              .select('lat, lng')
-              .eq('name', attr.name)
-              .eq('city_id', formData.city?.id)
-              .single();
-
-            if (error) throw error;
-
-            return {
-              ...attr,
-              lat: data?.lat || 0,
-              lng: data?.lng || 0
-            };
+          if (!attr.name) {
+            console.warn('Attraction name is missing:', attr);
+            return null;
           }
-          
-          // For address type, we'll need to implement geocoding
-          // For now, return with default coordinates
+
+          const { data, error } = await supabase
+            .from('attractions')
+            .select('name, lat, lng, visit_duration, price')
+            .eq('name', attr.name)
+            .eq('city_id', formData.city?.id)
+            .single();
+
+          if (error) {
+            console.error('Error fetching coordinates for attraction:', attr.name, error);
+            return null;
+          }
+
+          if (!data || !data.lat || !data.lng) {
+            console.error('Missing coordinates for attraction:', attr.name);
+            return null;
+          }
+
+          console.log('Fetched coordinates for', attr.name, ':', data);
+
           return {
-            ...attr,
-            lat: formData.city?.lat || 0,
-            lng: formData.city?.lng || 0
+            name: data.name,
+            position: [data.lat, data.lng] as [number, number],
+            visitDuration: attr.visitDuration || data.visit_duration,
+            price: attr.price || data.price || 0
           };
         });
 
-        const attractionsWithCoords = await Promise.all(attractionPromises);
-        console.log('Attractions with coordinates:', attractionsWithCoords);
+        const attractionsWithCoords = (await Promise.all(attractionPromises)).filter(Boolean);
+        console.log('All attractions with coordinates:', attractionsWithCoords);
         setAttractions(attractionsWithCoords);
       } catch (error) {
         console.error('Error fetching attraction coordinates:', error);
@@ -67,9 +79,17 @@ export function RoutePreview({
     fetchAttractionCoordinates();
   }, [formData, toast]);
 
+  const calculateTotalDuration = () => {
+    return formData?.attractions.reduce((total, attr) => total + (attr.visitDuration || 0), 0) || 0;
+  };
+
+  const calculateTotalPrice = () => {
+    return formData?.attractions.reduce((total, attr) => total + (attr.price || 0), 0) || 0;
+  };
+
   if (!formData) return null;
 
-  console.log('RoutePreview formData:', formData);
+  console.log('RoutePreview rendering with attractions:', attractions);
 
   return (
     <div className="space-y-4">
@@ -77,17 +97,21 @@ export function RoutePreview({
         onBack={onBack}
         onCreateRoute={onContinue}
       />
-      <div className="h-[400px] relative">
-        <CityMap
-          center={[formData.city?.lat || 0, formData.city?.lng || 0]}
-          attractions={attractions.map(attr => ({
-            name: attr.name || attr.address,
-            position: [attr.lat, attr.lng],
-            visitDuration: attr.visitDuration,
-            price: attr.price
-          }))}
-          zoom={13}
-          showWalkingPath={true}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="h-[400px] relative">
+          <CityMap
+            center={[formData.city?.lat || 0, formData.city?.lng || 0]}
+            attractions={attractions}
+            zoom={13}
+            showWalkingPath={true}
+          />
+        </div>
+        <RouteCreationSummary
+          formData={formData}
+          onBack={onBack}
+          onCreateRoute={onContinue}
+          calculateTotalDuration={calculateTotalDuration}
+          calculateTotalPrice={calculateTotalPrice}
         />
       </div>
     </div>

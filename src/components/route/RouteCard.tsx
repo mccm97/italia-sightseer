@@ -6,12 +6,10 @@ import { CommentSection } from './CommentSection';
 import { RouteStats } from './RouteStats';
 import { RouteActions } from './RouteActions';
 import { RouteHeaderWithImage } from './RouteHeaderWithImage';
-import { supabase } from '@/integrations/supabase/client';
-import CityMap from '../CityMap';
-import { toast } from '@/components/ui/use-toast';
-import { useLikeManagement } from '@/hooks/useLikeManagement';
-import { Link } from 'react-router-dom';
 import { RouteRating } from './RouteRating';
+import { SaveRouteButton } from './SaveRouteButton';
+import { RouteMapView } from './RouteMapView';
+import { useLikeManagement } from '@/hooks/useLikeManagement';
 
 interface RouteCardProps {
   route: {
@@ -52,44 +50,7 @@ export function RouteCard({
   const [showComments, setShowComments] = useState(false);
   const [showReviews, setShowReviews] = useState(false);
   const [showMap, setShowMap] = useState(false);
-  const [cityCoordinates, setCityCoordinates] = useState<[number, number] | null>(null);
   const { handleLike } = useLikeManagement();
-
-  const handleMapClick = async () => {
-    if (!route.city_id && !showMap) {
-      toast({
-        title: "Errore",
-        description: "Impossibile caricare le coordinate della città",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (showMap) {
-      setShowMap(false);
-      return;
-    }
-
-    try {
-      const { data: city } = await supabase
-        .from('cities')
-        .select('lat, lng')
-        .eq('id', route.city_id)
-        .single();
-
-      if (city) {
-        setCityCoordinates([city.lat, city.lng]);
-        setShowMap(true);
-      }
-    } catch (error) {
-      console.error('Error fetching city coordinates:', error);
-      toast({
-        title: "Errore",
-        description: "Impossibile caricare le coordinate della città",
-        variant: "destructive"
-      });
-    }
-  };
 
   const handleLikeClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -108,13 +69,16 @@ export function RouteCard({
         />
 
         <div className="p-4">
-          <RouteStats
-            routeId={route.id}
-            initialLikesCount={routeStats?.likesCount || 0}
-            initialAverageRating={routeStats?.averageRating}
-            onLikeClick={handleLikeClick}
-          />
-          
+          <div className="flex justify-between items-center mb-4">
+            <RouteStats
+              routeId={route.id}
+              initialLikesCount={routeStats?.likesCount || 0}
+              initialAverageRating={routeStats?.averageRating}
+              onLikeClick={handleLikeClick}
+            />
+            <SaveRouteButton routeId={route.id} />
+          </div>
+
           <RouteCardContent
             duration={route.total_duration}
             attractionsCount={route.attractions?.length || 0}
@@ -123,21 +87,18 @@ export function RouteCard({
             summary={route.description || ''}
           />
 
-          {showMap && cityCoordinates && (
-            <div className="mt-4 h-[300px] rounded-lg overflow-hidden">
-              <CityMap
-                center={cityCoordinates}
-                attractions={route.attractions}
-                showWalkingPath={true}
-              />
-            </div>
+          {showMap && (
+            <RouteMapView 
+              cityId={route.city_id}
+              attractions={route.attractions}
+            />
           )}
 
           <RouteActions
             onCommentsClick={() => setShowComments(!showComments)}
             onAttractionsClick={() => setShowAttractions(true)}
             onDescriptionToggle={() => setShowDescription(!showDescription)}
-            onMapClick={handleMapClick}
+            onMapClick={() => setShowMap(!showMap)}
             onReviewsClick={() => setShowReviews(!showReviews)}
             showDescription={showDescription}
             showMap={showMap}

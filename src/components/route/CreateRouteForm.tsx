@@ -7,22 +7,23 @@ import { CitySelector } from './CitySelector';
 import { FormField, FormItem, FormLabel, FormControl, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ImageUpload } from '../ImageUpload';
 import { Textarea } from '@/components/ui/textarea';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
 
 interface CreateRouteFormProps {
   onSubmit: (data: CreateRouteFormData) => void;
-  countries: string[];
   cities: any[];
   selectedCountry: string;
   onCountrySelect: (country: string) => void;
-  onSuccess?: () => void; // Added this prop
+  onSuccess?: () => void;
 }
 
 export function CreateRouteForm({
   onSubmit,
-  countries,
   cities,
   selectedCountry,
   onCountrySelect,
@@ -37,6 +38,29 @@ export function CreateRouteForm({
       attractions: [{ name: '', address: '', inputType: 'name', visitDuration: 0, price: 0 }],
       image_url: '',
       description: '',
+    }
+  });
+
+  const { toast } = useToast();
+
+  const { data: countries = [], isLoading: isLoadingCountries } = useQuery({
+    queryKey: ['countries'],
+    queryFn: async () => {
+      console.log('Fetching countries from Supabase');
+      const { data, error } = await supabase
+        .from('cities')
+        .select('country')
+        .not('country', 'is', null)
+        .order('country');
+
+      if (error) {
+        console.error('Error fetching countries:', error);
+        throw error;
+      }
+
+      const uniqueCountries = [...new Set(data.map(city => city.country))].filter(Boolean);
+      console.log('Fetched countries:', uniqueCountries);
+      return uniqueCountries;
     }
   });
 
@@ -55,8 +79,49 @@ export function CreateRouteForm({
   };
 
   const handleSubmit = async (data: CreateRouteFormData) => {
-    await onSubmit(data);
-    onSuccess?.(); // Call onSuccess if provided
+    console.log('Form submission data:', data);
+    
+    // Validate required fields
+    if (!data.city) {
+      toast({
+        title: "Errore",
+        description: "Seleziona una città",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!data.name) {
+      toast({
+        title: "Errore",
+        description: "Inserisci un nome per il percorso",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!data.attractions.length || !data.attractions[0].name) {
+      toast({
+        title: "Errore",
+        description: "Inserisci almeno un'attrazione",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // If all validations pass, proceed with submission
+    try {
+      await onSubmit(data);
+      console.log('Form submitted successfully');
+      onSuccess?.();
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast({
+        title: "Errore",
+        description: "Si è verificato un errore durante la creazione del percorso",
+        variant: "destructive"
+      });
+    }
   };
 
   return (

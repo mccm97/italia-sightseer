@@ -1,7 +1,8 @@
 import { FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
 import { CreateRouteFormData } from '@/types/route';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface CountrySelectorProps {
   form: UseFormReturn<CreateRouteFormData>;
@@ -25,15 +26,17 @@ export function CountrySelector({ form, countries, onCountrySelect }: CountrySel
                 onCountrySelect(value);
               }}
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Seleziona un paese" />
               </SelectTrigger>
               <SelectContent>
-                {countries.map((country, index) => (
-                  <SelectItem key={index} value={country}>
-                    {country}
-                  </SelectItem>
-                ))}
+                <ScrollArea className="h-[200px]">
+                  {countries.map((country, index) => (
+                    <SelectItem key={`${country}-${index}`} value={country}>
+                      {country}
+                    </SelectItem>
+                  ))}
+                </ScrollArea>
               </SelectContent>
             </Select>
           </FormControl>
