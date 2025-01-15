@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import CityMap from './CityMap';
 import { RouteHeader } from './route/RouteHeader';
+import { RouteCreationSummary } from './route/RouteCreationSummary';
 import { CreateRouteFormData } from '@/types/route';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -42,8 +43,6 @@ export function RoutePreview({
             };
           }
           
-          // For address type, we'll need to implement geocoding
-          // For now, return with default coordinates
           return {
             ...attr,
             lat: formData.city?.lat || 0,
@@ -67,6 +66,14 @@ export function RoutePreview({
     fetchAttractionCoordinates();
   }, [formData, toast]);
 
+  const calculateTotalDuration = () => {
+    return formData?.attractions.reduce((total, attr) => total + (attr.visitDuration || 0), 0) || 0;
+  };
+
+  const calculateTotalPrice = () => {
+    return formData?.attractions.reduce((total, attr) => total + (attr.price || 0), 0) || 0;
+  };
+
   if (!formData) return null;
 
   console.log('RoutePreview formData:', formData);
@@ -77,17 +84,26 @@ export function RoutePreview({
         onBack={onBack}
         onCreateRoute={onContinue}
       />
-      <div className="h-[400px] relative">
-        <CityMap
-          center={[formData.city?.lat || 0, formData.city?.lng || 0]}
-          attractions={attractions.map(attr => ({
-            name: attr.name || attr.address,
-            position: [attr.lat, attr.lng],
-            visitDuration: attr.visitDuration,
-            price: attr.price
-          }))}
-          zoom={13}
-          showWalkingPath={true}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="h-[400px] relative">
+          <CityMap
+            center={[formData.city?.lat || 0, formData.city?.lng || 0]}
+            attractions={attractions.map(attr => ({
+              name: attr.name || attr.address,
+              position: [attr.lat, attr.lng],
+              visitDuration: attr.visitDuration,
+              price: attr.price
+            }))}
+            zoom={13}
+            showWalkingPath={true}
+          />
+        </div>
+        <RouteCreationSummary
+          formData={formData}
+          onBack={onBack}
+          onCreateRoute={onContinue}
+          calculateTotalDuration={calculateTotalDuration}
+          calculateTotalPrice={calculateTotalPrice}
         />
       </div>
     </div>

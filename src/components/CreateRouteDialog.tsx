@@ -13,13 +13,26 @@ import {
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { CreateRouteForm } from '@/components/route/CreateRouteForm';
+import { RoutePreview } from '@/components/RoutePreview';
+import { useRouteCreation } from '@/hooks/useRouteCreation';
+import { useAuth } from '@/hooks/useAuth';
 
 export function CreateRouteDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState('');
+  const [step, setStep] = useState<'form' | 'preview'>('form');
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { user } = useAuth();
+  
+  const {
+    formData,
+    handleFormSubmit,
+    calculateTotalDuration,
+    calculateTotalPrice,
+    createRoute
+  } = useRouteCreation();
 
   const { data: cities = [] } = useQuery({
     queryKey: ['cities'],
@@ -55,6 +68,30 @@ export function CreateRouteDialog() {
   const handleCountrySelect = (country: string) => {
     console.log('Selected country:', country);
     setSelectedCountry(country);
+  };
+
+  const handleFormSubmission = async (data: any) => {
+    console.log('Form submitted with data:', data);
+    const success = await handleFormSubmit(data, user?.id);
+    if (success) {
+      setStep('preview');
+    }
+  };
+
+  const handleBack = () => {
+    setStep('form');
+  };
+
+  const handleRouteCreation = async () => {
+    console.log('Creating route...');
+    if (user?.id) {
+      const success = await createRoute(user.id);
+      if (success) {
+        setIsDialogOpen(false);
+        setStep('form');
+        navigate('/profile');
+      }
+    }
   };
 
   return (
@@ -93,13 +130,21 @@ export function CreateRouteDialog() {
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <CreateRouteForm 
-            onSubmit={() => {}} 
-            cities={cities} 
-            selectedCountry={selectedCountry} 
-            onCountrySelect={handleCountrySelect}
-            onSuccess={() => setIsDialogOpen(false)} 
-          />
+          {step === 'form' ? (
+            <CreateRouteForm 
+              onSubmit={handleFormSubmission}
+              cities={cities}
+              selectedCountry={selectedCountry}
+              onCountrySelect={handleCountrySelect}
+              onSuccess={() => {}}
+            />
+          ) : (
+            <RoutePreview
+              formData={formData}
+              onBack={handleBack}
+              onContinue={handleRouteCreation}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </>
