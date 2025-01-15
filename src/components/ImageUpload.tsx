@@ -72,12 +72,14 @@ export function ImageUpload({ onImageUploaded, bucketName, className = '', curre
   return (
     <div className={`space-y-4 ${className}`}>
       {currentImage && (
-        <div className="relative">
-          <img 
-            src={currentImage} 
-            alt={t('blog.imageUpload.preview')}
-            className="w-full h-48 object-cover rounded-lg"
-          />
+        <div className="relative bg-gray-100 rounded-lg overflow-hidden">
+          <div className="aspect-video w-full relative">
+            <img 
+              src={currentImage} 
+              alt={t('blog.imageUpload.preview')}
+              className="absolute inset-0 w-full h-full object-contain"
+            />
+          </div>
           <Button
             variant="destructive"
             size="icon"
