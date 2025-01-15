@@ -18,19 +18,15 @@ export const WalkingPath: React.FC<WalkingPathProps> = ({ points }) => {
 
     const fetchWalkingPath = async () => {
       try {
-        const directPath = L.polyline(points, {
-          color: 'purple',
-          weight: 2,
-          opacity: 0.4,
-          dashArray: '5, 10',
-        }).addTo(map);
-        layers.push(directPath);
-
+        // Rimuoviamo il percorso diretto iniziale che causava problemi
         for (let i = 0; i < points.length - 1; i++) {
           const start = points[i];
           const end = points[i + 1];
           
-          console.log(`Fetching walking path segment ${i + 1}/${points.length - 1}`);
+          console.log(`Fetching walking path segment ${i + 1}/${points.length - 1}`, {
+            start,
+            end
+          });
           
           try {
             const response = await fetch(
@@ -61,6 +57,7 @@ export const WalkingPath: React.FC<WalkingPathProps> = ({ points }) => {
             layers.push(pathLayer);
           } catch (error) {
             console.error(`Error fetching path segment ${i + 1}:`, error);
+            // In caso di errore, creiamo una linea diretta come fallback
             const fallbackLayer = L.polyline([start, end], {
               color: 'red',
               weight: 2,
@@ -71,7 +68,7 @@ export const WalkingPath: React.FC<WalkingPathProps> = ({ points }) => {
           }
         }
 
-        directPath.remove();
+        // Fit bounds solo dopo aver creato tutti i segmenti
         const bounds = L.latLngBounds(points);
         map.fitBounds(bounds, { padding: [50, 50] });
       } catch (error) {
