@@ -3,16 +3,12 @@ import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Star } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { RatingCategory } from './RatingCategory';
+import { AverageRatings } from './AverageRatings';
 
-interface RatingCategory {
-  name: string;
-  key: string;
-  label: string;
-}
-
-const ratingCategories: RatingCategory[] = [
+const ratingCategories = [
   { name: 'cleanliness', key: 'cleanliness', label: 'Pulizia' },
   { name: 'safety', key: 'safety', label: 'Sicurezza' },
   { name: 'transportation', key: 'transportation', label: 'Trasporti' },
@@ -49,6 +45,19 @@ export function CityRatings({ cityId, userId }: CityRatingsProps) {
       if (error) {
         console.error('Error fetching rating:', error);
         return null;
+      }
+
+      if (data) {
+        setRatings({
+          cleanliness: data.cleanliness,
+          safety: data.safety,
+          transportation: data.transportation,
+          food_quality: data.food_quality,
+          cultural_attractions: data.cultural_attractions,
+          nightlife: data.nightlife,
+          cost_of_living: data.cost_of_living,
+        });
+        setComment(data.comment || '');
       }
 
       return data;
@@ -92,7 +101,13 @@ export function CityRatings({ cityId, userId }: CityRatingsProps) {
       const ratingData = {
         city_id: cityId,
         user_id: userId,
-        ...ratings,
+        cleanliness: ratings.cleanliness,
+        safety: ratings.safety,
+        transportation: ratings.transportation,
+        food_quality: ratings.food_quality,
+        cultural_attractions: ratings.cultural_attractions,
+        nightlife: ratings.nightlife,
+        cost_of_living: ratings.cost_of_living,
         comment,
       };
 
@@ -146,28 +161,12 @@ export function CityRatings({ cityId, userId }: CityRatingsProps) {
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">La tua Recensione</h3>
           {ratingCategories.map(category => (
-            <div key={category.key} className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span>{category.label}</span>
-                <div className="flex gap-1">
-                  {[1, 2, 3, 4, 5].map(value => (
-                    <button
-                      key={value}
-                      onClick={() => handleRatingChange(category.name, value)}
-                      className="focus:outline-none"
-                    >
-                      <Star
-                        className={`h-5 w-5 ${
-                          value <= ratings[category.name]
-                            ? 'text-yellow-400 fill-yellow-400'
-                            : 'text-gray-300'
-                        }`}
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <RatingCategory
+              key={category.key}
+              label={category.label}
+              value={ratings[category.name]}
+              onChange={(value) => handleRatingChange(category.name, value)}
+            />
           ))}
           <div className="space-y-2">
             <label className="block text-sm font-medium">Commento</label>
@@ -191,31 +190,11 @@ export function CityRatings({ cityId, userId }: CityRatingsProps) {
         </div>
 
         {averageRatings && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Media Recensioni</h3>
-            {ratingCategories.map(category => (
-              <div key={category.key} className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span>{category.label}</span>
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map(value => (
-                      <Star
-                        key={value}
-                        className={`h-5 w-5 ${
-                          value <= averageRatings[category.name]
-                            ? 'text-yellow-400 fill-yellow-400'
-                            : 'text-gray-300'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ))}
-            <p className="text-sm text-gray-500 mt-2">
-              Basato su {allRatings.length} recensioni
-            </p>
-          </div>
+          <AverageRatings
+            categories={ratingCategories}
+            averageRatings={averageRatings}
+            totalReviews={allRatings.length}
+          />
         )}
       </div>
     </div>
