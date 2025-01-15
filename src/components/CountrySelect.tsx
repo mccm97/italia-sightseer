@@ -1,5 +1,4 @@
 import React from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface CountrySelectProps {
   countries: string[];
@@ -8,18 +7,14 @@ interface CountrySelectProps {
 
 const CountrySelect = ({ countries, onCountrySelect }: CountrySelectProps) => {
   return (
-    <Select onValueChange={onCountrySelect}>
-      <SelectTrigger className="w-full">
-        <SelectValue placeholder="Seleziona un paese" />
-      </SelectTrigger>
-      <SelectContent>
-        {countries.map((country, index) => (
-          <SelectItem key={index} value={country}>
-            {country}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <select onChange={(e) => onCountrySelect(e.target.value)} className="w-full p-2 border rounded-md">
+      <option value="">Seleziona un paese</option>
+      {countries.map((country, index) => (
+        <option key={index} value={country}>
+          {country}
+        </option>
+      ))}
+    </select>
   );
 };
 

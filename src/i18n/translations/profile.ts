@@ -22,9 +22,7 @@ export const profileTranslations = {
     deletePost: 'Delete Post',
     deleteConfirm: 'Are you sure?',
     deleteWarning: 'This action cannot be undone. The post will be permanently deleted.',
-    back: 'Back',
-    savedRoutes: 'Saved Routes',
-    noSavedRoutes: 'No saved routes yet',
+    back: 'Back'
   },
   it: {
     title: 'Profilo Utente',
@@ -49,8 +47,6 @@ export const profileTranslations = {
     deletePost: 'Elimina Post',
     deleteConfirm: 'Sei sicuro?',
     deleteWarning: 'Questa azione non può essere annullata. Il post verrà eliminato permanentemente.',
-    back: 'Indietro',
-    savedRoutes: 'Percorsi Salvati',
-    noSavedRoutes: 'Nessun percorso salvato',
+    back: 'Indietro'
   }
 };

@@ -7,8 +7,7 @@ export const menuTranslations = {
     logout: 'Logout',
     blog: 'Blog',
     search: 'Cerca città',
-    statistics: 'Statistiche',
-    newRoute: 'Nuovo Percorso'
+    statistics: 'Statistiche'
   },
   en: {
     home: 'Home',
@@ -18,7 +17,6 @@ export const menuTranslations = {
     logout: 'Logout',
     blog: 'Blog',
     search: 'Search cities',
-    statistics: 'Statistics',
-    newRoute: 'New Route'
+    statistics: 'Statistics'
   }
 };
