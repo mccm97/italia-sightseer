@@ -22,8 +22,8 @@ export function useAttractionCoordinates(formData: CreateRouteFormData) {
       }
 
       try {
-        console.log('Fetching coordinates for attractions:', formData.attractions);
-        console.log('City ID:', formData.city.id);
+        console.log('Fetching coordinates for city:', formData.city.name);
+        console.log('Attractions to fetch:', formData.attractions);
         
         const attractionPromises = formData.attractions.map(async (attr) => {
           if (!attr.name) {
@@ -38,7 +38,7 @@ export function useAttractionCoordinates(formData: CreateRouteFormData) {
             .select('name, lat, lng, visit_duration, price')
             .eq('name', attr.name)
             .eq('city_id', formData.city?.id)
-            .single();
+            .maybeSingle();
 
           if (error) {
             console.error('Error fetching coordinates for attraction:', attr.name, error);

@@ -23,13 +23,8 @@ const CityMap: React.FC<CityMapProps> = ({
   onRouteClick, 
   showWalkingPath = false 
 }) => {
-  console.log('CityMap rendering with:', {
-    center,
-    zoom,
-    attractionsCount: attractions.length,
-    routesCount: routes.length,
-    showWalkingPath
-  });
+  console.log('CityMap rendering with center:', center);
+  console.log('All attractions received:', attractions);
   
   const validAttractions = attractions.filter(attr => {
     if (!attr.position) {
@@ -50,7 +45,7 @@ const CityMap: React.FC<CityMapProps> = ({
 
   return (
     <MapContainer
-      key={`map-${center[0]}-${center[1]}`}
+      key={`map-${center[0]}-${center[1]}-${validAttractions.length}`}
       center={center}
       zoom={zoom}
       className="w-full h-full rounded-lg"
