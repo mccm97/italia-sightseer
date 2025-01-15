@@ -59,7 +59,7 @@ export function CreateRouteDialog() {
             className="cursor-pointer hover:bg-accent focus:bg-accent"
           >
             <MapPin className="mr-2 h-4 w-4" />
-            New Route
+            {t('menu.newRoute')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
