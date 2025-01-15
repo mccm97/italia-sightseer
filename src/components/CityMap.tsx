@@ -35,11 +35,16 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
   const map = useMap();
   
   useEffect(() => {
-    if (!map || points.length < 2) return;
+    if (!map || points.length < 2) {
+      console.log('Not enough points for walking path or map not ready:', points);
+      return;
+    }
 
     const layers: L.Polyline[] = [];
     
     const validPoints = points.filter(isValidCoordinate);
+    console.log('Valid points for walking path:', validPoints);
+    
     if (validPoints.length < 2) {
       console.warn('Not enough valid points for walking path');
       return;
@@ -47,8 +52,6 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
 
     const fetchWalkingPath = async () => {
       try {
-        console.log('Fetching walking paths for points:', validPoints);
-        
         // Prima creiamo una linea diretta tra i punti per mostrare subito il percorso
         const directPath = L.polyline(validPoints, {
           color: 'purple',
@@ -58,59 +61,62 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
         }).addTo(map);
         layers.push(directPath);
 
-        // Poi otteniamo il percorso pedonale reale da OSRM
-        const paths = await Promise.all(
-          validPoints.slice(0, -1).map(async (start, i) => {
-            const end = validPoints[i + 1];
-            try {
-              console.log(`Fetching path from ${start} to ${end}`);
-              const response = await fetch(
-                `https://router.project-osrm.org/route/v1/foot/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`
-              );
-              
-              if (!response.ok) {
-                throw new Error(`OSRM API error: ${response.status} ${response.statusText}`);
-              }
-              
-              const data = await response.json();
-              console.log('OSRM response:', data);
-              
-              if (!data.routes || !data.routes[0]) {
-                throw new Error('No route found');
-              }
-              
-              return data.routes[0].geometry.coordinates.map((coord: [number, number]) => [coord[1], coord[0]]);
-            } catch (error) {
-              console.error('Error fetching path segment:', error);
-              // In caso di errore, ritorna una linea diretta tra i punti
-              return [[start[0], start[1]], [end[0], end[1]]];
+        // Costruiamo il percorso completo tra tutte le attrazioni
+        for (let i = 0; i < validPoints.length - 1; i++) {
+          const start = validPoints[i];
+          const end = validPoints[i + 1];
+          
+          console.log(`Fetching walking path from ${start} to ${end}`);
+          
+          try {
+            const response = await fetch(
+              `https://router.project-osrm.org/route/v1/foot/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`
+            );
+            
+            if (!response.ok) {
+              throw new Error(`OSRM API error: ${response.status} ${response.statusText}`);
             }
-          })
-        );
-
-        console.log('Received walking paths:', paths);
+            
+            const data = await response.json();
+            console.log('OSRM response for segment:', data);
+            
+            if (!data.routes?.[0]?.geometry?.coordinates) {
+              throw new Error('No route coordinates found in response');
+            }
+            
+            // Convertiamo le coordinate [lng, lat] in [lat, lng] per Leaflet
+            const pathCoords = data.routes[0].geometry.coordinates.map(
+              (coord: [number, number]) => [coord[1], coord[0]] as [number, number]
+            );
+            
+            const pathLayer = L.polyline(pathCoords, {
+              color: 'blue',
+              weight: 4,
+              opacity: 0.7,
+            }).addTo(map);
+            
+            layers.push(pathLayer);
+          } catch (error) {
+            console.error('Error fetching path segment:', error);
+            // In caso di errore, creiamo una linea diretta tra i punti
+            const fallbackLayer = L.polyline([start, end], {
+              color: 'red',
+              weight: 2,
+              opacity: 0.5,
+              dashArray: '5, 5',
+            }).addTo(map);
+            layers.push(fallbackLayer);
+          }
+        }
 
         // Rimuoviamo la linea diretta temporanea
         directPath.remove();
 
-        // Aggiungiamo i percorsi pedonali reali
-        paths.forEach(path => {
-          const layer = L.polyline(path, {
-            color: 'blue',
-            weight: 4,
-            opacity: 0.7,
-            className: 'walking-path'
-          }).addTo(map);
-          layers.push(layer);
-        });
-
         // Fit della mappa per mostrare tutto il percorso
-        if (paths.length > 0) {
-          const bounds = L.latLngBounds(paths.flat());
-          map.fitBounds(bounds, { padding: [50, 50] });
-        }
+        const bounds = L.latLngBounds(validPoints);
+        map.fitBounds(bounds, { padding: [50, 50] });
       } catch (error) {
-        console.error('Error fetching walking path:', error);
+        console.error('Error creating walking path:', error);
       }
     };
 
@@ -136,11 +142,13 @@ const CityMap = ({
   onRouteClick, 
   showWalkingPath = false 
 }: CityMapProps) => {
+  console.log('CityMap rendering with attractions:', attractions);
+  
   const validAttractions = attractions.filter((attr): attr is { name: string; position: [number, number] } => 
     !!attr.position && isValidCoordinate(attr.position)
   );
 
-  console.log('CityMap rendering with attractions:', validAttractions);
+  console.log('Valid attractions for map:', validAttractions);
 
   return (
     <MapContainer
@@ -153,6 +161,18 @@ const CityMap = ({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
       
+      {validAttractions.map((attraction, index) => (
+        <Marker
+          key={`${attraction.name}-${index}`}
+          position={attraction.position}
+          title={attraction.name}
+        />
+      ))}
+
+      {showWalkingPath && validAttractions.length > 1 && (
+        <WalkingPath points={validAttractions.map(a => a.position)} />
+      )}
+
       {routes.map((route) => {
         const routePositions = route.attractions
           .filter(a => a.position && isValidCoordinate(a.position))
@@ -171,18 +191,6 @@ const CityMap = ({
           />
         );
       })}
-
-      {validAttractions.map((attraction, index) => (
-        <Marker
-          key={index}
-          position={attraction.position}
-          title={attraction.name}
-        />
-      ))}
-
-      {showWalkingPath && validAttractions.length > 1 && (
-        <WalkingPath points={validAttractions.map(a => a.position)} />
-      )}
     </MapContainer>
   );
 };

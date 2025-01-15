@@ -22,7 +22,10 @@ export function RoutePreview({
 
   useEffect(() => {
     const fetchAttractionCoordinates = async () => {
-      if (!formData?.city?.id) return;
+      if (!formData?.city?.id) {
+        console.warn('No city ID provided');
+        return;
+      }
 
       try {
         console.log('Fetching coordinates for attractions:', formData.attractions);
@@ -45,13 +48,18 @@ export function RoutePreview({
             return null;
           }
 
+          if (!data || !data.lat || !data.lng) {
+            console.error('Missing coordinates for attraction:', attr.name);
+            return null;
+          }
+
           console.log('Fetched coordinates for', attr.name, ':', data);
 
           return {
             name: data.name,
             position: [data.lat, data.lng] as [number, number],
-            visitDuration: attr.visitDuration,
-            price: attr.price
+            visitDuration: attr.visitDuration || data.visit_duration,
+            price: attr.price || data.price || 0
           };
         });
 
