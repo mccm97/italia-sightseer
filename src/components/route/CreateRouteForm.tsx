@@ -12,6 +12,7 @@ import { ImageUpload } from '../ImageUpload';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
 
 interface CreateRouteFormProps {
   onSubmit: (data: CreateRouteFormData) => void;
@@ -39,6 +40,8 @@ export function CreateRouteForm({
       description: '',
     }
   });
+
+  const { toast } = useToast();
 
   const { data: countries = [], isLoading: isLoadingCountries } = useQuery({
     queryKey: ['countries'],
@@ -77,6 +80,36 @@ export function CreateRouteForm({
 
   const handleSubmit = async (data: CreateRouteFormData) => {
     console.log('Form submission data:', data);
+    
+    // Validate required fields
+    if (!data.city) {
+      toast({
+        title: "Errore",
+        description: "Seleziona una città",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!data.name) {
+      toast({
+        title: "Errore",
+        description: "Inserisci un nome per il percorso",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!data.attractions.length || !data.attractions[0].name) {
+      toast({
+        title: "Errore",
+        description: "Inserisci almeno un'attrazione",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // If all validations pass, proceed with submission
     await onSubmit(data);
     onSuccess?.();
   };
