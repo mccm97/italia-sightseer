@@ -63,6 +63,7 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
           validPoints.slice(0, -1).map(async (start, i) => {
             const end = validPoints[i + 1];
             try {
+              console.log(`Fetching path from ${start} to ${end}`);
               const response = await fetch(
                 `https://router.project-osrm.org/route/v1/foot/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`
               );
@@ -72,6 +73,8 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
               }
               
               const data = await response.json();
+              console.log('OSRM response:', data);
+              
               if (!data.routes || !data.routes[0]) {
                 throw new Error('No route found');
               }

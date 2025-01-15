@@ -28,28 +28,34 @@ export function RoutePreview({
         console.log('Fetching coordinates for attractions:', formData.attractions);
         
         const attractionPromises = formData.attractions.map(async (attr) => {
+          if (!attr.name) {
+            console.warn('Attraction name is missing:', attr);
+            return null;
+          }
+
           const { data, error } = await supabase
             .from('attractions')
-            .select('lat, lng')
+            .select('name, lat, lng, visit_duration, price')
             .eq('name', attr.name)
             .eq('city_id', formData.city?.id)
             .single();
 
           if (error) {
             console.error('Error fetching coordinates for attraction:', attr.name, error);
-            throw error;
+            return null;
           }
 
           console.log('Fetched coordinates for', attr.name, ':', data);
 
           return {
-            ...attr,
-            lat: data?.lat || 0,
-            lng: data?.lng || 0
+            name: data.name,
+            position: [data.lat, data.lng] as [number, number],
+            visitDuration: attr.visitDuration,
+            price: attr.price
           };
         });
 
-        const attractionsWithCoords = await Promise.all(attractionPromises);
+        const attractionsWithCoords = (await Promise.all(attractionPromises)).filter(Boolean);
         console.log('All attractions with coordinates:', attractionsWithCoords);
         setAttractions(attractionsWithCoords);
       } catch (error) {
@@ -75,7 +81,7 @@ export function RoutePreview({
 
   if (!formData) return null;
 
-  console.log('RoutePreview formData:', formData);
+  console.log('RoutePreview rendering with attractions:', attractions);
 
   return (
     <div className="space-y-4">
@@ -87,12 +93,7 @@ export function RoutePreview({
         <div className="h-[400px] relative">
           <CityMap
             center={[formData.city?.lat || 0, formData.city?.lng || 0]}
-            attractions={attractions.map(attr => ({
-              name: attr.name,
-              position: [attr.lat, attr.lng],
-              visitDuration: attr.visitDuration,
-              price: attr.price
-            }))}
+            attractions={attractions}
             zoom={13}
             showWalkingPath={true}
           />
