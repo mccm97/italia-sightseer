@@ -36,6 +36,8 @@ export function RoutePreview({
             return null;
           }
 
+          console.log('Fetching coordinates for attraction:', attr.name);
+
           const { data, error } = await supabase
             .from('attractions')
             .select('name, lat, lng, visit_duration, price')
@@ -49,11 +51,11 @@ export function RoutePreview({
           }
 
           if (!data || !data.lat || !data.lng) {
-            console.error('Missing coordinates for attraction:', attr.name);
+            console.error('Missing coordinates for attraction:', attr.name, data);
             return null;
           }
 
-          console.log('Fetched coordinates for', attr.name, ':', data);
+          console.log('Fetched data for', attr.name, ':', data);
 
           return {
             name: data.name,

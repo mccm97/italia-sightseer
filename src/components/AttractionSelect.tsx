@@ -22,6 +22,8 @@ interface AttractionSelectProps {
 interface Attraction {
   name: string;
   source: 'local';
+  lat?: number;
+  lng?: number;
 }
 
 export function AttractionSelect({ value, onChange, inputType, cityId }: AttractionSelectProps) {
@@ -32,7 +34,6 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
 
-  // Fetch all attractions for the city once when component mounts or cityId changes
   useEffect(() => {
     const fetchAttractions = async () => {
       if (!cityId) {
@@ -42,10 +43,10 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
       
       setIsLoading(true);
       try {
-        console.log('Fetching all attractions for city:', cityId);
+        console.log('Fetching attractions for city:', cityId);
         const { data: localAttractions, error: localError } = await supabase
           .from('attractions')
-          .select('name')
+          .select('name, lat, lng')
           .eq('city_id', cityId)
           .order('name');
 
@@ -54,12 +55,16 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
           throw localError;
         }
 
+        console.log('Raw attractions data from database:', localAttractions);
+
         const results = (localAttractions || []).map(attr => ({
           name: attr.name,
-          source: 'local' as const
+          source: 'local' as const,
+          lat: attr.lat,
+          lng: attr.lng
         }));
 
-        console.log('Fetched attractions:', results);
+        console.log('Processed attractions with coordinates:', results);
         setAttractions(results);
         setFilteredAttractions(results);
       } catch (error) {
@@ -77,12 +82,11 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
     fetchAttractions();
   }, [cityId, toast]);
 
-  // Filter attractions based on search query
   useEffect(() => {
     const filtered = attractions.filter(attraction =>
       attraction.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
-    console.log('Filtered attractions:', filtered);
+    console.log('Filtered attractions with coordinates:', filtered);
     setFilteredAttractions(filtered);
   }, [searchQuery, attractions]);
 
