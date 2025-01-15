@@ -27,16 +27,28 @@ interface CityMapProps {
 }
 
 const isValidCoordinate = (coord: [number, number]): boolean => {
-  return coord[0] !== 0 && coord[1] !== 0 && 
-         !isNaN(coord[0]) && !isNaN(coord[1]) &&
-         Math.abs(coord[0]) <= 90 && Math.abs(coord[1]) <= 180;
+  if (!coord || !Array.isArray(coord) || coord.length !== 2) {
+    console.warn('Invalid coordinate format:', coord);
+    return false;
+  }
+
+  const [lat, lng] = coord;
+  const isValid = !isNaN(lat) && !isNaN(lng) && 
+                 Math.abs(lat) <= 90 && Math.abs(lng) <= 180 &&
+                 lat !== 0 && lng !== 0;
+
+  if (!isValid) {
+    console.warn('Coordinate values out of range:', coord);
+  }
+
+  return isValid;
 };
 
 const WalkingPath = ({ points }: { points: [number, number][] }) => {
   const map = useMap();
   
   useEffect(() => {
-    if (!map || points.length < 2) {
+    if (!map || !points || points.length < 2) {
       console.log('Not enough points for walking path or map not ready:', points);
       return;
     }
@@ -145,9 +157,14 @@ const CityMap = ({
 }: CityMapProps) => {
   console.log('CityMap rendering with attractions:', attractions);
   
-  const validAttractions = attractions.filter((attr): attr is { name: string; position: [number, number] } => 
-    !!attr.position && isValidCoordinate(attr.position)
-  );
+  // Filtra e valida le attrazioni prima di renderizzarle
+  const validAttractions = attractions.filter(attr => {
+    if (!attr.position) {
+      console.warn('Missing position for attraction:', attr.name);
+      return false;
+    }
+    return isValidCoordinate(attr.position);
+  });
 
   console.log('Valid attractions for map:', validAttractions);
 
@@ -165,13 +182,13 @@ const CityMap = ({
       {validAttractions.map((attraction, index) => (
         <Marker
           key={`${attraction.name}-${index}`}
-          position={attraction.position}
+          position={attraction.position!}
           title={attraction.name}
         />
       ))}
 
       {showWalkingPath && validAttractions.length > 1 && (
-        <WalkingPath points={validAttractions.map(a => a.position)} />
+        <WalkingPath points={validAttractions.map(a => a.position!)} />
       )}
 
       {routes.map((route) => {
