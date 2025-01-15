@@ -42,15 +42,25 @@ export function useAttractions(cityId?: string) {
 
         console.log('Raw attractions data from database:', localAttractions);
 
-        const results = (localAttractions || []).map(attr => ({
-          name: attr.name,
-          source: 'local' as const,
-          lat: attr.lat,
-          lng: attr.lng,
-          visitDuration: attr.visit_duration,
-          price: attr.price,
-          attractionId: attr.id
-        }));
+        const results = (localAttractions || []).map(attr => {
+          console.log(`Processing attraction "${attr.name}":`, {
+            lat: attr.lat,
+            lng: attr.lng,
+            visitDuration: attr.visit_duration,
+            price: attr.price,
+            id: attr.id
+          });
+
+          return {
+            name: attr.name,
+            source: 'local' as const,
+            lat: attr.lat,
+            lng: attr.lng,
+            visitDuration: attr.visit_duration,
+            price: attr.price,
+            attractionId: attr.id
+          };
+        });
 
         console.log('Processed attractions with coordinates:', results);
         setAttractions(results);

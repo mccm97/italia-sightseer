@@ -23,6 +23,7 @@ export function useAttractionCoordinates(formData: CreateRouteFormData) {
 
       try {
         console.log('Fetching coordinates for attractions:', formData.attractions);
+        console.log('City ID:', formData.city.id);
         
         const attractionPromises = formData.attractions.map(async (attr) => {
           if (!attr.name) {
