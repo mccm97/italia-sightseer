@@ -12,6 +12,11 @@ export const blogTranslations = {
       wordCount: 'parole',
       remainingWords: 'parole rimanenti'
     },
+    imageUpload: {
+      success: 'Immagine caricata con successo',
+      error: 'Si è verificato un errore durante il caricamento dell\'immagine',
+      preview: 'Anteprima immagine'
+    },
     noPosts: 'Nessun post pubblicato',
     readMore: 'Leggi di più',
     loading: 'Caricamento post...'
@@ -28,6 +33,11 @@ export const blogTranslations = {
       coverImage: 'Cover Image',
       wordCount: 'words',
       remainingWords: 'remaining words'
+    },
+    imageUpload: {
+      success: 'Image uploaded successfully',
+      error: 'An error occurred while uploading the image',
+      preview: 'Image preview'
     },
     noPosts: 'No posts published',
     readMore: 'Read more',
