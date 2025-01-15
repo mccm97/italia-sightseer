@@ -22,7 +22,7 @@ interface Attraction {
 }
 
 export function AttractionSelect({ value, onChange, inputType, cityId }: AttractionSelectProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(value);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const debouncedSearch = useDebounce(searchQuery, 300);
   const [suggestions, setSuggestions] = useState<Attraction[]>([]);
@@ -71,6 +71,10 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
 
     fetchAttractions();
   }, [debouncedSearch, cityId, toast]);
+
+  useEffect(() => {
+    setSearchQuery(value);
+  }, [value]);
 
   if (inputType === 'address') {
     return (
