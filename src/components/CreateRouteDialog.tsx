@@ -99,6 +99,13 @@ export function CreateRouteDialog() {
     }
   };
 
+  // Generate a unique suffix for the route name
+  const getUniqueRouteName = () => {
+    const date = new Date();
+    const timestamp = `${date.getHours()}:${date.getMinutes()}`;
+    return `Tour Classico di Torino (${timestamp})`;
+  };
+
   return (
     <>
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -143,7 +150,7 @@ export function CreateRouteDialog() {
               onCountrySelect={handleCountrySelect}
               onSuccess={() => {}}
               initialData={{
-                name: "Tour Classico di Torino",
+                name: getUniqueRouteName(),
                 description: "Un affascinante percorso attraverso il cuore storico e culturale di Torino. Questo itinerario ti porterà alla scoperta dei principali monumenti e musei della prima capitale d'Italia, permettendoti di ammirare l'elegante architettura barocca e assaporare l'atmosfera regale della città sabauda.",
                 attractions: [
                   {
