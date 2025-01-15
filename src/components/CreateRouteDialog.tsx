@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Plus, PenLine, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,8 +15,6 @@ export function CreateRouteDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
-  const isEnglish = i18n.language === 'en';
 
   const handleCreatePost = () => {
     console.log('Navigating to blog page');
@@ -53,14 +50,14 @@ export function CreateRouteDialog() {
             className="cursor-pointer hover:bg-accent focus:bg-accent"
           >
             <PenLine className="mr-2 h-4 w-4" />
-            {isEnglish ? 'New Post' : 'Nuovo Post'}
+            Nuovo Post
           </DropdownMenuItem>
           <DropdownMenuItem 
             onClick={handleCreateRoute}
             className="cursor-pointer hover:bg-accent focus:bg-accent"
           >
             <MapPin className="mr-2 h-4 w-4" />
-            {isEnglish ? 'New Route' : 'Nuovo Percorso'}
+            Nuovo Percorso
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

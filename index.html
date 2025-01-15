@@ -24,24 +24,7 @@
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="canonical" href="https://www.waywonder.info" />
     <link rel="icon" type="image/png" href="/favicon.png" />
-    <script>
-      // Load AdSense script only if cookie consent is given
-      try {
-        const consent = localStorage.getItem('waywonder-cookie-consent');
-        if (consent === 'true' && !window.adsbygoogle) {
-          const script = document.createElement('script');
-          script.async = true;
-          script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1267663470456742';
-          script.crossOrigin = 'anonymous';
-          script.onerror = function(error) {
-            console.log('AdSense script failed to load:', error);
-          };
-          document.head.appendChild(script);
-        }
-      } catch (error) {
-        console.log('Error loading AdSense:', error);
-      }
-    </script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1267663470456742" crossorigin="anonymous"></script>
   </head>
   <body>
     <div id="root"></div>

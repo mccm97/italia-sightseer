@@ -4,7 +4,6 @@ import { Input } from '@/components/ui/input';
 import { Loader2, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useTranslation } from 'react-i18next';
 
 interface ImageUploadProps {
   onImageUploaded: (url: string) => void;
@@ -16,54 +15,40 @@ interface ImageUploadProps {
 export function ImageUpload({ onImageUploaded, bucketName, className = '', currentImage }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
-  const { t } = useTranslation();
-
-  console.log('ImageUpload - Current image:', currentImage);
 
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       if (!event.target.files || event.target.files.length === 0) {
-        console.log('ImageUpload - No file selected');
         return;
       }
 
       setUploading(true);
       const file = event.target.files[0];
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${Math.random()}.${fileExt}`;
 
-      console.log('ImageUpload - Starting upload of file:', file.name);
-      console.log('ImageUpload - File size:', file.size, 'bytes');
-      console.log('ImageUpload - File type:', file.type);
-      console.log('ImageUpload - Generated filename:', fileName);
-
-      const { error: uploadError, data } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from(bucketName)
-        .upload(fileName, file);
+        .upload(filePath, file);
 
       if (uploadError) {
-        console.error('ImageUpload - Upload error:', uploadError);
         throw uploadError;
       }
 
-      console.log('ImageUpload - Upload successful, data:', data);
-
       const { data: { publicUrl } } = supabase.storage
         .from(bucketName)
-        .getPublicUrl(fileName);
-
-      console.log('ImageUpload - Generated public URL:', publicUrl);
+        .getPublicUrl(filePath);
 
       onImageUploaded(publicUrl);
       toast({
-        title: t('common.success'),
-        description: t('blog.imageUpload.success'),
+        title: "Successo",
+        description: "Immagine caricata con successo",
       });
     } catch (error) {
       console.error('Error uploading image:', error);
       toast({
-        title: t('common.error'),
-        description: t('blog.imageUpload.error'),
+        title: "Errore",
+        description: "Si è verificato un errore durante il caricamento dell'immagine",
         variant: "destructive",
       });
     } finally {
@@ -72,26 +57,17 @@ export function ImageUpload({ onImageUploaded, bucketName, className = '', curre
   };
 
   const handleRemove = () => {
-    console.log('ImageUpload - Removing image');
     onImageUploaded('');
   };
 
   return (
     <div className={`space-y-4 ${className}`}>
       {currentImage && (
-        <div className="relative w-full h-48">
+        <div className="relative">
           <img 
             src={currentImage} 
-            alt={t('blog.imageUpload.preview')}
-            className="w-full h-full object-contain bg-gray-100 rounded-lg"
-            onError={(e) => {
-              console.error('ImageUpload - Error loading image:', e);
-              const imgElement = e.target as HTMLImageElement;
-              console.log('ImageUpload - Failed image src:', imgElement.src);
-            }}
-            onLoad={() => {
-              console.log('ImageUpload - Image loaded successfully');
-            }}
+            alt="Preview" 
+            className="w-full h-48 object-cover rounded-lg"
           />
           <Button
             variant="destructive"
@@ -109,7 +85,6 @@ export function ImageUpload({ onImageUploaded, bucketName, className = '', curre
           accept="image/*"
           onChange={handleUpload}
           disabled={uploading}
-          className="cursor-pointer"
         />
         {uploading && <Loader2 className="h-4 w-4 animate-spin" />}
       </div>

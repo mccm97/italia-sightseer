@@ -276,66 +276,6 @@ export type Database = {
           },
         ]
       }
-      city_ratings: {
-        Row: {
-          city_id: string
-          cleanliness: number
-          comment: string | null
-          cost_of_living: number
-          created_at: string
-          cultural_attractions: number
-          food_quality: number
-          id: string
-          nightlife: number
-          safety: number
-          transportation: number
-          user_id: string
-        }
-        Insert: {
-          city_id: string
-          cleanliness: number
-          comment?: string | null
-          cost_of_living: number
-          created_at?: string
-          cultural_attractions: number
-          food_quality: number
-          id?: string
-          nightlife: number
-          safety: number
-          transportation: number
-          user_id: string
-        }
-        Update: {
-          city_id?: string
-          cleanliness?: number
-          comment?: string | null
-          cost_of_living?: number
-          created_at?: string
-          cultural_attractions?: number
-          food_quality?: number
-          id?: string
-          nightlife?: number
-          safety?: number
-          transportation?: number
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "city_ratings_city_id_fkey"
-            columns: ["city_id"]
-            isOneToOne: false
-            referencedRelation: "cities"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "city_ratings_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       profiles: {
         Row: {
           avatar_url: string | null
