@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { Route } from '@/types/route';
 
+// Fix for default marker icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -52,7 +53,7 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
 
     const fetchWalkingPath = async () => {
       try {
-        // Prima creiamo una linea diretta tra i punti per mostrare subito il percorso
+        // Mostra subito una linea diretta temporanea
         const directPath = L.polyline(validPoints, {
           color: 'purple',
           weight: 2,
@@ -61,7 +62,7 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
         }).addTo(map);
         layers.push(directPath);
 
-        // Costruiamo il percorso completo tra tutte le attrazioni
+        // Costruisci il percorso tra ogni coppia di punti consecutivi
         for (let i = 0; i < validPoints.length - 1; i++) {
           const start = validPoints[i];
           const end = validPoints[i + 1];
@@ -84,7 +85,7 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
               throw new Error('No route coordinates found in response');
             }
             
-            // Convertiamo le coordinate [lng, lat] in [lat, lng] per Leaflet
+            // Converti le coordinate [lng, lat] in [lat, lng] per Leaflet
             const pathCoords = data.routes[0].geometry.coordinates.map(
               (coord: [number, number]) => [coord[1], coord[0]] as [number, number]
             );
@@ -98,7 +99,7 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
             layers.push(pathLayer);
           } catch (error) {
             console.error('Error fetching path segment:', error);
-            // In caso di errore, creiamo una linea diretta tra i punti
+            // In caso di errore, crea una linea diretta tra i punti
             const fallbackLayer = L.polyline([start, end], {
               color: 'red',
               weight: 2,
@@ -109,7 +110,7 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
           }
         }
 
-        // Rimuoviamo la linea diretta temporanea
+        // Rimuovi la linea diretta temporanea
         directPath.remove();
 
         // Fit della mappa per mostrare tutto il percorso

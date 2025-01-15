@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import CityMap from '../CityMap';
 
 interface RouteMapViewProps {
@@ -14,42 +14,57 @@ interface RouteMapViewProps {
 export function RouteMapView({ cityId, attractions }: RouteMapViewProps) {
   const [cityCoordinates, setCityCoordinates] = useState<[number, number] | null>(null);
   const [showMap, setShowMap] = useState(false);
+  const { toast } = useToast();
 
-  const handleMapClick = async () => {
-    if (!cityId && !showMap) {
-      toast({
-        title: "Errore",
-        description: "Impossibile caricare le coordinate della città",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (showMap) {
-      setShowMap(false);
-      return;
-    }
-
-    try {
-      const { data: city } = await supabase
-        .from('cities')
-        .select('lat, lng')
-        .eq('id', cityId)
-        .single();
-
-      if (city) {
-        setCityCoordinates([city.lat, city.lng]);
-        setShowMap(true);
+  useEffect(() => {
+    const fetchCityCoordinates = async () => {
+      if (!cityId) {
+        console.error('No city ID provided');
+        return;
       }
-    } catch (error) {
-      console.error('Error fetching city coordinates:', error);
-      toast({
-        title: "Errore",
-        description: "Impossibile caricare le coordinate della città",
-        variant: "destructive"
-      });
+
+      try {
+        console.log('Fetching coordinates for city:', cityId);
+        const { data: city, error } = await supabase
+          .from('cities')
+          .select('lat, lng')
+          .eq('id', cityId)
+          .single();
+
+        if (error) {
+          throw error;
+        }
+
+        if (city) {
+          console.log('City coordinates fetched:', city);
+          setCityCoordinates([city.lat, city.lng]);
+          setShowMap(true);
+        }
+      } catch (error) {
+        console.error('Error fetching city coordinates:', error);
+        toast({
+          title: "Errore",
+          description: "Impossibile caricare le coordinate della città",
+          variant: "destructive"
+        });
+      }
+    };
+
+    if (cityId) {
+      fetchCityCoordinates();
     }
-  };
+  }, [cityId, toast]);
+
+  // Verifica che ci siano attrazioni valide con coordinate
+  const validAttractions = attractions.filter(attr => 
+    attr.position && 
+    Array.isArray(attr.position) && 
+    attr.position.length === 2 &&
+    !isNaN(attr.position[0]) && 
+    !isNaN(attr.position[1])
+  );
+
+  console.log('Valid attractions for map:', validAttractions);
 
   if (!showMap || !cityCoordinates) {
     return null;
@@ -59,8 +74,9 @@ export function RouteMapView({ cityId, attractions }: RouteMapViewProps) {
     <div className="mt-4 h-[300px] rounded-lg overflow-hidden">
       <CityMap
         center={cityCoordinates}
-        attractions={attractions}
+        attractions={validAttractions}
         showWalkingPath={true}
+        zoom={13}
       />
     </div>
   );
