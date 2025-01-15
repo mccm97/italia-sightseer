@@ -17,7 +17,11 @@ interface CitySelectorProps {
 }
 
 export function CitySelector({ form, cities, selectedCountry }: CitySelectorProps) {
+  console.log('CitySelector - selectedCountry:', selectedCountry);
+  console.log('CitySelector - available cities:', cities);
+  
   const filteredCities = cities.filter(city => city.country === selectedCountry);
+  console.log('CitySelector - filtered cities:', filteredCities);
 
   return (
     <FormField
@@ -28,17 +32,19 @@ export function CitySelector({ form, cities, selectedCountry }: CitySelectorProp
           <FormLabel>Città</FormLabel>
           <FormControl>
             <Select
-              disabled={!selectedCountry}
+              disabled={!selectedCountry || filteredCities.length === 0}
               value={field.value?.id || ''}
               onValueChange={(value) => {
+                console.log('CitySelector - selected city value:', value);
                 const selectedCity = filteredCities.find(city => city.id === value);
+                console.log('CitySelector - selected city object:', selectedCity);
                 if (selectedCity) {
                   field.onChange(selectedCity);
                 }
               }}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Seleziona una città" />
+                <SelectValue placeholder={!selectedCountry ? "Seleziona prima un paese" : "Seleziona una città"} />
               </SelectTrigger>
               <SelectContent>
                 <ScrollArea className="h-[200px]">

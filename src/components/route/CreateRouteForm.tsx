@@ -15,7 +15,6 @@ import { useQuery } from '@tanstack/react-query';
 
 interface CreateRouteFormProps {
   onSubmit: (data: CreateRouteFormData) => void;
-  countries: string[];
   cities: any[];
   selectedCountry: string;
   onCountrySelect: (country: string) => void;
@@ -56,7 +55,6 @@ export function CreateRouteForm({
         throw error;
       }
 
-      // Get unique countries and remove null/undefined values
       const uniqueCountries = [...new Set(data.map(city => city.country))].filter(Boolean);
       console.log('Fetched countries:', uniqueCountries);
       return uniqueCountries;
@@ -78,6 +76,7 @@ export function CreateRouteForm({
   };
 
   const handleSubmit = async (data: CreateRouteFormData) => {
+    console.log('Form submission data:', data);
     await onSubmit(data);
     onSuccess?.();
   };
