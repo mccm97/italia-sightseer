@@ -31,7 +31,6 @@ const isValidCoordinate = (coord: [number, number]): boolean => {
          Math.abs(coord[0]) <= 90 && Math.abs(coord[1]) <= 180;
 };
 
-// Component to update walking path
 const WalkingPath = ({ points }: { points: [number, number][] }) => {
   const map = useMap();
   
@@ -40,7 +39,6 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
 
     const layers: L.Polyline[] = [];
 
-    // Validate all points before making the API call
     const validPoints = points.filter(isValidCoordinate);
     if (validPoints.length < 2) {
       console.warn('Not enough valid points for walking path');
@@ -49,6 +47,7 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
 
     const fetchWalkingPath = async () => {
       try {
+        console.log('Fetching walking paths for points:', validPoints);
         const paths = await Promise.all(
           validPoints.slice(0, -1).map(async (start, i) => {
             const end = validPoints[i + 1];
@@ -65,7 +64,8 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
           })
         );
 
-        // Add new paths
+        console.log('Received walking paths:', paths);
+
         paths.forEach(path => {
           const layer = L.polyline(path, {
             color: 'blue',
@@ -82,7 +82,6 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
 
     fetchWalkingPath();
 
-    // Cleanup function
     return () => {
       layers.forEach(layer => {
         if (layer && map) {
@@ -103,10 +102,11 @@ const CityMap = ({
   onRouteClick, 
   showWalkingPath = false 
 }: CityMapProps) => {
-  // Filter out attractions without positions and with invalid coordinates
   const validAttractions = attractions.filter((attr): attr is { name: string; position: [number, number] } => 
     !!attr.position && isValidCoordinate(attr.position)
   );
+
+  console.log('CityMap rendering with attractions:', validAttractions);
 
   return (
     <MapContainer
@@ -119,7 +119,6 @@ const CityMap = ({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
       
-      {/* Show existing routes */}
       {routes.map((route) => {
         const routePositions = route.attractions
           .filter(a => a.position && isValidCoordinate(a.position))
@@ -139,7 +138,6 @@ const CityMap = ({
         );
       })}
 
-      {/* Show attraction markers */}
       {validAttractions.map((attraction, index) => (
         <Marker
           key={index}
@@ -148,7 +146,6 @@ const CityMap = ({
         />
       ))}
 
-      {/* Show walking path if requested */}
       {showWalkingPath && validAttractions.length > 1 && (
         <WalkingPath points={validAttractions.map(a => a.position)} />
       )}

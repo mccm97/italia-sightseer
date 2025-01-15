@@ -25,33 +25,32 @@ export function RoutePreview({
       if (!formData?.city?.id) return;
 
       try {
+        console.log('Fetching coordinates for attractions:', formData.attractions);
+        
         const attractionPromises = formData.attractions.map(async (attr) => {
-          if (attr.inputType === 'name') {
-            const { data, error } = await supabase
-              .from('attractions')
-              .select('lat, lng')
-              .eq('name', attr.name)
-              .eq('city_id', formData.city?.id)
-              .single();
+          const { data, error } = await supabase
+            .from('attractions')
+            .select('lat, lng')
+            .eq('name', attr.name)
+            .eq('city_id', formData.city?.id)
+            .single();
 
-            if (error) throw error;
-
-            return {
-              ...attr,
-              lat: data?.lat || 0,
-              lng: data?.lng || 0
-            };
+          if (error) {
+            console.error('Error fetching coordinates for attraction:', attr.name, error);
+            throw error;
           }
-          
+
+          console.log('Fetched coordinates for', attr.name, ':', data);
+
           return {
             ...attr,
-            lat: formData.city?.lat || 0,
-            lng: formData.city?.lng || 0
+            lat: data?.lat || 0,
+            lng: data?.lng || 0
           };
         });
 
         const attractionsWithCoords = await Promise.all(attractionPromises);
-        console.log('Attractions with coordinates:', attractionsWithCoords);
+        console.log('All attractions with coordinates:', attractionsWithCoords);
         setAttractions(attractionsWithCoords);
       } catch (error) {
         console.error('Error fetching attraction coordinates:', error);
@@ -89,7 +88,7 @@ export function RoutePreview({
           <CityMap
             center={[formData.city?.lat || 0, formData.city?.lng || 0]}
             attractions={attractions.map(attr => ({
-              name: attr.name || attr.address,
+              name: attr.name,
               position: [attr.lat, attr.lng],
               visitDuration: attr.visitDuration,
               price: attr.price
