@@ -35,12 +35,15 @@ export function CityRatings({ cityId, userId }: CityRatingsProps) {
     queryKey: ['cityRating', cityId, userId],
     queryFn: async () => {
       if (!userId) return null;
+      
+      console.log('Fetching rating for city:', cityId, 'and user:', userId);
+      
       const { data, error } = await supabase
         .from('city_ratings')
         .select('*')
         .eq('city_id', cityId)
         .eq('user_id', userId)
-        .single();
+        .maybeSingle(); // Changed from .single() to .maybeSingle()
 
       if (error) {
         console.error('Error fetching rating:', error);
@@ -48,6 +51,7 @@ export function CityRatings({ cityId, userId }: CityRatingsProps) {
       }
 
       if (data) {
+        console.log('Found existing rating:', data);
         setRatings({
           cleanliness: data.cleanliness,
           safety: data.safety,
@@ -58,6 +62,8 @@ export function CityRatings({ cityId, userId }: CityRatingsProps) {
           cost_of_living: data.cost_of_living,
         });
         setComment(data.comment || '');
+      } else {
+        console.log('No existing rating found');
       }
 
       return data;
