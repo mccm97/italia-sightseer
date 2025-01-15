@@ -35,7 +35,13 @@ export function CreateRouteForm({
       attractionsCount: 1,
       city: null,
       country: '',
-      attractions: [{ name: '', address: '', inputType: 'name', visitDuration: 0, price: 0 }],
+      attractions: [{ 
+        name: '', 
+        address: '', 
+        inputType: 'name' as const, 
+        visitDuration: 0, 
+        price: 0 
+      }],
       image_url: '',
       description: '',
     }
@@ -69,13 +75,13 @@ export function CreateRouteForm({
   useEffect(() => {
     console.log('Attractions count changed:', attractionsCount);
     
-    if (!attractionsCount || attractionsCount < 1) {
-      console.log('Invalid attractions count, setting to 1');
-      form.setValue('attractionsCount', 1);
+    // Ensure valid count
+    const count = Math.max(1, Math.floor(attractionsCount) || 1);
+    if (count !== attractionsCount) {
+      form.setValue('attractionsCount', count);
       return;
     }
 
-    const count = Math.floor(attractionsCount); // Ensure integer
     const currentAttractions = form.getValues('attractions') || [];
     
     // Create new array with the correct length
@@ -83,7 +89,7 @@ export function CreateRouteForm({
       return currentAttractions[index] || { 
         name: '', 
         address: '', 
-        inputType: 'name', 
+        inputType: 'name' as const, 
         visitDuration: 0, 
         price: 0 
       };
