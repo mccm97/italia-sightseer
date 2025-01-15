@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { Plus, PenLine, MapPin, ArrowLeft } from 'lucide-react';
+import { Plus, PenLine, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,8 +17,28 @@ import { CreateRouteForm } from '@/components/route/CreateRouteForm';
 export function CreateRouteDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState('');
   const navigate = useNavigate();
   const { t } = useTranslation();
+
+  const { data: cities = [] } = useQuery({
+    queryKey: ['cities'],
+    queryFn: async () => {
+      console.log('Fetching cities from Supabase');
+      const { data, error } = await supabase
+        .from('cities')
+        .select('id, name, lat, lng, country')
+        .order('name');
+
+      if (error) {
+        console.error('Error fetching cities:', error);
+        throw error;
+      }
+
+      console.log('Fetched cities:', data);
+      return data;
+    }
+  });
 
   const handleCreatePost = () => {
     console.log('Navigating to blog page');
@@ -28,6 +50,11 @@ export function CreateRouteDialog() {
     console.log('Opening route creation dialog');
     setIsOpen(false);
     setIsDialogOpen(true);
+  };
+
+  const handleCountrySelect = (country: string) => {
+    console.log('Selected country:', country);
+    setSelectedCountry(country);
   };
 
   return (
@@ -68,9 +95,9 @@ export function CreateRouteDialog() {
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <CreateRouteForm 
             onSubmit={() => {}} 
-            cities={[]} 
-            selectedCountry="" 
-            onCountrySelect={() => {}}
+            cities={cities} 
+            selectedCountry={selectedCountry} 
+            onCountrySelect={handleCountrySelect}
             onSuccess={() => setIsDialogOpen(false)} 
           />
         </DialogContent>
