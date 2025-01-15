@@ -28,7 +28,7 @@ export const CityView = ({
   onBackClick,
   onRouteClick,
 }: CityViewProps) => {
-  const { session } = useSession();
+  const { user } = useSession();
 
   return (
     <>
@@ -80,7 +80,7 @@ export const CityView = ({
             <div className="p-4 border rounded-md">
               <CityRatings 
                 cityId={city.id || ''} 
-                userId={session?.user?.id}
+                userId={user?.id}
               />
             </div>
           </div>
