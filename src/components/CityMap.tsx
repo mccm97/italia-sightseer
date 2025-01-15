@@ -28,17 +28,23 @@ interface CityMapProps {
 
 const isValidCoordinate = (coord: [number, number]): boolean => {
   if (!coord || !Array.isArray(coord) || coord.length !== 2) {
-    console.warn('Invalid coordinate format:', coord);
+    console.warn('Invalid coordinate format for coordinate:', coord);
     return false;
   }
 
   const [lat, lng] = coord;
+  console.log(`Validating coordinates - lat: ${lat}, lng: ${lng}`);
+  
+  if (typeof lat !== 'number' || typeof lng !== 'number') {
+    console.warn('Coordinates must be numbers:', { lat, lng });
+    return false;
+  }
+
   const isValid = !isNaN(lat) && !isNaN(lng) && 
-                 Math.abs(lat) <= 90 && Math.abs(lng) <= 180 &&
-                 lat !== 0 && lng !== 0;
+                 Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
 
   if (!isValid) {
-    console.warn('Coordinate values out of range:', coord);
+    console.warn('Coordinate values out of range:', { lat, lng });
   }
 
   return isValid;
@@ -55,7 +61,14 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
 
     const layers: L.Polyline[] = [];
     
-    const validPoints = points.filter(isValidCoordinate);
+    const validPoints = points.filter(point => {
+      const isValid = isValidCoordinate(point);
+      if (!isValid) {
+        console.warn('Invalid point filtered out:', point);
+      }
+      return isValid;
+    });
+    
     console.log('Valid points for walking path:', validPoints);
     
     if (validPoints.length < 2) {
@@ -163,7 +176,11 @@ const CityMap = ({
       console.warn('Missing position for attraction:', attr.name);
       return false;
     }
-    return isValidCoordinate(attr.position);
+    const isValid = isValidCoordinate(attr.position);
+    if (!isValid) {
+      console.warn('Invalid position for attraction:', attr.name, attr.position);
+    }
+    return isValid;
   });
 
   console.log('Valid attractions for map:', validAttractions);
