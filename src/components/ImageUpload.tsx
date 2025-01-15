@@ -30,26 +30,29 @@ export function ImageUpload({ onImageUploaded, bucketName, className = '', curre
       setUploading(true);
       const file = event.target.files[0];
       const fileExt = file.name.split('.').pop();
-      const filePath = `${Math.random()}.${fileExt}`;
+      const fileName = `${Math.random()}.${fileExt}`;
 
       console.log('ImageUpload - Starting upload of file:', file.name);
       console.log('ImageUpload - File size:', file.size, 'bytes');
       console.log('ImageUpload - File type:', file.type);
+      console.log('ImageUpload - Generated filename:', fileName);
 
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError, data } = await supabase.storage
         .from(bucketName)
-        .upload(filePath, file);
+        .upload(fileName, file);
 
       if (uploadError) {
         console.error('ImageUpload - Upload error:', uploadError);
         throw uploadError;
       }
 
+      console.log('ImageUpload - Upload successful, data:', data);
+
       const { data: { publicUrl } } = supabase.storage
         .from(bucketName)
-        .getPublicUrl(filePath);
+        .getPublicUrl(fileName);
 
-      console.log('ImageUpload - Upload successful, public URL:', publicUrl);
+      console.log('ImageUpload - Generated public URL:', publicUrl);
 
       onImageUploaded(publicUrl);
       toast({
@@ -76,22 +79,20 @@ export function ImageUpload({ onImageUploaded, bucketName, className = '', curre
   return (
     <div className={`space-y-4 ${className}`}>
       {currentImage && (
-        <div className="relative bg-gray-100 rounded-lg">
-          <div className="w-full h-48">
-            <img 
-              src={currentImage} 
-              alt={t('blog.imageUpload.preview')}
-              className="w-full h-full object-cover rounded-lg"
-              onError={(e) => {
-                console.error('ImageUpload - Error loading image:', e);
-                const imgElement = e.target as HTMLImageElement;
-                console.log('ImageUpload - Failed image src:', imgElement.src);
-              }}
-              onLoad={() => {
-                console.log('ImageUpload - Image loaded successfully');
-              }}
-            />
-          </div>
+        <div className="relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden">
+          <img 
+            src={currentImage} 
+            alt={t('blog.imageUpload.preview')}
+            className="w-full h-full object-contain"
+            onError={(e) => {
+              console.error('ImageUpload - Error loading image:', e);
+              const imgElement = e.target as HTMLImageElement;
+              console.log('ImageUpload - Failed image src:', imgElement.src);
+            }}
+            onLoad={() => {
+              console.log('ImageUpload - Image loaded successfully');
+            }}
+          />
           <Button
             variant="destructive"
             size="icon"
