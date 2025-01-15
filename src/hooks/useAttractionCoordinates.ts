@@ -35,7 +35,7 @@ export function useAttractionCoordinates(formData: CreateRouteFormData) {
 
           const { data, error } = await supabase
             .from('attractions')
-            .select('name, lat, lng, visit_duration, price')
+            .select('id, name, lat, lng, visit_duration, price')
             .eq('name', attr.name)
             .eq('city_id', formData.city?.id)
             .maybeSingle();
@@ -45,12 +45,18 @@ export function useAttractionCoordinates(formData: CreateRouteFormData) {
             return null;
           }
 
-          if (!data || !data.lat || !data.lng) {
-            console.error('Missing coordinates for attraction:', attr.name, data);
+          if (!data || typeof data.lat !== 'number' || typeof data.lng !== 'number') {
+            console.error('Missing or invalid coordinates for attraction:', attr.name, data);
             return null;
           }
 
-          console.log('Fetched data for', attr.name, ':', data);
+          console.log('Fetched data for attraction:', {
+            name: attr.name,
+            lat: data.lat,
+            lng: data.lng,
+            visitDuration: attr.visitDuration || data.visit_duration,
+            price: attr.price || data.price
+          });
 
           return {
             name: data.name,
@@ -60,7 +66,19 @@ export function useAttractionCoordinates(formData: CreateRouteFormData) {
           };
         });
 
-        const attractionsWithCoords = (await Promise.all(attractionPromises)).filter(Boolean) as AttractionWithCoordinates[];
+        const attractionsWithCoords = (await Promise.all(attractionPromises))
+          .filter((attr): attr is AttractionWithCoordinates => {
+            if (!attr) return false;
+            const isValid = Array.isArray(attr.position) && 
+                          attr.position.length === 2 && 
+                          typeof attr.position[0] === 'number' && 
+                          typeof attr.position[1] === 'number';
+            if (!isValid) {
+              console.error('Invalid coordinates for attraction:', attr);
+            }
+            return isValid;
+          });
+
         console.log('All attractions with coordinates:', attractionsWithCoords);
         setAttractions(attractionsWithCoords);
       } catch (error) {
