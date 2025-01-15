@@ -74,11 +74,13 @@ export function CreateRouteDialog() {
     console.log('Form submitted with data:', data);
     const success = await handleFormSubmit(data, user?.id);
     if (success) {
+      console.log('Moving to preview step');
       setStep('preview');
     }
   };
 
   const handleBack = () => {
+    console.log('Going back to form step');
     setStep('form');
   };
 
@@ -87,6 +89,7 @@ export function CreateRouteDialog() {
     if (user?.id) {
       const success = await createRoute(user.id);
       if (success) {
+        console.log('Route created successfully, closing dialog and navigating to profile');
         setIsDialogOpen(false);
         setStep('form');
         navigate('/profile');

@@ -110,8 +110,18 @@ export function CreateRouteForm({
     }
 
     // If all validations pass, proceed with submission
-    await onSubmit(data);
-    onSuccess?.();
+    try {
+      await onSubmit(data);
+      console.log('Form submitted successfully');
+      onSuccess?.();
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast({
+        title: "Errore",
+        description: "Si è verificato un errore durante la creazione del percorso",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
