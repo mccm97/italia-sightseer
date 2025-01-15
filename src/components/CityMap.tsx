@@ -110,7 +110,7 @@ const WalkingPath = ({ points }: { points: [number, number][] }) => {
           }
         }
 
-        // Rimuovi la linea diretta temporanea
+        // Rimuovi la linea diretta temporanea dopo aver caricato tutti i segmenti
         directPath.remove();
 
         // Fit della mappa per mostrare tutto il percorso
@@ -155,7 +155,7 @@ const CityMap = ({
     <MapContainer
       center={center}
       zoom={zoom}
-      className="w-full h-[500px] rounded-lg"
+      className="w-full h-full rounded-lg"
     >
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
