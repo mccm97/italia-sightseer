@@ -38,7 +38,6 @@ export function RouteMapView({ cityId, attractions }: RouteMapViewProps) {
         if (city) {
           console.log('City coordinates fetched:', city);
           setCityCoordinates([city.lat, city.lng]);
-          setShowMap(true);
         }
       } catch (error) {
         console.error('Error fetching city coordinates:', error);
@@ -66,11 +65,11 @@ export function RouteMapView({ cityId, attractions }: RouteMapViewProps) {
 
   console.log('Valid attractions for map:', validAttractions);
 
-  if (!showMap || !cityCoordinates) {
+  if (!cityCoordinates) {
     return null;
   }
 
-  return (
+  return showMap ? (
     <div className="mt-4 h-[300px] rounded-lg overflow-hidden">
       <CityMap
         center={cityCoordinates}
@@ -79,5 +78,5 @@ export function RouteMapView({ cityId, attractions }: RouteMapViewProps) {
         zoom={13}
       />
     </div>
-  );
+  ) : null;
 }

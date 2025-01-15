@@ -87,10 +87,12 @@ export function RouteCard({
             summary={route.description || ''}
           />
 
-          <RouteMapView 
-            cityId={route.city_id}
-            attractions={route.attractions}
-          />
+          {showMap && (
+            <RouteMapView 
+              cityId={route.city_id}
+              attractions={route.attractions}
+            />
+          )}
 
           <RouteActions
             onCommentsClick={() => setShowComments(!showComments)}
