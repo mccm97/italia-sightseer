@@ -2,6 +2,7 @@ import { FormControl, FormField, FormItem, FormLabel } from '@/components/ui/for
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
 import { CreateRouteFormData } from '@/types/route';
+import { useEffect } from 'react';
 
 interface CountrySelectorProps {
   form: UseFormReturn<CreateRouteFormData>;
@@ -10,6 +11,10 @@ interface CountrySelectorProps {
 }
 
 export function CountrySelector({ form, countries, onCountrySelect }: CountrySelectorProps) {
+  useEffect(() => {
+    console.log('Countries available:', countries); // Debug log
+  }, [countries]);
+
   return (
     <FormField
       control={form.control}
@@ -21,6 +26,7 @@ export function CountrySelector({ form, countries, onCountrySelect }: CountrySel
             <Select
               value={field.value}
               onValueChange={(value) => {
+                console.log('Country selected:', value); // Debug log
                 field.onChange(value);
                 onCountrySelect(value);
               }}
@@ -29,11 +35,17 @@ export function CountrySelector({ form, countries, onCountrySelect }: CountrySel
                 <SelectValue placeholder="Seleziona un paese" />
               </SelectTrigger>
               <SelectContent>
-                {countries.map((country, index) => (
-                  <SelectItem key={index} value={country}>
-                    {country}
+                {Array.isArray(countries) && countries.length > 0 ? (
+                  countries.map((country, index) => (
+                    <SelectItem key={index} value={country}>
+                      {country}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="" disabled>
+                    Nessun paese disponibile
                   </SelectItem>
-                ))}
+                )}
               </SelectContent>
             </Select>
           </FormControl>
