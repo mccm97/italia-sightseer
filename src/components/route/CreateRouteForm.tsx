@@ -67,10 +67,29 @@ export function CreateRouteForm({
   const attractionsCount = form.watch('attractionsCount');
 
   useEffect(() => {
-    const currentAttractions = form.getValues('attractions');
-    const updatedAttractions = Array(attractionsCount)
-      .fill({ name: '', address: '', inputType: 'name', visitDuration: 0, price: 0 })
-      .map((attr, index) => currentAttractions[index] || attr);
+    console.log('Attractions count changed:', attractionsCount);
+    
+    if (!attractionsCount || attractionsCount < 1) {
+      console.log('Invalid attractions count, setting to 1');
+      form.setValue('attractionsCount', 1);
+      return;
+    }
+
+    const count = Math.floor(attractionsCount); // Ensure integer
+    const currentAttractions = form.getValues('attractions') || [];
+    
+    // Create new array with the correct length
+    const updatedAttractions = Array.from({ length: count }, (_, index) => {
+      return currentAttractions[index] || { 
+        name: '', 
+        address: '', 
+        inputType: 'name', 
+        visitDuration: 0, 
+        price: 0 
+      };
+    });
+
+    console.log('Setting attractions array:', updatedAttractions);
     form.setValue('attractions', updatedAttractions);
   }, [attractionsCount, form]);
 
@@ -81,7 +100,6 @@ export function CreateRouteForm({
   const handleSubmit = async (data: CreateRouteFormData) => {
     console.log('Form submission data:', data);
     
-    // Validate required fields
     if (!data.city) {
       toast({
         title: "Errore",
@@ -109,7 +127,6 @@ export function CreateRouteForm({
       return;
     }
 
-    // If all validations pass, proceed with submission
     try {
       await onSubmit(data);
       console.log('Form submitted successfully');
@@ -201,7 +218,10 @@ export function CreateRouteForm({
                   min="1"
                   placeholder="Inserisci il numero di attrazioni"
                   {...field}
-                  onChange={e => field.onChange(parseInt(e.target.value))}
+                  onChange={e => {
+                    const value = Math.max(1, parseInt(e.target.value) || 1);
+                    field.onChange(value);
+                  }}
                 />
               </FormControl>
             </FormItem>
