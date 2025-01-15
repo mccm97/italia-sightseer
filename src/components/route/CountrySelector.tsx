@@ -37,12 +37,12 @@ export function CountrySelector({ form, countries, onCountrySelect }: CountrySel
               <SelectContent>
                 {Array.isArray(countries) && countries.length > 0 ? (
                   countries.map((country, index) => (
-                    <SelectItem key={index} value={country}>
+                    <SelectItem key={index} value={country || `country-${index}`}>
                       {country}
                     </SelectItem>
                   ))
                 ) : (
-                  <SelectItem value="" disabled>
+                  <SelectItem value="no-countries" disabled>
                     Nessun paese disponibile
                   </SelectItem>
                 )}
