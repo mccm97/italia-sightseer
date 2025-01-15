@@ -6,6 +6,13 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Card } from './ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface AttractionSelectProps {
   value: string;
@@ -90,17 +97,42 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
 
   return (
     <div className="relative w-full">
-      <Input
-        type="text"
-        value={searchQuery}
-        onChange={(e) => {
-          setSearchQuery(e.target.value);
-          setShowSuggestions(true);
-        }}
-        onFocus={() => setShowSuggestions(true)}
-        placeholder="Cerca un monumento..."
-        className="w-full"
-      />
+      <div className="flex gap-2">
+        <Input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            setShowSuggestions(true);
+          }}
+          onFocus={() => setShowSuggestions(true)}
+          placeholder="Cerca un monumento..."
+          className="w-full"
+        />
+        {suggestions.length > 0 && (
+          <Select
+            value={searchQuery}
+            onValueChange={(value) => {
+              onChange(value);
+              setSearchQuery(value);
+              setShowSuggestions(false);
+            }}
+          >
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Seleziona..." />
+            </SelectTrigger>
+            <SelectContent>
+              <ScrollArea className="h-[200px]">
+                {suggestions.map((suggestion) => (
+                  <SelectItem key={suggestion.name} value={suggestion.name}>
+                    {suggestion.name}
+                  </SelectItem>
+                ))}
+              </ScrollArea>
+            </SelectContent>
+          </Select>
+        )}
+      </div>
       
       {showSuggestions && searchQuery && (
         <Card className="absolute z-50 w-full mt-1 shadow-lg">
