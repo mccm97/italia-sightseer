@@ -23,6 +23,7 @@ export function ImageUpload({ onImageUploaded, bucketName, className = '', curre
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       if (!event.target.files || event.target.files.length === 0) {
+        console.log('ImageUpload - No file selected');
         return;
       }
 
@@ -31,13 +32,16 @@ export function ImageUpload({ onImageUploaded, bucketName, className = '', curre
       const fileExt = file.name.split('.').pop();
       const filePath = `${Math.random()}.${fileExt}`;
 
-      console.log('ImageUpload - Uploading file:', filePath);
+      console.log('ImageUpload - Starting upload of file:', file.name);
+      console.log('ImageUpload - File size:', file.size, 'bytes');
+      console.log('ImageUpload - File type:', file.type);
 
       const { error: uploadError } = await supabase.storage
         .from(bucketName)
         .upload(filePath, file);
 
       if (uploadError) {
+        console.error('ImageUpload - Upload error:', uploadError);
         throw uploadError;
       }
 
@@ -72,12 +76,20 @@ export function ImageUpload({ onImageUploaded, bucketName, className = '', curre
   return (
     <div className={`space-y-4 ${className}`}>
       {currentImage && (
-        <div className="relative bg-gray-100 rounded-lg overflow-hidden">
-          <div className="aspect-video w-full relative">
+        <div className="relative bg-gray-100 rounded-lg">
+          <div className="w-full h-48">
             <img 
               src={currentImage} 
               alt={t('blog.imageUpload.preview')}
-              className="absolute inset-0 w-full h-full object-contain"
+              className="w-full h-full object-cover rounded-lg"
+              onError={(e) => {
+                console.error('ImageUpload - Error loading image:', e);
+                const imgElement = e.target as HTMLImageElement;
+                console.log('ImageUpload - Failed image src:', imgElement.src);
+              }}
+              onLoad={() => {
+                console.log('ImageUpload - Image loaded successfully');
+              }}
             />
           </div>
           <Button
