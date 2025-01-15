@@ -79,11 +79,11 @@ export function ImageUpload({ onImageUploaded, bucketName, className = '', curre
   return (
     <div className={`space-y-4 ${className}`}>
       {currentImage && (
-        <div className="relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden">
+        <div className="relative w-full h-48">
           <img 
             src={currentImage} 
             alt={t('blog.imageUpload.preview')}
-            className="w-full h-full object-contain"
+            className="w-full h-full object-contain bg-gray-100 rounded-lg"
             onError={(e) => {
               console.error('ImageUpload - Error loading image:', e);
               const imgElement = e.target as HTMLImageElement;
