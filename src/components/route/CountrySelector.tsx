@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ChevronDown } from 'lucide-react';
 
 interface CountrySelectorProps {
   form: UseFormReturn<CreateRouteFormData>;
@@ -29,18 +31,30 @@ export function CountrySelector({ form, countries, onCountrySelect }: CountrySel
           <FormLabel>Paese</FormLabel>
           <FormControl>
             <div className="relative">
-              <Input
-                type="text"
-                placeholder="Cerca un paese..."
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setShowSuggestions(true);
-                }}
-                onFocus={() => setShowSuggestions(true)}
-              />
+              <div className="relative flex">
+                <Input
+                  type="text"
+                  placeholder="Cerca un paese..."
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setShowSuggestions(true);
+                  }}
+                  onFocus={() => setShowSuggestions(true)}
+                  className="pr-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 h-full px-3 hover:bg-transparent"
+                  onClick={() => setShowSuggestions(!showSuggestions)}
+                >
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </Button>
+              </div>
               
-              {showSuggestions && search && (
+              {showSuggestions && (
                 <Card className="absolute z-50 w-full mt-1 shadow-lg">
                   <ScrollArea className="max-h-[200px]">
                     <div className="p-2 space-y-1">
