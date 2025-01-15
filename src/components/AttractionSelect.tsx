@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import {
   Select,
@@ -11,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useAttractions } from '@/hooks/useAttractions';
 
 interface AttractionSelectProps {
   value: string;
@@ -19,76 +18,14 @@ interface AttractionSelectProps {
   cityId?: string;
 }
 
-interface Attraction {
-  name: string;
-  source: 'local';
-  lat?: number;
-  lng?: number;
-}
-
 export function AttractionSelect({ value, onChange, inputType, cityId }: AttractionSelectProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [attractions, setAttractions] = useState<Attraction[]>([]);
-  const [filteredAttractions, setFilteredAttractions] = useState<Attraction[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    const fetchAttractions = async () => {
-      if (!cityId) {
-        setAttractions([]);
-        return;
-      }
-      
-      setIsLoading(true);
-      try {
-        console.log('Fetching attractions for city:', cityId);
-        const { data: localAttractions, error: localError } = await supabase
-          .from('attractions')
-          .select('name, lat, lng')
-          .eq('city_id', cityId)
-          .order('name');
-
-        if (localError) {
-          console.error('Error fetching local attractions:', localError);
-          throw localError;
-        }
-
-        console.log('Raw attractions data from database:', localAttractions);
-
-        const results = (localAttractions || []).map(attr => ({
-          name: attr.name,
-          source: 'local' as const,
-          lat: attr.lat,
-          lng: attr.lng
-        }));
-
-        console.log('Processed attractions with coordinates:', results);
-        setAttractions(results);
-        setFilteredAttractions(results);
-      } catch (error) {
-        console.error('Error fetching attractions:', error);
-        toast({
-          title: "Errore",
-          description: "Impossibile caricare le attrazioni. Riprova più tardi.",
-          variant: "destructive"
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchAttractions();
-  }, [cityId, toast]);
-
-  useEffect(() => {
-    const filtered = attractions.filter(attraction =>
-      attraction.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    console.log('Filtered attractions with coordinates:', filtered);
-    setFilteredAttractions(filtered);
-  }, [searchQuery, attractions]);
+  const {
+    filteredAttractions,
+    isLoading,
+    searchQuery,
+    setSearchQuery
+  } = useAttractions(cityId);
+  const [isOpen, setIsOpen] = React.useState(false);
 
   if (inputType === 'address') {
     return (
