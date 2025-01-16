@@ -20,7 +20,7 @@ export function useRouteData(userId?: string) {
           cities(name, lat, lng),
           route_likes(count),
           route_ratings(rating),
-          route_attractions!inner(
+          route_attractions(
             *,
             attraction:attractions(
               id,
@@ -46,6 +46,21 @@ export function useRouteData(userId?: string) {
       // Log each route's attractions for debugging
       routes?.forEach(route => {
         console.log(`Route ${route.id} attractions:`, route.route_attractions);
+        if (route.route_attractions?.length === 0) {
+          console.warn(`Route ${route.id} has no attractions - checking route_attractions table directly`);
+          // Double check route_attractions table
+          supabase
+            .from('route_attractions')
+            .select('*')
+            .eq('route_id', route.id)
+            .then(({ data, error }) => {
+              if (error) {
+                console.error('Error checking route_attractions:', error);
+              } else {
+                console.log(`Direct route_attractions query for route ${route.id}:`, data);
+              }
+            });
+        }
       });
 
       return routes as DbRoute[];
