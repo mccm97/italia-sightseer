@@ -37,6 +37,8 @@ interface RouteCardProps {
   };
   onRouteClick?: () => void;
   showDeleteButton?: boolean;
+  currentUserId?: string | null;
+  onRouteDelete?: () => void;
 }
 
 export function RouteCard({
@@ -44,6 +46,8 @@ export function RouteCard({
   routeStats,
   onRouteClick,
   showDeleteButton = false,
+  currentUserId,
+  onRouteDelete,
 }: RouteCardProps) {
   const [showAttractions, setShowAttractions] = useState(false);
   const [showDescription, setShowDescription] = useState(false);
