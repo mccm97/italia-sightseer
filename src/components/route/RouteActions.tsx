@@ -76,9 +76,8 @@ export function RouteActions({
           e.stopPropagation();
           onMapClick();
         }}
-        className="flex items-center gap-2"
       >
-        <Map className="w-4 h-4" />
+        <Map className="w-4 h-4 mr-2" />
         {showMap ? 'Nascondi mappa' : 'Visualizza su mappa'}
       </Button>
     </div>
