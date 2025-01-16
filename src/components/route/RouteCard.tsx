@@ -52,6 +52,8 @@ export function RouteCard({
   const [showMap, setShowMap] = useState(false);
   const { handleLike } = useLikeManagement();
 
+  console.log('RouteCard - route attractions:', route.attractions);
+
   const handleLikeClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     await handleLike(route.id);
@@ -121,7 +123,7 @@ export function RouteCard({
       <AttractionDetailsDialog
         isOpen={showAttractions}
         onClose={() => setShowAttractions(false)}
-        attractions={route.attractions}
+        attractions={route.attractions || []}
       />
     </>
   );

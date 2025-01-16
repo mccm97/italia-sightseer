@@ -20,8 +20,10 @@ interface AttractionDetailsDialogProps {
 export function AttractionDetailsDialog({
   isOpen,
   onClose,
-  attractions
+  attractions = []
 }: AttractionDetailsDialogProps) {
+  console.log('AttractionDetailsDialog - received attractions:', attractions);
+  
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">

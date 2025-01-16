@@ -8,7 +8,9 @@ interface AttractionTimelineProps {
   }>;
 }
 
-export function AttractionTimeline({ attractions }: AttractionTimelineProps) {
+export function AttractionTimeline({ attractions = [] }: AttractionTimelineProps) {
+  console.log('AttractionTimeline - received attractions:', attractions);
+
   return (
     <div className="space-y-4 relative">
       <div className="absolute left-2 top-4 bottom-4 w-0.5 bg-primary/20" />
