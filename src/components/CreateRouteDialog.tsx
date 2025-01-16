@@ -63,8 +63,6 @@ export function CreateRouteDialog() {
     console.log('Opening route creation dialog');
     setIsOpen(false);
     setIsDialogOpen(true);
-    // Pre-select Italy and Turin
-    setSelectedCountry('Italy');
   };
 
   const handleCountrySelect = (country: string) => {
@@ -97,13 +95,6 @@ export function CreateRouteDialog() {
         navigate('/profile');
       }
     }
-  };
-
-  // Generate a unique suffix for the route name
-  const getUniqueRouteName = () => {
-    const date = new Date();
-    const timestamp = `${date.getHours()}:${date.getMinutes()}`;
-    return `Tour Classico di Torino (${timestamp})`;
   };
 
   return (
@@ -149,43 +140,6 @@ export function CreateRouteDialog() {
               selectedCountry={selectedCountry}
               onCountrySelect={handleCountrySelect}
               onSuccess={() => {}}
-              initialData={{
-                name: getUniqueRouteName(),
-                description: "Un affascinante percorso attraverso il cuore storico e culturale di Torino. Questo itinerario ti porterà alla scoperta dei principali monumenti e musei della prima capitale d'Italia, permettendoti di ammirare l'elegante architettura barocca e assaporare l'atmosfera regale della città sabauda.",
-                attractions: [
-                  {
-                    name: "Palazzo Reale",
-                    address: "",
-                    inputType: "name",
-                    visitDuration: 90,
-                    price: 15
-                  },
-                  {
-                    name: "Museo Egizio",
-                    address: "",
-                    inputType: "name",
-                    visitDuration: 120,
-                    price: 18
-                  },
-                  {
-                    name: "Mole Antonelliana",
-                    address: "",
-                    inputType: "name",
-                    visitDuration: 60,
-                    price: 14
-                  },
-                  {
-                    name: "Piazza San Carlo",
-                    address: "",
-                    inputType: "name",
-                    visitDuration: 30,
-                    price: 0
-                  }
-                ],
-                attractionsCount: 4,
-                country: "Italy",
-                city: cities.find(city => city.name === "Turin")
-              }}
             />
           ) : (
             <RoutePreview
