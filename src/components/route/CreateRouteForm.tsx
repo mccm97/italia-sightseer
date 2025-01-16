@@ -20,6 +20,7 @@ interface CreateRouteFormProps {
   selectedCountry: string;
   onCountrySelect: (country: string) => void;
   onSuccess?: () => void;
+  initialData?: Partial<CreateRouteFormData>;
 }
 
 export function CreateRouteForm({
@@ -28,22 +29,23 @@ export function CreateRouteForm({
   selectedCountry,
   onCountrySelect,
   onSuccess,
+  initialData
 }: CreateRouteFormProps) {
   const form = useForm<CreateRouteFormData>({
     defaultValues: {
-      name: '',
-      attractionsCount: 1,
-      city: null,
-      country: '',
-      attractions: [{ 
+      name: initialData?.name || '',
+      attractionsCount: initialData?.attractionsCount || 1,
+      city: initialData?.city || null,
+      country: initialData?.country || '',
+      attractions: initialData?.attractions || [{ 
         name: '', 
         address: '', 
         inputType: 'name' as const, 
         visitDuration: 0, 
         price: 0 
       }],
-      image_url: '',
-      description: '',
+      image_url: initialData?.image_url || '',
+      description: initialData?.description || '',
     }
   });
 
@@ -98,6 +100,12 @@ export function CreateRouteForm({
     console.log('Setting attractions array:', updatedAttractions);
     form.setValue('attractions', updatedAttractions);
   }, [attractionsCount, form]);
+
+  useEffect(() => {
+    if (initialData?.country) {
+      onCountrySelect(initialData.country);
+    }
+  }, [initialData?.country, onCountrySelect]);
 
   const handleImageUploaded = (url: string) => {
     form.setValue('image_url', url);

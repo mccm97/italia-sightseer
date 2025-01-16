@@ -37,8 +37,6 @@ interface RouteCardProps {
   };
   onRouteClick?: () => void;
   showDeleteButton?: boolean;
-  currentUserId?: string | null;
-  onRouteDelete?: () => void;
 }
 
 export function RouteCard({
@@ -46,8 +44,6 @@ export function RouteCard({
   routeStats,
   onRouteClick,
   showDeleteButton = false,
-  currentUserId,
-  onRouteDelete,
 }: RouteCardProps) {
   const [showAttractions, setShowAttractions] = useState(false);
   const [showDescription, setShowDescription] = useState(false);
@@ -55,8 +51,6 @@ export function RouteCard({
   const [showReviews, setShowReviews] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const { handleLike } = useLikeManagement();
-
-  console.log('RouteCard - route attractions:', route.attractions);
 
   const handleLikeClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -96,7 +90,7 @@ export function RouteCard({
           {showMap && (
             <RouteMapView 
               cityId={route.city_id}
-              attractions={route.attractions || []}
+              attractions={route.attractions}
             />
           )}
 
@@ -127,7 +121,7 @@ export function RouteCard({
       <AttractionDetailsDialog
         isOpen={showAttractions}
         onClose={() => setShowAttractions(false)}
-        attractions={route.attractions || []}
+        attractions={route.attractions}
       />
     </>
   );

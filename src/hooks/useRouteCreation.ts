@@ -17,37 +17,18 @@ export function useRouteCreation() {
     return formData?.attractions.reduce((total, attr) => total + (attr.price || 0), 0) || 0;
   };
 
-  const getUniqueRouteName = async (baseName: string, cityId: string, userId: string) => {
-    console.log('Checking for unique route name:', baseName);
-    
-    // First try with the original name
-    const { data: existingRoute } = await supabase
-      .from('routes')
-      .select('id')
-      .eq('name', baseName)
-      .eq('city_id', cityId)
-      .eq('user_id', userId)
-      .maybeSingle();
-
-    if (!existingRoute) {
-      return baseName;
-    }
-
-    // If exists, append timestamp
-    const timestamp = new Date().toISOString().slice(11, 19).replace(/:/g, '-');
-    const newName = `${baseName} (${timestamp})`;
-    console.log('Generated unique name:', newName);
-    return newName;
-  };
-
   const handleFormSubmit = async (data: CreateRouteFormData, userId: string) => {
     try {
       console.log('Starting form submission process...', data);
       
       const isDuplicate = await checkDuplicateRouteName(userId, data.name);
       if (isDuplicate) {
-        const uniqueName = await getUniqueRouteName(data.name, data.city?.id || '', userId);
-        data.name = uniqueName;
+        toast({
+          title: "Nome percorso duplicato",
+          description: "Hai già un percorso con questo nome. Per favore, scegli un nome diverso.",
+          variant: "destructive"
+        });
+        return false;
       }
 
       const { data: canCreate } = await supabase.rpc('can_create_route', { input_user_id: userId });

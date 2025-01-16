@@ -3,11 +3,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AttractionTimeline } from './AttractionTimeline';
-import { useTranslation } from 'react-i18next';
 
 interface AttractionDetailsDialogProps {
   isOpen: boolean;
@@ -22,20 +20,13 @@ interface AttractionDetailsDialogProps {
 export function AttractionDetailsDialog({
   isOpen,
   onClose,
-  attractions = []
+  attractions
 }: AttractionDetailsDialogProps) {
-  const { t } = useTranslation();
-  
-  console.log('AttractionDetailsDialog - received attractions:', attractions);
-  
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{t('routes.attractionsDetails')}</DialogTitle>
-          <DialogDescription>
-            {t('routes.attractionsDetailsDescription')}
-          </DialogDescription>
+          <DialogTitle>Dettagli Attrazioni</DialogTitle>
         </DialogHeader>
         <ScrollArea className="h-[400px] pr-4">
           <AttractionTimeline attractions={attractions} />
