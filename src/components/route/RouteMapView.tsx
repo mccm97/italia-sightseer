@@ -13,7 +13,6 @@ interface RouteMapViewProps {
 
 export function RouteMapView({ cityId, attractions }: RouteMapViewProps) {
   const [cityCoordinates, setCityCoordinates] = useState<[number, number] | null>(null);
-  const [showMap, setShowMap] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -69,7 +68,7 @@ export function RouteMapView({ cityId, attractions }: RouteMapViewProps) {
     return null;
   }
 
-  return showMap ? (
+  return (
     <div className="mt-4 h-[300px] rounded-lg overflow-hidden">
       <CityMap
         center={cityCoordinates}
@@ -78,5 +77,5 @@ export function RouteMapView({ cityId, attractions }: RouteMapViewProps) {
         zoom={13}
       />
     </div>
-  ) : null;
+  );
 }
