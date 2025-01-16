@@ -3,7 +3,7 @@ import { Map, MessageSquare, ListTree, Star } from 'lucide-react';
 
 interface RouteActionsProps {
   onCommentsClick: () => void;
-  onAttractionsClick?: () => void; // Made optional
+  onAttractionsClick: () => void;
   onDescriptionToggle: () => void;
   onMapClick: () => void;
   onReviewsClick: () => void;
@@ -46,19 +46,17 @@ export function RouteActions({
         Recensioni
       </Button>
 
-      {onAttractionsClick && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            onAttractionsClick();
-          }}
-        >
-          <ListTree className="w-4 h-4 mr-2" />
-          Dettagli Attrazioni
-        </Button>
-      )}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={(e) => {
+          e.stopPropagation();
+          onAttractionsClick();
+        }}
+      >
+        <ListTree className="w-4 h-4 mr-2" />
+        Dettagli Attrazioni
+      </Button>
 
       <Button
         variant="outline"
