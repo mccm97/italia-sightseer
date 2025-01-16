@@ -34,7 +34,6 @@ export function useRouteCreation() {
       const { data: canCreate } = await supabase.rpc('can_create_route', { input_user_id: userId });
 
       if (!canCreate) {
-        // Verifica il livello di sottoscrizione dell'utente
         const { data: profile } = await supabase
           .from('profiles')
           .select('subscription_level')
@@ -78,9 +77,12 @@ export function useRouteCreation() {
         return false;
       }
 
+      console.log('Creating route with data:', formData);
+
       const totalDuration = calculateTotalDuration();
       const totalDistance = 0; // This would need to be calculated based on the route
 
+      // First create the route
       const { data: routeData, error: routeError } = await supabase
         .from('routes')
         .insert({
@@ -100,36 +102,35 @@ export function useRouteCreation() {
 
       if (routeError) {
         console.error('Error creating route:', routeError);
-        toast({
-          title: "Errore",
-          description: "Impossibile creare il percorso. Riprova più tardi.",
-          variant: "destructive"
-        });
-        return false;
+        throw routeError;
       }
 
       console.log('Route created successfully:', routeData);
 
-      // Insert route attractions
-      const attractionPromises = formData.attractions.map((attr, index) => {
+      // Then insert route attractions
+      for (let i = 0; i < formData.attractions.length; i++) {
+        const attr = formData.attractions[i];
         if (!attr.attractionId) {
           console.error('Missing attraction ID for:', attr);
-          return Promise.reject(new Error('Missing attraction ID'));
+          continue;
         }
-        
-        return supabase
+
+        const { error: attractionError } = await supabase
           .from('route_attractions')
           .insert({
             route_id: routeData.id,
             attraction_id: attr.attractionId,
-            order_index: index,
+            order_index: i,
             transport_mode: 'walking',
             travel_duration: 0,
             travel_distance: 0
           });
-      });
 
-      await Promise.all(attractionPromises);
+        if (attractionError) {
+          console.error('Error adding attraction to route:', attractionError);
+          throw attractionError;
+        }
+      }
 
       toast({
         title: "Successo",
