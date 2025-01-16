@@ -100,13 +100,18 @@ export function UserRoutes({ userId }: UserRoutesProps) {
             console.log('Processing route attractions for route:', route.id);
             const attractions = route.route_attractions?.map(ra => {
               console.log('Processing attraction:', ra.attraction);
+              if (!ra.attraction.lat || !ra.attraction.lng) {
+                console.warn('Missing coordinates for attraction:', ra.attraction.name);
+                return null;
+              }
               return {
                 name: ra.attraction.name,
                 visitDuration: ra.attraction.visit_duration,
                 price: ra.attraction.price || 0,
                 position: [ra.attraction.lat, ra.attraction.lng] as [number, number]
               };
-            }) || [];
+            }).filter(Boolean) || [];
+            
             console.log('Transformed attractions:', attractions);
 
             return (
