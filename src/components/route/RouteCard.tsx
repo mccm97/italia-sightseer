@@ -92,7 +92,7 @@ export function RouteCard({
           {showMap && (
             <RouteMapView 
               cityId={route.city_id}
-              attractions={route.attractions}
+              attractions={route.attractions || []}
             />
           )}
 
