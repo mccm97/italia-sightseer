@@ -34,7 +34,7 @@ export function RouteActions({
         }}
       >
         <MessageSquare className="w-4 h-4 mr-2" />
-        {t('route.comments')}
+        {t('routes.comments')}
       </Button>
 
       <Button
@@ -46,7 +46,7 @@ export function RouteActions({
         }}
       >
         <Star className="w-4 h-4 mr-2" />
-        {t('route.reviews')}
+        {t('routes.reviews')}
       </Button>
 
       <Button
@@ -58,7 +58,7 @@ export function RouteActions({
         }}
       >
         <ListTree className="w-4 h-4 mr-2" />
-        {t('route.attractionDetails')}
+        {t('routes.attractionDetails')}
       </Button>
 
       <Button
@@ -69,7 +69,7 @@ export function RouteActions({
           onDescriptionToggle();
         }}
       >
-        {showDescription ? t('route.hideDescription') : t('route.showDescription')}
+        {showDescription ? t('routes.hideDescription') : t('routes.showDescription')}
       </Button>
 
       <Button
@@ -82,7 +82,7 @@ export function RouteActions({
         className="flex items-center gap-2"
       >
         <Map className="w-4 h-4" />
-        {showMap ? t('route.hideMap') : t('route.showMap')}
+        {showMap ? t('routes.hideMap') : t('routes.showMap')}
       </Button>
     </div>
   );
