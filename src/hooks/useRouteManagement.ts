@@ -14,13 +14,14 @@ export function useRouteManagement(selectedCity: any, toast: any) {
 
     console.log('Fetching routes for city:', selectedCity.id);
     
+    // First, let's check what routes exist for this city
     const { data: routes, error } = await supabase
       .from('routes')
       .select(`
         *,
-        route_attractions!inner (
+        route_attractions (
           *,
-          attraction:attractions!inner (*)
+          attraction:attractions (*)
         ),
         creator:profiles!routes_user_id_fkey(id, username, avatar_url)
       `)
@@ -38,6 +39,24 @@ export function useRouteManagement(selectedCity: any, toast: any) {
 
     console.log('Routes fetched:', routes?.length || 0, 'routes found');
     console.log('Raw routes data:', routes);
+
+    // For each route, let's double check its attractions
+    for (const route of routes || []) {
+      console.log(`Checking attractions for route ${route.id}:`);
+      const { data: attractions, error: attrError } = await supabase
+        .from('route_attractions')
+        .select(`
+          *,
+          attraction:attractions(*)
+        `)
+        .eq('route_id', route.id);
+
+      if (attrError) {
+        console.error(`Error checking attractions for route ${route.id}:`, attrError);
+      } else {
+        console.log(`Direct attractions query for route ${route.id}:`, attractions);
+      }
+    }
 
     return routes?.map(route => {
       console.log(`Processing route ${route.id} with attractions:`, route.route_attractions);
