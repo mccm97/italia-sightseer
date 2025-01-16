@@ -113,11 +113,8 @@ export function UserRoutes({ userId }: UserRoutesProps) {
                   route={{
                     id: route.id,
                     name: route.name,
-                    cityName: route.cities?.name || '',
-                    duration: route.total_duration,
                     total_duration: route.total_duration,
                     attractions,
-                    isPublic: route.is_public || false,
                     image_url: route.image_url,
                     description: route.description,
                     city_id: route.city_id,
