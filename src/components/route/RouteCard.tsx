@@ -49,7 +49,6 @@ export function RouteCard({
   currentUserId,
   onRouteDelete,
 }: RouteCardProps) {
-  const [showAttractions, setShowAttractions] = useState(false);
   const [showDescription, setShowDescription] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [showReviews, setShowReviews] = useState(false);
@@ -102,7 +101,6 @@ export function RouteCard({
 
           <RouteActions
             onCommentsClick={() => setShowComments(!showComments)}
-            onAttractionsClick={() => setShowAttractions(true)}
             onDescriptionToggle={() => setShowDescription(!showDescription)}
             onMapClick={() => setShowMap(!showMap)}
             onReviewsClick={() => setShowReviews(!showReviews)}
@@ -124,11 +122,7 @@ export function RouteCard({
         </div>
       </Card>
 
-      <AttractionDetailsDialog
-        isOpen={showAttractions}
-        onClose={() => setShowAttractions(false)}
-        attractions={route.attractions || []}
-      />
+      <AttractionDetailsDialog attractions={route.attractions || []} />
     </>
   );
 }
