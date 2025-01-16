@@ -18,7 +18,7 @@ export function RouteMapView({ cityId, attractions }: RouteMapViewProps) {
   useEffect(() => {
     const fetchCityCoordinates = async () => {
       if (!cityId) {
-        console.error('No city ID provided');
+        console.error('No city ID provided to RouteMapView');
         return;
       }
 
@@ -53,18 +53,30 @@ export function RouteMapView({ cityId, attractions }: RouteMapViewProps) {
     }
   }, [cityId, toast]);
 
+  // Log attractions data for debugging
+  console.log('RouteMapView - Received attractions:', attractions);
+
   // Verify that attractions have valid coordinates
-  const validAttractions = attractions.filter(attr => 
-    attr.position && 
-    Array.isArray(attr.position) && 
-    attr.position.length === 2 &&
-    !isNaN(attr.position[0]) && 
-    !isNaN(attr.position[1])
-  );
+  const validAttractions = attractions.filter(attr => {
+    const isValid = attr.position && 
+      Array.isArray(attr.position) && 
+      attr.position.length === 2 &&
+      !isNaN(attr.position[0]) && 
+      !isNaN(attr.position[1]);
+    
+    if (!isValid) {
+      console.warn('Invalid attraction data:', attr);
+    } else {
+      console.log('Valid attraction:', attr);
+    }
+    
+    return isValid;
+  });
 
   console.log('Valid attractions for map:', validAttractions);
 
   if (!cityCoordinates) {
+    console.log('City coordinates not yet loaded');
     return null;
   }
 

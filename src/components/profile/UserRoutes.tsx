@@ -61,7 +61,6 @@ export function UserRoutes({ userId }: UserRoutesProps) {
           route_likes(count),
           route_ratings(rating),
           route_attractions(
-            *,
             attraction:attractions(
               name,
               visit_duration,
@@ -79,7 +78,7 @@ export function UserRoutes({ userId }: UserRoutesProps) {
         throw error;
       }
 
-      console.log('User routes fetched:', routes);
+      console.log('Raw routes data:', routes);
       return routes as unknown as DbRoute[];
     },
   });
