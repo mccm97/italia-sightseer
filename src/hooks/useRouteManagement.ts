@@ -18,11 +18,22 @@ export function useRouteManagement(selectedCity: any, toast: any) {
       .from('routes')
       .select(`
         *,
-        route_attractions (
+        route_attractions!inner (
           *,
-          attraction: attractions (*)
+          attraction:attractions (
+            id,
+            name,
+            lat,
+            lng,
+            visit_duration,
+            price
+          )
         ),
-        creator:profiles!routes_user_id_fkey(id, username, avatar_url)
+        creator:profiles!routes_user_id_fkey (
+          id,
+          username,
+          avatar_url
+        )
       `)
       .eq('city_id', selectedCity.id);
 
@@ -36,22 +47,22 @@ export function useRouteManagement(selectedCity: any, toast: any) {
       throw error;
     }
 
-    console.log('Routes fetched:', routes?.length || 0, 'routes found');
+    console.log('Raw routes data:', routes);
 
     return routes?.map(route => {
       const transformedAttractions: Attraction[] = route.route_attractions?.map((ra: any) => ({
-        name: String(ra.attraction.name),
-        visitDuration: Number(ra.attraction.visit_duration),
-        price: Number(ra.attraction.price) || 0,
+        name: ra.attraction.name,
+        visitDuration: ra.attraction.visit_duration,
+        price: ra.attraction.price || 0,
         position: [
-          Number(ra.attraction.lat) || 0,
-          Number(ra.attraction.lng) || 0
+          Number(ra.attraction.lat),
+          Number(ra.attraction.lng)
         ]
       })) || [];
 
-      const totalDuration = route.total_duration + (route.route_attractions?.reduce((sum: number, ra: any) => {
-        return sum + (ra.travel_duration || 0);
-      }, 0) || 0);
+      console.log('Transformed attractions for route:', route.id, transformedAttractions);
+
+      const totalDuration = route.total_duration;
 
       let parsedDirections: DirectionsStep[] = [];
       if (route.directions) {
@@ -102,7 +113,7 @@ export function useRouteManagement(selectedCity: any, toast: any) {
   });
 
   const handleRouteClick = useCallback(async (route: Route) => {
-    console.log('Route clicked:', route.id);
+    console.log('Route clicked:', route);
     setSelectedRoute(route);
     setShowRoutePreview(true);
     
