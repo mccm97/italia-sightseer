@@ -29,8 +29,6 @@ export function CreateRouteDialog() {
   const {
     formData,
     handleFormSubmit,
-    calculateTotalDuration,
-    calculateTotalPrice,
     createRoute
   } = useRouteCreation();
 
@@ -89,10 +87,9 @@ export function CreateRouteDialog() {
     if (user?.id) {
       const success = await createRoute(user.id);
       if (success) {
-        console.log('Route created successfully, closing dialog and navigating to profile');
+        console.log('Route created successfully, closing dialog');
         setIsDialogOpen(false);
         setStep('form');
-        navigate('/profile');
       }
     }
   };
@@ -143,7 +140,7 @@ export function CreateRouteDialog() {
             />
           ) : (
             <RoutePreview
-              formData={formData}
+              formData={formData!}
               onBack={handleBack}
               onContinue={handleRouteCreation}
             />

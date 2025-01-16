@@ -32,10 +32,6 @@ export function RoutePreview({
 
   return (
     <div className="space-y-4">
-      <RouteHeader 
-        onBack={onBack}
-        onCreateRoute={onContinue}
-      />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="h-[400px] relative">
           <CityMap

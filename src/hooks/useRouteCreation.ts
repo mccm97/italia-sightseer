@@ -3,11 +3,13 @@ import { CreateRouteFormData } from '@/types/route';
 import { useToast } from './use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { useRouteValidation } from './useRouteValidation';
 
 export function useRouteCreation() {
   const [formData, setFormData] = useState<CreateRouteFormData | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { checkDuplicateRouteName, validateRouteData } = useRouteValidation();
 
   const calculateTotalDuration = () => {
     return formData?.attractions.reduce((total, attr) => total + (attr.visitDuration || 0), 0) || 0;
@@ -17,71 +19,21 @@ export function useRouteCreation() {
     return formData?.attractions.reduce((total, attr) => total + (attr.price || 0), 0) || 0;
   };
 
-  const checkDuplicateRouteName = async (userId: string, cityId: string, routeName: string) => {
-    console.log('Checking for duplicate route name:', { userId, cityId, routeName });
-    
-    const { data, error } = await supabase
-      .from('routes')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('city_id', cityId)
-      .eq('name', routeName)
-      .maybeSingle();
-
-    if (error) {
-      console.error('Error checking for duplicate route:', error);
-      return true; // Assume duplicate to be safe
-    }
-
-    return !!data;
-  };
-
   const handleFormSubmit = async (data: CreateRouteFormData, userId: string) => {
     try {
       console.log('Starting form submission process...', data);
       
-      if (!data.city?.id) {
-        toast({
-          title: "Errore",
-          description: "Seleziona una città",
-          variant: "destructive"
-        });
+      if (!validateRouteData(data.city?.id)) {
         return false;
       }
 
-      const isDuplicate = await checkDuplicateRouteName(userId, data.city.id, data.name);
+      const isDuplicate = await checkDuplicateRouteName(userId, data.city!.id, data.name);
       if (isDuplicate) {
         toast({
           title: "Nome percorso duplicato",
           description: "Hai già un percorso con questo nome in questa città. Scegli un nome diverso.",
           variant: "destructive"
         });
-        return false;
-      }
-
-      const { data: canCreate } = await supabase.rpc('can_create_route', { input_user_id: userId });
-
-      if (!canCreate) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('subscription_level')
-          .eq('id', userId)
-          .single();
-
-        if (profile?.subscription_level === 'bronze') {
-          toast({
-            title: "Limite mensile raggiunto",
-            description: "Con il piano Bronze puoi creare solo un percorso al mese. Passa a un piano superiore per crearne di più!",
-            variant: "destructive"
-          });
-        } else if (profile?.subscription_level === 'silver') {
-          toast({
-            title: "Limite mensile raggiunto",
-            description: "Con il piano Silver puoi creare solo 10 percorsi al mese. Passa al piano Gold per avere percorsi illimitati!",
-            variant: "destructive"
-          });
-        }
-        navigate('/upgrade');
         return false;
       }
 
@@ -183,6 +135,8 @@ export function useRouteCreation() {
         description: "Percorso creato con successo!",
       });
 
+      // Navigate to profile page after successful creation
+      navigate('/profile');
       return true;
     } catch (error) {
       console.error('Error in route creation:', error);
