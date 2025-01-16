@@ -100,8 +100,9 @@ export function UserRoutes({ userId }: UserRoutesProps) {
             console.log('Processing route attractions for route:', route.id);
             const attractions = route.route_attractions?.map(ra => {
               console.log('Processing attraction:', ra.attraction);
-              if (!ra.attraction.lat || !ra.attraction.lng) {
-                console.warn('Missing coordinates for attraction:', ra.attraction.name);
+              // Ensure attraction has valid coordinates
+              if (!ra.attraction || typeof ra.attraction.lat !== 'number' || typeof ra.attraction.lng !== 'number') {
+                console.warn('Invalid attraction data:', ra.attraction);
                 return null;
               }
               return {
