@@ -95,10 +95,18 @@ export function CreateRouteDialog() {
         toast({
           title: "Successo",
           description: "Percorso creato con successo!",
+          variant: "default",
         });
         setIsDialogOpen(false);
         setStep('form');
         navigate('/profile');
+      } else {
+        console.error('Failed to create route');
+        toast({
+          title: "Errore",
+          description: "Si è verificato un errore durante la creazione del percorso.",
+          variant: "destructive",
+        });
       }
     }
   };
@@ -137,7 +145,15 @@ export function CreateRouteDialog() {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog 
+        open={isDialogOpen} 
+        onOpenChange={(open) => {
+          setIsDialogOpen(open);
+          if (!open) {
+            setStep('form');
+          }
+        }}
+      >
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           {step === 'form' ? (
             <CreateRouteForm 
