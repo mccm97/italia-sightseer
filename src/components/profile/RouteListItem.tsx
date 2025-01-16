@@ -8,19 +8,20 @@ interface RouteListItemProps {
 }
 
 export function RouteListItem({ route, currentUserId, onRouteDelete }: RouteListItemProps) {
-  const transformedAttractions = route.route_attractions?.map(ra => ({
-    name: ra.attraction.name,
-    visitDuration: ra.attraction.visit_duration,
-    price: ra.attraction.price || 0,
-    position: [
-      Number(ra.attraction.lat),
-      Number(ra.attraction.lng)
-    ] as [number, number]
-  })) || [];
+  const transformedAttractions = route.route_attractions?.map(ra => {
+    console.log('Processing attraction:', ra.attraction);
+    return {
+      name: ra.attraction.name,
+      visitDuration: ra.attraction.visit_duration,
+      price: ra.attraction.price || 0,
+      position: [
+        Number(ra.attraction.lat),
+        Number(ra.attraction.lng)
+      ] as [number, number]
+    };
+  }) || [];
 
-  console.log(`Processing route attractions for route: ${route.id}`);
-  console.log('Route attractions raw data:', route.route_attractions);
-  console.log('Transformed attractions:', transformedAttractions);
+  console.log(`Route ${route.id} transformed attractions:`, transformedAttractions);
 
   return (
     <RouteCard

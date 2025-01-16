@@ -20,7 +20,7 @@ export function useRouteData(userId?: string) {
           cities(name, lat, lng),
           route_likes(count),
           route_ratings(rating),
-          route_attractions(
+          route_attractions!inner(
             *,
             attraction:attractions(
               id,
@@ -42,6 +42,12 @@ export function useRouteData(userId?: string) {
       }
 
       console.log('Raw routes data:', routes);
+      
+      // Log each route's attractions for debugging
+      routes?.forEach(route => {
+        console.log(`Route ${route.id} attractions:`, route.route_attractions);
+      });
+
       return routes as DbRoute[];
     },
     enabled: !!userId
