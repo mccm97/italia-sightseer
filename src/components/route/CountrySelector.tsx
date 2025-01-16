@@ -11,6 +11,11 @@ interface CountrySelectorProps {
 }
 
 export function CountrySelector({ form, countries, onCountrySelect }: CountrySelectorProps) {
+  // Remove duplicates and sort countries
+  const uniqueCountries = Array.from(new Set(countries)).sort();
+  
+  console.log('CountrySelector - unique countries:', uniqueCountries);
+
   return (
     <FormField
       control={form.control}
@@ -31,8 +36,8 @@ export function CountrySelector({ form, countries, onCountrySelect }: CountrySel
               </SelectTrigger>
               <SelectContent>
                 <ScrollArea className="h-[200px]">
-                  {countries.map((country, index) => (
-                    <SelectItem key={`${country}-${index}`} value={country}>
+                  {uniqueCountries.map((country) => (
+                    <SelectItem key={country} value={country}>
                       {country}
                     </SelectItem>
                   ))}
