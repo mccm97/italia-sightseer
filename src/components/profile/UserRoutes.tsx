@@ -98,12 +98,14 @@ export function UserRoutes({ userId }: UserRoutesProps) {
               ? ratings.reduce((acc, curr) => acc + curr.rating, 0) / ratings.length
               : 0;
 
+            console.log('Processing route attractions:', route.route_attractions);
             const attractions = route.route_attractions?.map(ra => ({
               name: ra.attraction.name,
               visitDuration: ra.attraction.visit_duration,
               price: ra.attraction.price,
               position: [ra.attraction.lat, ra.attraction.lng] as [number, number]
             })) || [];
+            console.log('Transformed attractions:', attractions);
 
             return (
               <div key={route.id} className="relative">
