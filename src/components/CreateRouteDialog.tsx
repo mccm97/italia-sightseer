@@ -16,6 +16,7 @@ import { CreateRouteForm } from '@/components/route/CreateRouteForm';
 import { RoutePreview } from '@/components/RoutePreview';
 import { useRouteCreation } from '@/hooks/useRouteCreation';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 
 export function CreateRouteDialog() {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,6 +26,7 @@ export function CreateRouteDialog() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { toast } = useToast();
   
   const {
     formData,
@@ -89,7 +91,11 @@ export function CreateRouteDialog() {
     if (user?.id) {
       const success = await createRoute(user.id);
       if (success) {
-        console.log('Route created successfully, closing dialog and navigating to profile');
+        console.log('Route created successfully');
+        toast({
+          title: "Successo",
+          description: "Percorso creato con successo!",
+        });
         setIsDialogOpen(false);
         setStep('form');
         navigate('/profile');
