@@ -1,8 +1,8 @@
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RouteList } from './RouteList';
+import { useRouteData } from './hooks/useRouteData';
 
 interface UserRoutesProps {
   userId?: string;
@@ -11,6 +11,7 @@ interface UserRoutesProps {
 export function UserRoutes({ userId }: UserRoutesProps) {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { t } = useTranslation();
+  const { data: routes, isLoading, refetch } = useRouteData(userId);
 
   useEffect(() => {
     const getCurrentUser = async () => {
@@ -19,46 +20,6 @@ export function UserRoutes({ userId }: UserRoutesProps) {
     };
     getCurrentUser();
   }, []);
-
-  const { data: routes, isLoading, refetch } = useQuery({
-    queryKey: ['userRoutes', userId],
-    queryFn: async () => {
-      console.log('Fetching routes for user:', userId);
-      
-      if (!userId) {
-        console.warn('No userId provided to UserRoutes');
-        return [];
-      }
-
-      const { data: routes, error } = await supabase
-        .from('routes')
-        .select(`
-          *,
-          cities(name, lat, lng),
-          route_likes(count),
-          route_ratings(rating),
-          route_attractions(
-            attraction:attractions(
-              name,
-              visit_duration,
-              price,
-              lat,
-              lng
-            )
-          ),
-          creator:profiles!routes_user_id_fkey(id, username, avatar_url)
-        `)
-        .eq('user_id', userId);
-
-      if (error) {
-        console.error('Error fetching user routes:', error);
-        throw error;
-      }
-
-      console.log('Raw routes data:', routes);
-      return routes;
-    },
-  });
 
   if (isLoading) return <div>{t('common.loading')}</div>;
 
