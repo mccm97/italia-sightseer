@@ -24,16 +24,33 @@
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="canonical" href="https://www.waywonder.info" />
     <link rel="icon" type="image/png" href="/favicon.png" />
+    <script>
+      // AdSense error handling
+      window.addEventListener('error', function(e) {
+        if (e.target && e.target.src && e.target.src.includes('pagead2.googlesyndication.com')) {
+          console.log('AdSense script failed to load, this is normal if using an ad blocker');
+          e.preventDefault(); // Prevent the error from appearing in console
+        }
+      }, true);
+    </script>
   </head>
   <body>
     <div id="root"></div>
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
-    <!-- AdSense Script -->
-    <script async 
-            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1267663470456742" 
-            crossorigin="anonymous"
-            onerror="console.log('AdSense failed to load, this is normal if using an ad blocker')">
+    <!-- AdSense Script with error handling -->
+    <script>
+      try {
+        (adsbygoogle = window.adsbygoogle || []).push({});
+      } catch (e) {
+        console.log('AdSense initialization error, this is normal if using an ad blocker');
+      }
     </script>
+    <script 
+      async 
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1267663470456742"
+      crossorigin="anonymous"
+      onerror="console.log('AdSense failed to load, this is normal if using an ad blocker')"
+    ></script>
   </body>
 </html>
