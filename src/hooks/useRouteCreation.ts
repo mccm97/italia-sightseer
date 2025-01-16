@@ -101,26 +101,42 @@ export function useRouteCreation() {
       console.log('Route created successfully:', routeData);
 
       // Then insert route attractions
-      for (let i = 0; i < formData.attractions.length; i++) {
-        const attr = formData.attractions[i];
-        if (!attr.attractionId) {
-          console.error('Missing attraction ID for:', attr);
+      for (const attr of formData.attractions) {
+        console.log('Processing attraction:', attr);
+        
+        // Get attraction ID from the database based on the name
+        const { data: attractionData, error: attractionError } = await supabase
+          .from('attractions')
+          .select('id')
+          .eq('name', attr.name)
+          .eq('city_id', formData.city?.id)
+          .maybeSingle();
+
+        if (attractionError) {
+          console.error('Error fetching attraction:', attractionError);
           continue;
         }
 
-        const { error: attractionError } = await supabase
+        if (!attractionData?.id) {
+          console.error('No attraction found with name:', attr.name);
+          continue;
+        }
+
+        console.log('Found attraction ID:', attractionData.id);
+
+        const { error: insertError } = await supabase
           .from('route_attractions')
           .insert({
             route_id: routeData.id,
-            attraction_id: attr.attractionId,
-            order_index: i,
+            attraction_id: attractionData.id,
+            order_index: formData.attractions.indexOf(attr),
             transport_mode: 'walking',
             travel_duration: 0,
             travel_distance: 0
           });
 
-        if (attractionError) {
-          console.error('Error adding attraction to route:', attractionError);
+        if (insertError) {
+          console.error('Error adding attraction to route:', insertError);
           toast({
             title: "Errore",
             description: "Errore nell'aggiungere le attrazioni al percorso.",
