@@ -14,6 +14,14 @@ export function AttractionTimeline({ attractions = [] }: AttractionTimelineProps
   
   console.log('AttractionTimeline - received attractions:', attractions);
 
+  if (!attractions || attractions.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-muted-foreground">{t('routes.noAttractions')}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4 relative">
       <div className="absolute left-2 top-4 bottom-4 w-0.5 bg-primary/20" />
@@ -22,7 +30,7 @@ export function AttractionTimeline({ attractions = [] }: AttractionTimelineProps
           <Circle className="w-4 h-4 text-primary flex-shrink-0 mt-2" />
           <div className="flex-1 p-4 border rounded-lg space-y-2 bg-card">
             <h3 className="font-semibold">{attraction.name}</h3>
-            <div className="text-sm text-muted-foreground">
+            <div className="text-sm text-muted-foreground space-y-1">
               <p>{t('routes.visitDuration')}: {attraction.visitDuration || 0} {t('routes.minutes')}</p>
               {typeof attraction.price === 'number' && (
                 <p>{t('routes.price')}: €{attraction.price.toFixed(2)}</p>

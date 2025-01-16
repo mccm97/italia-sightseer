@@ -38,13 +38,7 @@ export function AttractionDetailsDialog({
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-[400px] pr-4">
-          {attractions && attractions.length > 0 ? (
-            <AttractionTimeline attractions={attractions} />
-          ) : (
-            <div className="text-center text-muted-foreground py-4">
-              {t('routes.noAttractions')}
-            </div>
-          )}
+          <AttractionTimeline attractions={attractions} />
         </ScrollArea>
       </DialogContent>
     </Dialog>
