@@ -102,7 +102,7 @@ export function UserRoutes({ userId }: UserRoutesProps) {
             const attractions = route.route_attractions?.map(ra => ({
               name: ra.attraction.name,
               visitDuration: ra.attraction.visit_duration,
-              price: ra.attraction.price,
+              price: ra.attraction.price || 0,
               position: [ra.attraction.lat, ra.attraction.lng] as [number, number]
             })) || [];
             console.log('Transformed attractions:', attractions);
@@ -111,8 +111,16 @@ export function UserRoutes({ userId }: UserRoutesProps) {
               <div key={route.id} className="relative">
                 <RouteCard
                   route={{
-                    ...route,
+                    id: route.id,
+                    name: route.name,
+                    cityName: route.cities?.name || '',
+                    duration: route.total_duration,
+                    total_duration: route.total_duration,
                     attractions,
+                    isPublic: route.is_public || false,
+                    image_url: route.image_url,
+                    description: route.description,
+                    city_id: route.city_id,
                     creator: {
                       id: route.creator.id,
                       username: route.creator.username,
