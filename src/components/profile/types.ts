@@ -5,6 +5,12 @@ export type DbRoute = {
   image_url?: string;
   description?: string;
   city_id: string;
+  cities?: {
+    name: string;
+    lat: number;
+    lng: number;
+  };
+  is_public: boolean;
   route_likes: { count: number; }[];
   route_ratings: { rating: number; }[];
   route_attractions: {
