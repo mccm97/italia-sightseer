@@ -16,11 +16,11 @@ export function RouteListItem({ route, currentUserId, onRouteDelete }: RouteList
   })) || [];
 
   console.log(`Processing route attractions for route: ${route.id}`);
+  console.log('Route attractions raw data:', route.route_attractions);
   console.log('Transformed attractions:', transformedAttractions);
 
   return (
     <RouteCard
-      key={route.id}
       route={{
         id: route.id,
         name: route.name,
