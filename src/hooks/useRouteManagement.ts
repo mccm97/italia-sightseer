@@ -18,9 +18,9 @@ export function useRouteManagement(selectedCity: any, toast: any) {
       .from('routes')
       .select(`
         *,
-        route_attractions (
+        route_attractions!inner (
           *,
-          attraction: attractions (*)
+          attraction:attractions!inner (*)
         ),
         creator:profiles!routes_user_id_fkey(id, username, avatar_url)
       `)
@@ -37,17 +37,38 @@ export function useRouteManagement(selectedCity: any, toast: any) {
     }
 
     console.log('Routes fetched:', routes?.length || 0, 'routes found');
+    console.log('Raw routes data:', routes);
 
     return routes?.map(route => {
-      const transformedAttractions: Attraction[] = route.route_attractions?.map((ra: any) => ({
-        name: String(ra.attraction.name),
-        visitDuration: Number(ra.attraction.visit_duration),
-        price: Number(ra.attraction.price) || 0,
-        position: [
-          Number(ra.attraction.lat) || 0,
-          Number(ra.attraction.lng) || 0
-        ]
-      })) || [];
+      console.log(`Processing route ${route.id} with attractions:`, route.route_attractions);
+      
+      const transformedAttractions: Attraction[] = route.route_attractions?.map((ra: any) => {
+        console.log('Processing attraction:', ra.attraction);
+        
+        if (!ra.attraction) {
+          console.warn(`Missing attraction data for route_attraction in route ${route.id}:`, ra);
+          return null;
+        }
+
+        const position: [number, number] = [
+          Number(ra.attraction.lat),
+          Number(ra.attraction.lng)
+        ];
+
+        if (isNaN(position[0]) || isNaN(position[1])) {
+          console.warn(`Invalid coordinates for attraction in route ${route.id}:`, ra.attraction);
+          return null;
+        }
+
+        return {
+          name: ra.attraction.name,
+          visitDuration: Number(ra.attraction.visit_duration),
+          price: Number(ra.attraction.price) || 0,
+          position
+        };
+      }).filter(Boolean) || [];
+
+      console.log(`Route ${route.id} transformed attractions:`, transformedAttractions);
 
       const totalDuration = route.total_duration + (route.route_attractions?.reduce((sum: number, ra: any) => {
         return sum + (ra.travel_duration || 0);
@@ -103,6 +124,7 @@ export function useRouteManagement(selectedCity: any, toast: any) {
 
   const handleRouteClick = useCallback(async (route: Route) => {
     console.log('Route clicked:', route.id);
+    console.log('Route attractions:', route.attractions);
     setSelectedRoute(route);
     setShowRoutePreview(true);
     
