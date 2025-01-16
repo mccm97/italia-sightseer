@@ -24,13 +24,11 @@ export function RouteListItem({ route, currentUserId, onRouteDelete }: RouteList
       route={{
         id: route.id,
         name: route.name,
-        cityName: route.cities?.name || '',
-        duration: route.total_duration,
         creator: route.creator,
+        total_duration: route.total_duration,
         attractions: transformedAttractions,
-        isPublic: route.is_public,
-        description: route.description,
         image_url: route.image_url,
+        description: route.description,
         city_id: route.city_id
       }}
       currentUserId={currentUserId}
