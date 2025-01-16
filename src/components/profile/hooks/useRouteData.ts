@@ -21,7 +21,9 @@ export function useRouteData(userId?: string) {
           route_likes(count),
           route_ratings(rating),
           route_attractions(
+            *,
             attraction:attractions(
+              id,
               name,
               visit_duration,
               price,
@@ -31,7 +33,8 @@ export function useRouteData(userId?: string) {
           ),
           creator:profiles!routes_user_id_fkey(id, username, avatar_url)
         `)
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching user routes:', error);

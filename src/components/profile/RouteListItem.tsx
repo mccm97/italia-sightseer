@@ -12,7 +12,10 @@ export function RouteListItem({ route, currentUserId, onRouteDelete }: RouteList
     name: ra.attraction.name,
     visitDuration: ra.attraction.visit_duration,
     price: ra.attraction.price || 0,
-    position: [ra.attraction.lat, ra.attraction.lng] as [number, number]
+    position: [
+      Number(ra.attraction.lat),
+      Number(ra.attraction.lng)
+    ] as [number, number]
   })) || [];
 
   console.log(`Processing route attractions for route: ${route.id}`);
