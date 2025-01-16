@@ -17,15 +17,43 @@ export function useRouteCreation() {
     return formData?.attractions.reduce((total, attr) => total + (attr.price || 0), 0) || 0;
   };
 
+  const checkDuplicateRouteName = async (userId: string, cityId: string, routeName: string) => {
+    console.log('Checking for duplicate route name:', { userId, cityId, routeName });
+    
+    const { data, error } = await supabase
+      .from('routes')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('city_id', cityId)
+      .eq('name', routeName)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error checking for duplicate route:', error);
+      return true; // Assume duplicate to be safe
+    }
+
+    return !!data;
+  };
+
   const handleFormSubmit = async (data: CreateRouteFormData, userId: string) => {
     try {
       console.log('Starting form submission process...', data);
       
-      const isDuplicate = await checkDuplicateRouteName(userId, data.name);
+      if (!data.city?.id) {
+        toast({
+          title: "Errore",
+          description: "Seleziona una città",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      const isDuplicate = await checkDuplicateRouteName(userId, data.city.id, data.name);
       if (isDuplicate) {
         toast({
           title: "Nome percorso duplicato",
-          description: "Hai già un percorso con questo nome. Per favore, scegli un nome diverso.",
+          description: "Hai già un percorso con questo nome in questa città. Scegli un nome diverso.",
           variant: "destructive"
         });
         return false;
@@ -102,7 +130,20 @@ export function useRouteCreation() {
 
       if (routeError) {
         console.error('Error creating route:', routeError);
-        throw routeError;
+        if (routeError.code === '23505') {
+          toast({
+            title: "Nome percorso duplicato",
+            description: "Hai già un percorso con questo nome in questa città. Scegli un nome diverso.",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Errore",
+            description: "Impossibile creare il percorso. Riprova più tardi.",
+            variant: "destructive"
+          });
+        }
+        return false;
       }
 
       console.log('Route created successfully:', routeData);
@@ -128,7 +169,12 @@ export function useRouteCreation() {
 
         if (attractionError) {
           console.error('Error adding attraction to route:', attractionError);
-          throw attractionError;
+          toast({
+            title: "Errore",
+            description: "Errore nell'aggiungere le attrazioni al percorso.",
+            variant: "destructive"
+          });
+          return false;
         }
       }
 
@@ -157,21 +203,4 @@ export function useRouteCreation() {
     calculateTotalPrice,
     createRoute
   };
-}
-
-// Helper functions
-async function checkDuplicateRouteName(userId: string, routeName: string) {
-  const { data, error } = await supabase
-    .from('routes')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('name', routeName)
-    .maybeSingle();
-
-  if (error) {
-    console.error('Error checking for duplicate route name:', error);
-    return true;
-  }
-
-  return !!data;
 }
