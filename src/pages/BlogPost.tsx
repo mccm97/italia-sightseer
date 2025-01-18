@@ -130,25 +130,25 @@ export default function BlogPost() {
   }
 
   // Create a truncated version of the content for meta description
-  const metaDescription = post.content.length > 140 
+  const metaDescription = post?.content?.length > 140 
     ? post.content.substring(0, 137) + '...'
-    : post.content;
+    : post?.content;
 
   // Get the absolute URL for the cover image
-  const absoluteCoverImageUrl = post.cover_image_url 
-    ? new URL(post.cover_image_url, 'https://waywonder.info').toString()
+  const absoluteCoverImageUrl = post?.cover_image_url 
+    ? new URL(post.cover_image_url, 'https://www.waywonder.info').toString()
     : '';
 
-  const postUrl = `https://waywonder.info/blog/${post.id}`;
+  const postUrl = post?.id ? `https://www.waywonder.info/blog/${post.id}` : '';
 
   return (
     <>
       <Helmet>
-        <title>{`${post.title} | WayWonder Blog`}</title>
+        <title>{post ? `${post.title} | WayWonder Blog` : 'WayWonder Blog'}</title>
         <meta name="description" content={metaDescription} />
         
         {/* Open Graph meta tags for social sharing */}
-        <meta property="og:title" content={post.title} />
+        <meta property="og:title" content={post?.title} />
         <meta property="og:description" content={metaDescription} />
         <meta property="og:type" content="article" />
         <meta property="og:url" content={postUrl} />
@@ -156,10 +156,11 @@ export default function BlogPost() {
           <meta property="og:image" content={absoluteCoverImageUrl} />
         )}
         <meta property="og:site_name" content="WayWonder" />
+        <meta property="fb:app_id" content="1234567890" /> {/* Sostituisci con il tuo vero FB App ID */}
         
         {/* Twitter Card meta tags */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={post.title} />
+        <meta name="twitter:title" content={post?.title} />
         <meta name="twitter:description" content={metaDescription} />
         {absoluteCoverImageUrl && (
           <meta name="twitter:image" content={absoluteCoverImageUrl} />
