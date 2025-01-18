@@ -9,6 +9,7 @@ import { BlogPostHeader } from './BlogPostHeader';
 import { BlogPostActions } from './BlogPostActions';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Pencil, Trash2 } from 'lucide-react';
+import { Helmet } from 'react-helmet';
 
 interface BlogPostProps {
   post: {
@@ -186,103 +187,129 @@ export function BlogPost({ post }: BlogPostProps) {
 
   // Get the absolute URL for the cover image
   const absoluteCoverImageUrl = post.cover_image_url 
-    ? new URL(post.cover_image_url, 'https://waywonder.info').toString()
+    ? new URL(post.cover_image_url, window.location.origin).toString()
     : '';
 
+  const postUrl = `${window.location.origin}/blog/${post.id}`;
+
   return (
-    <Card className="overflow-hidden">
-      {post.cover_image_url && (
-        <div className="w-full h-64 relative">
-          <img
-            src={post.cover_image_url}
-            alt={post.title}
-            className="w-full h-full object-cover"
-          />
-        </div>
-      )}
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <BlogPostHeader
-            userId={post.user_id}
-            username={post.profiles?.username}
-            avatarUrl={post.profiles?.avatar_url}
-            title={isEditing ? '' : post.title}
-            createdAt={post.created_at}
-          />
-          {currentUser === post.user_id && (
-            <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsEditing(!isEditing)}
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <Trash2 className="h-4 w-4 text-red-500" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Sei sicuro?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Questa azione non può essere annullata. Il post verrà eliminato permanentemente.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Annulla</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete}>
-                      Elimina
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent>
-        {isEditing ? (
-          <div className="space-y-4">
-            <Input
-              value={editedTitle}
-              onChange={(e) => setEditedTitle(e.target.value)}
-              placeholder="Titolo del post"
-            />
-            <Textarea
-              value={editedContent}
-              onChange={(e) => setEditedContent(e.target.value)}
-              placeholder="Contenuto del post"
-              className="min-h-[200px]"
-            />
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsEditing(false)}>
-                Annulla
-              </Button>
-              <Button onClick={handleUpdate}>
-                Salva modifiche
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <>
-            <p className="whitespace-pre-wrap mb-6">{post.content}</p>
-            <BlogPostActions
-              postId={post.id}
-              postTitle={post.title}
-              postContent={shareDescription}
-              coverImageUrl={absoluteCoverImageUrl}
-              likes={likes}
-              isLiked={isLiked}
-              isLoading={isLoading}
-              onLike={handleLike}
-              onShare={handleShare}
-            />
-          </>
+    <>
+      <Helmet>
+        <title>{post.title} | WayWonder Blog</title>
+        <meta name="description" content={shareDescription} />
+        
+        {/* Open Graph meta tags for Facebook */}
+        <meta property="og:title" content={post.title} />
+        <meta property="og:description" content={shareDescription} />
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={postUrl} />
+        {absoluteCoverImageUrl && (
+          <meta property="og:image" content={absoluteCoverImageUrl} />
         )}
-      </CardContent>
-    </Card>
+        
+        {/* Twitter Card meta tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={post.title} />
+        <meta name="twitter:description" content={shareDescription} />
+        {absoluteCoverImageUrl && (
+          <meta name="twitter:image" content={absoluteCoverImageUrl} />
+        )}
+      </Helmet>
+
+      <Card className="overflow-hidden">
+        {post.cover_image_url && (
+          <div className="w-full h-64 relative">
+            <img
+              src={post.cover_image_url}
+              alt={post.title}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+        <CardHeader>
+          <div className="flex justify-between items-start">
+            <BlogPostHeader
+              userId={post.user_id}
+              username={post.profiles?.username}
+              avatarUrl={post.profiles?.avatar_url}
+              title={isEditing ? '' : post.title}
+              createdAt={post.created_at}
+            />
+            {currentUser === post.user_id && (
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsEditing(!isEditing)}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Sei sicuro?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Questa azione non può essere annullata. Il post verrà eliminato permanentemente.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Annulla</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDelete}>
+                        Elimina
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {isEditing ? (
+            <div className="space-y-4">
+              <Input
+                value={editedTitle}
+                onChange={(e) => setEditedTitle(e.target.value)}
+                placeholder="Titolo del post"
+              />
+              <Textarea
+                value={editedContent}
+                onChange={(e) => setEditedContent(e.target.value)}
+                placeholder="Contenuto del post"
+                className="min-h-[200px]"
+              />
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsEditing(false)}>
+                  Annulla
+                </Button>
+                <Button onClick={handleUpdate}>
+                  Salva modifiche
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <p className="whitespace-pre-wrap mb-6">{post.content}</p>
+              <BlogPostActions
+                postId={post.id}
+                postTitle={post.title}
+                postContent={shareDescription}
+                coverImageUrl={absoluteCoverImageUrl}
+                likes={likes}
+                isLiked={isLiked}
+                isLoading={isLoading}
+                onLike={handleLike}
+                onShare={handleShare}
+              />
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </>
   );
 }
