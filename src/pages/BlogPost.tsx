@@ -134,9 +134,11 @@ export default function BlogPost() {
     ? post.content.substring(0, 137) + '...'
     : post?.content;
 
-  // Get the absolute URL for the cover image
+  // Get the absolute URL for the cover image, ensuring it's a full URL
   const absoluteCoverImageUrl = post?.cover_image_url 
-    ? new URL(post.cover_image_url, 'https://www.waywonder.info').toString()
+    ? post.cover_image_url.startsWith('http') 
+      ? post.cover_image_url 
+      : `https://www.waywonder.info${post.cover_image_url}`
     : '';
 
   const postUrl = post?.id ? `https://www.waywonder.info/blog/${post.id}` : '';
@@ -153,10 +155,14 @@ export default function BlogPost() {
         <meta property="og:type" content="article" />
         <meta property="og:url" content={postUrl} />
         {absoluteCoverImageUrl && (
-          <meta property="og:image" content={absoluteCoverImageUrl} />
+          <>
+            <meta property="og:image" content={absoluteCoverImageUrl} />
+            <meta property="og:image:width" content="1200" />
+            <meta property="og:image:height" content="630" />
+          </>
         )}
         <meta property="og:site_name" content="WayWonder" />
-        <meta property="fb:app_id" content="1234567890" /> {/* Sostituisci con il tuo vero FB App ID */}
+        <meta property="fb:app_id" content="1234567890" />
         
         {/* Twitter Card meta tags */}
         <meta name="twitter:card" content="summary_large_image" />

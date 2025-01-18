@@ -32,7 +32,7 @@ export function BlogPostActions({
   onShare 
 }: BlogPostActionsProps) {
   const handleShare = (platform: string) => {
-    const postUrl = `https://waywonder.info/blog/${postId}`;
+    const postUrl = `https://www.waywonder.info/blog/${postId}`;
     const text = encodeURIComponent(postTitle);
     const description = encodeURIComponent(postContent);
     
