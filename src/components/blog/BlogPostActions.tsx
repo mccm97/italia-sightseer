@@ -25,6 +25,19 @@ export function BlogPostActions({
   onLike, 
   onShare 
 }: BlogPostActionsProps) {
+  const handleShare = (platform: string) => {
+    const postUrl = `https://waywonder.info/blog/${postId}`;
+    
+    const shareUrls = {
+      whatsapp: `https://wa.me/?text=${encodeURIComponent(postUrl)}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`,
+      twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(postUrl)}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(postUrl)}`
+    };
+
+    window.open(shareUrls[platform as keyof typeof shareUrls], '_blank');
+  };
+
   return (
     <div className="flex items-center gap-2 border-t pt-4">
       <Button 
@@ -47,16 +60,16 @@ export function BlogPostActions({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuItem onClick={() => onShare('whatsapp')}>
+          <DropdownMenuItem onClick={() => handleShare('whatsapp')}>
             WhatsApp
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onShare('facebook')}>
+          <DropdownMenuItem onClick={() => handleShare('facebook')}>
             Facebook
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onShare('twitter')}>
+          <DropdownMenuItem onClick={() => handleShare('twitter')}>
             Twitter
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onShare('linkedin')}>
+          <DropdownMenuItem onClick={() => handleShare('linkedin')}>
             LinkedIn
           </DropdownMenuItem>
         </DropdownMenuContent>
