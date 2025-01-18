@@ -179,6 +179,16 @@ export function BlogPost({ post }: BlogPostProps) {
     }
   };
 
+  // Create a truncated version of the content for sharing
+  const shareDescription = post.content.length > 140 
+    ? post.content.substring(0, 137) + '...'
+    : post.content;
+
+  // Get the absolute URL for the cover image
+  const absoluteCoverImageUrl = post.cover_image_url 
+    ? new URL(post.cover_image_url, 'https://waywonder.info').toString()
+    : '';
+
   return (
     <Card className="overflow-hidden">
       {post.cover_image_url && (
@@ -261,6 +271,9 @@ export function BlogPost({ post }: BlogPostProps) {
             <p className="whitespace-pre-wrap mb-6">{post.content}</p>
             <BlogPostActions
               postId={post.id}
+              postTitle={post.title}
+              postContent={shareDescription}
+              coverImageUrl={absoluteCoverImageUrl}
               likes={likes}
               isLiked={isLiked}
               isLoading={isLoading}
