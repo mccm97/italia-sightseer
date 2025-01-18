@@ -129,12 +129,35 @@ export default function BlogPost() {
     );
   }
 
+  // Create a truncated version of the content for meta description
+  const metaDescription = post.content.length > 160 
+    ? post.content.substring(0, 157) + '...'
+    : post.content;
+
   return (
     <>
       <Helmet>
         <title>{`${post.title} | WayWonder Blog`}</title>
-        <meta name="description" content={post.content.substring(0, 160)} />
+        <meta name="description" content={metaDescription} />
+        
+        {/* Open Graph meta tags for social sharing */}
+        <meta property="og:title" content={post.title} />
+        <meta property="og:description" content={metaDescription} />
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={`https://waywonder.info/blog/${post.id}`} />
+        {post.cover_image_url && (
+          <meta property="og:image" content={post.cover_image_url} />
+        )}
+        
+        {/* Twitter Card meta tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={post.title} />
+        <meta name="twitter:description" content={metaDescription} />
+        {post.cover_image_url && (
+          <meta name="twitter:image" content={post.cover_image_url} />
+        )}
       </Helmet>
+
       <div className="container mx-auto p-4">
         <MainMenu />
         <div className="max-w-3xl mx-auto mt-8">
