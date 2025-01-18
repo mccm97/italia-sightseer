@@ -8,19 +8,25 @@ interface BlogPostMetaProps {
 }
 
 export function BlogPostMeta({ title, description, imageUrl, postUrl }: BlogPostMetaProps) {
+  // Ensure all values are strings and not undefined
+  const safeTitle = String(title || '');
+  const safeDescription = String(description || '');
+  const safeImageUrl = imageUrl ? String(imageUrl) : '';
+  const safePostUrl = String(postUrl || window.location.href);
+
   return (
     <Helmet>
-      <title>{`${title} | WayWonder Blog`}</title>
-      <meta name="description" content={description} />
+      <title>{`${safeTitle} | WayWonder Blog`}</title>
+      <meta name="description" content={safeDescription} />
       
       {/* Open Graph meta tags for Facebook */}
-      <meta property="og:title" content={title} />
-      <meta property="og:description" content={description} />
+      <meta property="og:title" content={safeTitle} />
+      <meta property="og:description" content={safeDescription} />
       <meta property="og:type" content="article" />
-      <meta property="og:url" content={postUrl} />
-      {imageUrl && (
+      <meta property="og:url" content={safePostUrl} />
+      {safeImageUrl && (
         <>
-          <meta property="og:image" content={imageUrl} />
+          <meta property="og:image" content={safeImageUrl} />
           <meta property="og:image:width" content="1200" />
           <meta property="og:image:height" content="630" />
         </>
@@ -29,9 +35,9 @@ export function BlogPostMeta({ title, description, imageUrl, postUrl }: BlogPost
       
       {/* Twitter Card meta tags */}
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={title} />
-      <meta name="twitter:description" content={description} />
-      {imageUrl && <meta name="twitter:image" content={imageUrl} />}
+      <meta name="twitter:title" content={safeTitle} />
+      <meta name="twitter:description" content={safeDescription} />
+      {safeImageUrl && <meta name="twitter:image" content={safeImageUrl} />}
     </Helmet>
   );
 }
