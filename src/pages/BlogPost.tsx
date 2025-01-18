@@ -130,9 +130,16 @@ export default function BlogPost() {
   }
 
   // Create a truncated version of the content for meta description
-  const metaDescription = post.content.length > 160 
-    ? post.content.substring(0, 157) + '...'
+  const metaDescription = post.content.length > 140 
+    ? post.content.substring(0, 137) + '...'
     : post.content;
+
+  // Get the absolute URL for the cover image
+  const absoluteCoverImageUrl = post.cover_image_url 
+    ? new URL(post.cover_image_url, 'https://waywonder.info').toString()
+    : '';
+
+  const postUrl = `https://waywonder.info/blog/${post.id}`;
 
   return (
     <>
@@ -144,18 +151,20 @@ export default function BlogPost() {
         <meta property="og:title" content={post.title} />
         <meta property="og:description" content={metaDescription} />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content={`https://waywonder.info/blog/${post.id}`} />
-        {post.cover_image_url && (
-          <meta property="og:image" content={post.cover_image_url} />
+        <meta property="og:url" content={postUrl} />
+        {absoluteCoverImageUrl && (
+          <meta property="og:image" content={absoluteCoverImageUrl} />
         )}
+        <meta property="og:site_name" content="WayWonder" />
         
         {/* Twitter Card meta tags */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={post.title} />
         <meta name="twitter:description" content={metaDescription} />
-        {post.cover_image_url && (
-          <meta name="twitter:image" content={post.cover_image_url} />
+        {absoluteCoverImageUrl && (
+          <meta name="twitter:image" content={absoluteCoverImageUrl} />
         )}
+        <meta name="twitter:site" content="@waywonder" />
       </Helmet>
 
       <div className="container mx-auto p-4">
@@ -193,6 +202,9 @@ export default function BlogPost() {
               <p className="whitespace-pre-wrap mb-6">{post.content}</p>
               <BlogPostActions
                 postId={post.id}
+                postTitle={post.title}
+                postContent={metaDescription}
+                coverImageUrl={absoluteCoverImageUrl}
                 likes={0}
                 isLiked={false}
                 isLoading={false}

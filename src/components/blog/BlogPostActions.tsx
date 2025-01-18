@@ -10,6 +10,9 @@ import {
 
 interface BlogPostActionsProps {
   postId: string;
+  postTitle: string;
+  postContent: string;
+  coverImageUrl: string;
   likes: number;
   isLiked: boolean;
   isLoading: boolean;
@@ -19,6 +22,9 @@ interface BlogPostActionsProps {
 
 export function BlogPostActions({ 
   postId, 
+  postTitle,
+  postContent,
+  coverImageUrl,
   likes, 
   isLiked, 
   isLoading, 
@@ -27,11 +33,13 @@ export function BlogPostActions({
 }: BlogPostActionsProps) {
   const handleShare = (platform: string) => {
     const postUrl = `https://waywonder.info/blog/${postId}`;
+    const text = encodeURIComponent(postTitle);
+    const description = encodeURIComponent(postContent);
     
     const shareUrls = {
-      whatsapp: `https://wa.me/?text=${encodeURIComponent(postUrl)}`,
+      whatsapp: `https://wa.me/?text=${text}%20${postUrl}`,
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`,
-      twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(postUrl)}`,
+      twitter: `https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(postUrl)}`,
       linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(postUrl)}`
     };
 
