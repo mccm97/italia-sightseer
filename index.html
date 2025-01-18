@@ -25,27 +25,18 @@
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="canonical" href="https://www.waywonder.info" />
     <link rel="icon" type="image/png" href="/favicon.png" />
+    <!-- AdSense Script with improved error handling -->
     <script>
-      // AdSense error handling
-      window.addEventListener('error', function(e) {
-        if (e.target && e.target.src && e.target.src.includes('pagead2.googlesyndication.com')) {
-          console.log('AdSense script failed to load, this is normal if using an ad blocker');
-          e.preventDefault(); // Prevent the error from appearing in console
+      window.addEventListener('load', function() {
+        try {
+          if (window.adsbygoogle === undefined) {
+            window.adsbygoogle = [];
+          }
+          window.adsbygoogle.push({});
+        } catch (e) {
+          console.log('AdSense initialization error:', e);
         }
-      }, true);
-    </script>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
-    <script type="module" src="/src/main.tsx"></script>
-    <!-- AdSense Script with error handling -->
-    <script>
-      try {
-        (adsbygoogle = window.adsbygoogle || []).push({});
-      } catch (e) {
-        console.log('AdSense initialization error, this is normal if using an ad blocker');
-      }
+      });
     </script>
     <script 
       async 
@@ -53,5 +44,10 @@
       crossorigin="anonymous"
       onerror="console.log('AdSense failed to load, this is normal if using an ad blocker')"
     ></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
