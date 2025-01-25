@@ -7,9 +7,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { BlogPostHeader } from '@/components/blog/BlogPostHeader';
 import { BlogPostActions } from '@/components/blog/BlogPostActions';
+import { BlogPostMeta } from '@/components/blog/BlogPostMeta';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import { Helmet } from 'react-helmet';
 
 export default function BlogPost() {
   const { postId } = useParams();
@@ -146,31 +146,12 @@ export default function BlogPost() {
 
   return (
     <>
-      <Helmet>
-        <title>{String(post.title || 'WayWonder Blog')}</title>
-        <meta name="description" content={String(metaDescription)} />
-        
-        <meta property="og:title" content={String(post.title || '')} />
-        <meta property="og:description" content={String(metaDescription)} />
-        <meta property="og:type" content="article" />
-        <meta property="og:url" content={String(postUrl)} />
-        {absoluteCoverImageUrl && (
-          <>
-            <meta property="og:image" content={String(absoluteCoverImageUrl)} />
-            <meta property="og:image:width" content="1200" />
-            <meta property="og:image:height" content="630" />
-          </>
-        )}
-        <meta property="og:site_name" content="WayWonder" />
-        
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={String(post.title || '')} />
-        <meta name="twitter:description" content={String(metaDescription)} />
-        {absoluteCoverImageUrl && (
-          <meta name="twitter:image" content={String(absoluteCoverImageUrl)} />
-        )}
-        <meta name="twitter:site" content="@waywonder" />
-      </Helmet>
+      <BlogPostMeta
+        title={post.title || ''}
+        description={metaDescription}
+        imageUrl={absoluteCoverImageUrl}
+        postUrl={postUrl}
+      />
 
       <div className="container mx-auto p-4">
         <MainMenu />

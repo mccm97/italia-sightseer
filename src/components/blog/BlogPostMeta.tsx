@@ -8,6 +8,7 @@ interface BlogPostMetaProps {
 }
 
 export function BlogPostMeta({ title, description, imageUrl, postUrl }: BlogPostMetaProps) {
+  // Ensure all values are strings and have fallbacks
   const safeTitle = String(title || 'WayWonder Blog');
   const safeDescription = String(description || '');
   const safeUrl = String(postUrl);
