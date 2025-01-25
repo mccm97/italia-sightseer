@@ -2,22 +2,39 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { BlogPostHeader } from './BlogPostHeader';
 import { BlogPostActions } from './BlogPostActions';
 
-interface BlogPostContentProps {
-  post: any;
+export interface BlogPostContentProps {
+  post: {
+    id: string;
+    title: string;
+    content: string;
+    created_at: string;
+    cover_image_url: string | null;
+    user_id: string;
+    profiles: {
+      username: string | null;
+      avatar_url: string | null;
+    } | null;
+  };
+  currentUser: string | null;
   likes: number;
   isLiked: boolean;
   isLoading: boolean;
   onLike: () => Promise<void>;
   onShare: (platform: string) => void;
+  onDelete?: () => Promise<void>;
+  onUpdate?: (title: string, content: string) => Promise<void>;
 }
 
 export function BlogPostContent({ 
   post, 
+  currentUser,
   likes, 
   isLiked, 
   isLoading, 
   onLike, 
-  onShare 
+  onShare,
+  onDelete,
+  onUpdate
 }: BlogPostContentProps) {
   return (
     <Card className="mb-8">
@@ -51,6 +68,10 @@ export function BlogPostContent({
           isLoading={isLoading}
           onLike={onLike}
           onShare={onShare}
+          onDelete={onDelete}
+          onUpdate={onUpdate}
+          currentUserId={currentUser}
+          authorId={post.user_id}
         />
       </CardContent>
     </Card>
