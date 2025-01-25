@@ -19,6 +19,7 @@ export function BlogPostMeta({ title, description, imageUrl, postUrl }: BlogPost
       <title>{safeTitle}</title>
       <meta name="description" content={safeDescription} />
       
+      {/* OpenGraph tags */}
       <meta property="og:title" content={safeTitle} />
       <meta property="og:description" content={safeDescription} />
       <meta property="og:type" content="article" />
@@ -32,6 +33,7 @@ export function BlogPostMeta({ title, description, imageUrl, postUrl }: BlogPost
       )}
       <meta property="og:site_name" content="WayWonder" />
       
+      {/* Twitter Card tags */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={safeTitle} />
       <meta name="twitter:description" content={safeDescription} />
