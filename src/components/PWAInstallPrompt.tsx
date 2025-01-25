@@ -9,6 +9,8 @@ export function PWAInstallPrompt() {
   const { toast } = useToast();
 
   useEffect(() => {
+    console.log('PWAInstallPrompt mounted');
+    
     // Check if the app is already installed
     const isInstalled = window.matchMedia('(display-mode: standalone)').matches;
     console.log('PWA is installed:', isInstalled);
@@ -19,6 +21,7 @@ export function PWAInstallPrompt() {
     }
 
     const handler = (e: Event) => {
+      // Prevent the default browser prompt
       e.preventDefault();
       console.log('beforeinstallprompt triggered');
       setDeferredPrompt(e);
@@ -41,6 +44,8 @@ export function PWAInstallPrompt() {
   }, []);
 
   const handleInstall = async () => {
+    console.log('Install button clicked', { deferredPrompt });
+    
     if (!deferredPrompt) {
       // If no install prompt is available, open in browser install menu
       toast({
@@ -51,8 +56,13 @@ export function PWAInstallPrompt() {
     }
 
     try {
+      // Show the installation prompt
       await deferredPrompt.prompt();
+      console.log('Installation prompt shown');
+      
+      // Wait for the user's choice
       const { outcome } = await deferredPrompt.userChoice;
+      console.log('Installation choice:', outcome);
       
       if (outcome === 'accepted') {
         toast({
@@ -70,6 +80,7 @@ export function PWAInstallPrompt() {
       });
     }
 
+    // Clear the deferred prompt
     setDeferredPrompt(null);
   };
 
