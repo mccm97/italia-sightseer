@@ -130,12 +130,14 @@ export default function BlogPost() {
   }
 
   // Create a truncated version of the content for meta description
-  const metaDescription = post.content?.length > 140 
-    ? post.content.substring(0, 137) + '...'
-    : post.content || '';
+  const metaDescription = post.content && typeof post.content === 'string'
+    ? (post.content.length > 140 
+        ? post.content.substring(0, 137) + '...'
+        : post.content)
+    : '';
 
   // Get the absolute URL for the cover image
-  const absoluteCoverImageUrl = post.cover_image_url 
+  const absoluteCoverImageUrl = post.cover_image_url
     ? new URL(post.cover_image_url, window.location.origin).toString()
     : '';
 
@@ -145,16 +147,16 @@ export default function BlogPost() {
   return (
     <>
       <Helmet>
-        <title>{post.title ? `${post.title} | WayWonder Blog` : 'WayWonder Blog'}</title>
-        <meta name="description" content={metaDescription} />
+        <title>{String(post.title || 'WayWonder Blog')}</title>
+        <meta name="description" content={String(metaDescription)} />
         
-        <meta property="og:title" content={post.title || ''} />
-        <meta property="og:description" content={metaDescription} />
+        <meta property="og:title" content={String(post.title || '')} />
+        <meta property="og:description" content={String(metaDescription)} />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content={postUrl} />
+        <meta property="og:url" content={String(postUrl)} />
         {absoluteCoverImageUrl && (
           <>
-            <meta property="og:image" content={absoluteCoverImageUrl} />
+            <meta property="og:image" content={String(absoluteCoverImageUrl)} />
             <meta property="og:image:width" content="1200" />
             <meta property="og:image:height" content="630" />
           </>
@@ -162,10 +164,10 @@ export default function BlogPost() {
         <meta property="og:site_name" content="WayWonder" />
         
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={post.title || ''} />
-        <meta name="twitter:description" content={metaDescription} />
+        <meta name="twitter:title" content={String(post.title || '')} />
+        <meta name="twitter:description" content={String(metaDescription)} />
         {absoluteCoverImageUrl && (
-          <meta name="twitter:image" content={absoluteCoverImageUrl} />
+          <meta name="twitter:image" content={String(absoluteCoverImageUrl)} />
         )}
         <meta name="twitter:site" content="@waywonder" />
       </Helmet>
