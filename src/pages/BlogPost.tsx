@@ -3,13 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { MainMenu } from '@/components/MainMenu';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { BlogPostHeader } from '@/components/blog/BlogPostHeader';
-import { BlogPostActions } from '@/components/blog/BlogPostActions';
-import { BlogPostMeta } from '@/components/blog/BlogPostMeta';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { ArrowLeft, Loader2 } from 'lucide-react';
+import { BlogPostMeta } from '@/components/blog/BlogPostMeta';
+import { BlogPostContent } from '@/components/blog/BlogPostContent';
+import { BlogComments } from '@/components/blog/BlogComments';
 
 export default function BlogPost() {
   const { postId } = useParams();
@@ -17,13 +15,16 @@ export default function BlogPost() {
   const [post, setPost] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [comments, setComments] = useState<any[]>([]);
-  const [newComment, setNewComment] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [likes, setLikes] = useState(0);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isLikeLoading, setIsLikeLoading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchPost();
     fetchComments();
+    fetchLikes();
   }, [postId]);
 
   const fetchPost = async () => {
@@ -75,21 +76,46 @@ export default function BlogPost() {
     }
   };
 
-  const handleSubmitComment = async () => {
-    if (!newComment.trim()) return;
+  const fetchLikes = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      // Get total likes count
+      const { count } = await supabase
+        .from('blog_post_likes')
+        .select('id', { count: 'exact' })
+        .eq('post_id', postId);
+      
+      setLikes(count || 0);
 
+      // Check if user has liked the post
+      if (user) {
+        const { data } = await supabase
+          .from('blog_post_likes')
+          .select('id')
+          .eq('post_id', postId)
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        setIsLiked(!!data);
+      }
+    } catch (error) {
+      console.error('Error fetching likes:', error);
+    }
+  };
+
+  const handleSubmitComment = async (content: string) => {
     setSubmittingComment(true);
     try {
       const { error } = await supabase
         .from('blog_comments')
         .insert({
           post_id: postId,
-          content: newComment.trim()
+          content: content.trim()
         });
 
       if (error) throw error;
 
-      setNewComment('');
       fetchComments();
       toast({
         title: "Commento aggiunto",
@@ -104,6 +130,69 @@ export default function BlogPost() {
       });
     } finally {
       setSubmittingComment(false);
+    }
+  };
+
+  const handleLike = async () => {
+    setIsLikeLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Errore",
+          description: "Devi essere autenticato per mettere mi piace",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (isLiked) {
+        await supabase
+          .from('blog_post_likes')
+          .delete()
+          .eq('post_id', postId)
+          .eq('user_id', user.id);
+        setLikes(prev => prev - 1);
+        setIsLiked(false);
+      } else {
+        await supabase
+          .from('blog_post_likes')
+          .insert({
+            post_id: postId,
+            user_id: user.id
+          });
+        setLikes(prev => prev + 1);
+        setIsLiked(true);
+      }
+    } catch (error) {
+      console.error('Error handling like:', error);
+      toast({
+        title: "Errore",
+        description: "Impossibile gestire il mi piace",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLikeLoading(false);
+    }
+  };
+
+  const handleShare = (platform: string) => {
+    const url = window.location.href;
+    const text = `Leggi "${post.title}" su WayWonder`;
+    
+    switch (platform) {
+      case 'whatsapp':
+        window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`);
+        break;
+      case 'facebook':
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`);
+        break;
+      case 'twitter':
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`);
+        break;
+      case 'linkedin':
+        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`);
+        break;
     }
   };
 
@@ -129,19 +218,17 @@ export default function BlogPost() {
     );
   }
 
-  // Create a truncated version of the content for meta description
+  // Create meta description
   const metaDescription = post.content && typeof post.content === 'string'
     ? (post.content.length > 140 
         ? post.content.substring(0, 137) + '...'
         : post.content)
     : '';
 
-  // Get the absolute URL for the cover image
+  // Get absolute URLs
   const absoluteCoverImageUrl = post.cover_image_url
     ? new URL(post.cover_image_url, window.location.origin).toString()
     : '';
-
-  // Get the absolute URL for the post
   const postUrl = `${window.location.origin}/blog/${post.id}`;
 
   return (
@@ -165,83 +252,20 @@ export default function BlogPost() {
             Torna al blog
           </Button>
 
-          <Card className="mb-8">
-            {post.cover_image_url && (
-              <div className="w-full h-64 relative">
-                <img
-                  src={post.cover_image_url}
-                  alt={post.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
-            <CardHeader>
-              <BlogPostHeader
-                userId={post.user_id}
-                username={post.profiles?.username}
-                avatarUrl={post.profiles?.avatar_url}
-                title={post.title}
-                createdAt={post.created_at}
-              />
-            </CardHeader>
-            <CardContent>
-              <p className="whitespace-pre-wrap mb-6">{post.content}</p>
-              <BlogPostActions
-                postId={post.id}
-                postTitle={post.title}
-                postContent={metaDescription}
-                coverImageUrl={absoluteCoverImageUrl}
-                likes={0}
-                isLiked={false}
-                isLoading={false}
-                onLike={async () => {}}
-                onShare={() => {}}
-              />
-            </CardContent>
-          </Card>
+          <BlogPostContent
+            post={post}
+            likes={likes}
+            isLiked={isLiked}
+            isLoading={isLikeLoading}
+            onLike={handleLike}
+            onShare={handleShare}
+          />
 
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold">Commenti</h2>
-            
-            <div className="space-y-4">
-              <Textarea
-                placeholder="Scrivi un commento..."
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-              />
-              <Button 
-                onClick={handleSubmitComment}
-                disabled={submittingComment || !newComment.trim()}
-              >
-                {submittingComment && (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                )}
-                Pubblica commento
-              </Button>
-            </div>
-
-            <div className="space-y-4">
-              {comments.map((comment) => (
-                <Card key={comment.id}>
-                  <CardContent className="pt-6">
-                    <div className="flex items-start gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="font-semibold">
-                            {comment.profiles?.username || 'Utente anonimo'}
-                          </span>
-                          <span className="text-sm text-gray-500">
-                            {new Date(comment.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                        <p className="text-gray-700">{comment.content}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
+          <BlogComments
+            comments={comments}
+            onSubmitComment={handleSubmitComment}
+            isSubmitting={submittingComment}
+          />
         </div>
       </div>
     </>
