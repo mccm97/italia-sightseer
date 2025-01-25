@@ -36,13 +36,30 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
+          navigator.serviceWorker.register('/sw.js', { scope: '/' })
             .then(registration => {
               console.log('ServiceWorker registration successful with scope:', registration.scope);
+              
+              // Handle updates
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                console.log('Service Worker update found!');
+                
+                newWorker.addEventListener('statechange', () => {
+                  console.log('Service Worker state changed:', newWorker.state);
+                });
+              });
             })
             .catch(err => {
               console.error('ServiceWorker registration failed:', err);
             });
+
+          // Check for updates
+          setInterval(() => {
+            navigator.serviceWorker.ready.then(registration => {
+              registration.update();
+            });
+          }, 1000 * 60 * 60); // Check every hour
         });
       }
     </script>
