@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ThumbsUp, Share2 } from 'lucide-react';
 import {
@@ -31,21 +30,6 @@ export function BlogPostActions({
   onLike, 
   onShare 
 }: BlogPostActionsProps) {
-  const handleShare = (platform: string) => {
-    const postUrl = `https://www.waywonder.info/blog/${postId}`;
-    const text = encodeURIComponent(postTitle);
-    const description = encodeURIComponent(postContent);
-    
-    const shareUrls = {
-      whatsapp: `https://wa.me/?text=${text}%20${postUrl}`,
-      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`,
-      twitter: `https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(postUrl)}`,
-      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(postUrl)}`
-    };
-
-    window.open(shareUrls[platform as keyof typeof shareUrls], '_blank');
-  };
-
   return (
     <div className="flex items-center gap-2 border-t pt-4">
       <Button 
@@ -68,16 +52,16 @@ export function BlogPostActions({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuItem onClick={() => handleShare('whatsapp')}>
+          <DropdownMenuItem onClick={() => onShare('whatsapp')}>
             WhatsApp
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleShare('facebook')}>
+          <DropdownMenuItem onClick={() => onShare('facebook')}>
             Facebook
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleShare('twitter')}>
+          <DropdownMenuItem onClick={() => onShare('twitter')}>
             Twitter
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleShare('linkedin')}>
+          <DropdownMenuItem onClick={() => onShare('linkedin')}>
             LinkedIn
           </DropdownMenuItem>
         </DropdownMenuContent>
