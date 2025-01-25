@@ -9,19 +9,46 @@ export function PWAInstallPrompt() {
   const { toast } = useToast();
 
   useEffect(() => {
+    // Check if the app is already installed
+    const isInstalled = window.matchMedia('(display-mode: standalone)').matches;
+    console.log('PWA is installed:', isInstalled);
+
+    if (!isInstalled) {
+      // Show prompt immediately if not installed
+      setShowPrompt(true);
+    }
+
     const handler = (e: Event) => {
       e.preventDefault();
+      console.log('beforeinstallprompt triggered');
       setDeferredPrompt(e);
       setShowPrompt(true);
     };
 
     window.addEventListener('beforeinstallprompt', handler);
 
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+    // Also listen for installation status changes
+    window.matchMedia('(display-mode: standalone)').addEventListener('change', (e) => {
+      if (e.matches) {
+        console.log('App was installed, hiding prompt');
+        setShowPrompt(false);
+      }
+    });
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+    };
   }, []);
 
   const handleInstall = async () => {
-    if (!deferredPrompt) return;
+    if (!deferredPrompt) {
+      // If no install prompt is available, open in browser install menu
+      toast({
+        title: "Installazione",
+        description: "Per installare l'app, usa il menu del tuo browser",
+      });
+      return;
+    }
 
     try {
       await deferredPrompt.prompt();
@@ -32,6 +59,7 @@ export function PWAInstallPrompt() {
           title: "Installazione completata",
           description: "WayWonder è stata installata con successo!",
         });
+        setShowPrompt(false);
       }
     } catch (error) {
       console.error('Errore durante l\'installazione:', error);
@@ -43,7 +71,6 @@ export function PWAInstallPrompt() {
     }
 
     setDeferredPrompt(null);
-    setShowPrompt(false);
   };
 
   return (
