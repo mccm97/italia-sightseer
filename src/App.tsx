@@ -1,3 +1,4 @@
+import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from 'next-themes';
@@ -17,6 +18,7 @@ import Login from '@/pages/Login';
 import { Footer } from './components/layout/Footer';
 import './App.css';
 
+// Create a new QueryClient instance
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -26,34 +28,37 @@ const queryClient = new QueryClient({
   },
 });
 
-function App() {
+// Create App component as a proper React functional component
+const App: React.FC = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <div className="min-h-screen flex flex-col">
-            <PWAInstallPrompt />
-            <CookieBanner />
-            <main className="flex-grow">
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/search" element={<Search />} />
-                <Route path="/blog" element={<Blog />} />
-                <Route path="/blog/:id" element={<BlogPost />} />
-                <Route path="/profile/:id?" element={<Profile />} />
-                <Route path="/statistics" element={<Statistics />} />
-                <Route path="/admin" element={<Admin />} />
-                <Route path="/upgrade" element={<Upgrade />} />
-                <Route path="/login" element={<Login />} />
-              </Routes>
-            </main>
-            <Footer />
-            <Toaster />
-          </div>
-        </ThemeProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <div className="min-h-screen flex flex-col">
+              <PWAInstallPrompt />
+              <CookieBanner />
+              <main className="flex-grow">
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/search" element={<Search />} />
+                  <Route path="/blog" element={<Blog />} />
+                  <Route path="/blog/:id" element={<BlogPost />} />
+                  <Route path="/profile/:id?" element={<Profile />} />
+                  <Route path="/statistics" element={<Statistics />} />
+                  <Route path="/admin" element={<Admin />} />
+                  <Route path="/upgrade" element={<Upgrade />} />
+                  <Route path="/login" element={<Login />} />
+                </Routes>
+              </main>
+              <Footer />
+              <Toaster />
+            </div>
+          </ThemeProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </React.StrictMode>
   );
-}
+};
 
 export default App;
