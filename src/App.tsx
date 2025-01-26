@@ -18,17 +18,15 @@ import Login from '@/pages/Login';
 import { Footer } from './components/layout/Footer';
 import './App.css';
 
-// Create a new QueryClient instance
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
+      staleTime: 1000 * 60 * 5,
       retry: 1,
     },
   },
 });
 
-// Create App component as a proper React functional component
 const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
