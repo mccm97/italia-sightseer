@@ -11,7 +11,7 @@
 
       gtag('config', 'G-304J5E7MQ9');
     </script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="google-site-verification" content="Il715jJenSaqLCMBMD2cdTeHbrq27D6SRGcZGn-xRZ8" />
     <title>WayWonder - Scopri e Pianifica i Tuoi Percorsi in Italia</title>
     <meta name="description" content="WayWonder ti aiuta a scoprire e pianificare percorsi personalizzati in Italia. Esplora le città più belle del paese e crea itinerari su misura." />
@@ -23,47 +23,46 @@
     <meta property="og:url" content="https://www.waywonder.info" />
     <meta property="fb:app_id" content="1047744786264405" />
     <meta name="twitter:card" content="summary_large_image" />
-    <link rel="canonical" href="https://www.waywonder.info" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <!-- PWA Meta Tags -->
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#000000" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="apple-mobile-web-app-title" content="WayWonder" />
+    <link rel="canonical" href="https://www.waywonder.info" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-    <!-- Service Worker Registration -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#000000" />
     <script>
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js', { scope: '/' })
-            .then(registration => {
-              console.log('ServiceWorker registration successful with scope:', registration.scope);
+        window.addEventListener('load', async () => {
+          try {
+            const registration = await navigator.serviceWorker.register('/sw.js', { 
+              scope: '/',
+              updateViaCache: 'none'
+            });
+            console.log('ServiceWorker registration successful:', registration);
+
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              console.log('Service Worker update found!');
               
-              // Handle updates
-              registration.addEventListener('updatefound', () => {
-                const newWorker = registration.installing;
-                console.log('Service Worker update found!');
-                
-                newWorker.addEventListener('statechange', () => {
-                  console.log('Service Worker state changed:', newWorker.state);
-                });
+              newWorker.addEventListener('statechange', () => {
+                console.log('Service Worker state:', newWorker.state);
+                if (newWorker.state === 'activated') {
+                  console.log('New Service Worker activated');
+                }
               });
-            })
-            .catch(err => {
-              console.error('ServiceWorker registration failed:', err);
             });
 
-          // Check for updates
-          setInterval(() => {
-            navigator.serviceWorker.ready.then(registration => {
+            // Check for updates every hour
+            setInterval(() => {
               registration.update();
-            });
-          }, 1000 * 60 * 60); // Check every hour
+            }, 1000 * 60 * 60);
+          } catch (error) {
+            console.error('ServiceWorker registration failed:', error);
+          }
         });
       }
     </script>
-    <!-- AdSense Script -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1267663470456742" crossorigin="anonymous"></script>
   </head>
   <body>
