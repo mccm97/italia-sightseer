@@ -18,6 +18,8 @@ import Login from '@/pages/Login';
 import { Footer } from './components/layout/Footer';
 import './App.css';
 
+console.log('App component initializing');
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

@@ -5,6 +5,8 @@ import './index.css';
 import './i18n.ts';
 import { Analytics } from '@vercel/analytics/react';
 
+console.log('Initializing React application');
+
 const rootElement = document.getElementById('root');
 
 if (!rootElement) {
