@@ -13,7 +13,6 @@ import CookiePolicy from './pages/CookiePolicy';
 import TermsOfService from './pages/TermsOfService';
 import { CookieBanner } from './components/CookieConsent';
 import { Footer } from './components/layout/Footer';
-import { PWAInstallPrompt } from './components/PWAInstallPrompt';
 
 function App() {
   return (
@@ -36,7 +35,6 @@ function App() {
       </main>
       <Footer />
       <CookieBanner />
-      <PWAInstallPrompt />
     </div>
   );
 }
