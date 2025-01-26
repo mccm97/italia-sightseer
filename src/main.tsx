@@ -1,23 +1,28 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App';
 import './index.css';
 import './i18n.ts';
 import { Analytics } from '@vercel/analytics/react';
 
-console.log('Initializing React application');
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
+    },
+  },
+});
 
-const rootElement = document.getElementById('root');
-
-if (!rootElement) {
-  throw new Error('Root element not found');
-}
-
-const root = ReactDOM.createRoot(rootElement);
-
-root.render(
+ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
-    <Analytics />
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <App />
+        <Analytics />
+      </BrowserRouter>
+    </QueryClientProvider>
   </React.StrictMode>
 );

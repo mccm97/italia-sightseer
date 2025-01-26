@@ -1,62 +1,42 @@
-import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider } from 'next-themes';
-import { Toaster } from '@/components/ui/toaster';
-import { CookieBanner } from '@/components/CookieConsent';
-import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 import { Routes, Route } from 'react-router-dom';
-import Index from '@/pages/Index';
-import Search from '@/pages/Search';
-import Blog from '@/pages/Blog';
-import BlogPost from '@/pages/BlogPost';
-import Profile from '@/pages/Profile';
-import Statistics from '@/pages/Statistics';
-import Admin from '@/pages/Admin';
-import Upgrade from '@/pages/Upgrade';
-import Login from '@/pages/Login';
+import Index from './pages/Index';
+import Login from './pages/Login';
+import Profile from './pages/Profile';
+import Blog from './pages/Blog';
+import BlogPost from './pages/BlogPost';
+import Statistics from './pages/Statistics';
+import Admin from './pages/Admin';
+import Upgrade from './pages/Upgrade';
+import Search from './pages/Search';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import CookiePolicy from './pages/CookiePolicy';
+import TermsOfService from './pages/TermsOfService';
+import { CookieBanner } from './components/CookieConsent';
 import { Footer } from './components/layout/Footer';
-import './App.css';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5,
-      retry: 1,
-    },
-  },
-});
-
-const App: React.FC = () => {
-  console.log('App component rendering');
-  
+function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <div className="min-h-screen flex flex-col">
-            <main className="flex-grow">
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/search" element={<Search />} />
-                <Route path="/blog" element={<Blog />} />
-                <Route path="/blog/:id" element={<BlogPost />} />
-                <Route path="/profile/:id?" element={<Profile />} />
-                <Route path="/statistics" element={<Statistics />} />
-                <Route path="/admin" element={<Admin />} />
-                <Route path="/upgrade" element={<Upgrade />} />
-                <Route path="/login" element={<Login />} />
-              </Routes>
-            </main>
-            <Footer />
-            <Toaster />
-            <CookieBanner />
-            <PWAInstallPrompt />
-          </div>
-        </ThemeProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
+    <div className="min-h-screen flex flex-col">
+      <main className="flex-1">
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:postId" element={<BlogPost />} />
+          <Route path="/statistics" element={<Statistics />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/upgrade" element={<Upgrade />} />
+          <Route path="/search" element={<Search />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/cookie-policy" element={<CookiePolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+        </Routes>
+      </main>
+      <Footer />
+      <CookieBanner />
+    </div>
   );
-};
+}
 
 export default App;
