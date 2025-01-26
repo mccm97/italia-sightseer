@@ -23,14 +23,19 @@
     <meta property="og:url" content="https://www.waywonder.info" />
     <meta property="fb:app_id" content="1047744786264405" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="WayWonder" />
+    <meta name="application-name" content="WayWonder" />
+    <meta name="msapplication-TileColor" content="#000000" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
     <link rel="canonical" href="https://www.waywonder.info" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#000000" />
+    <link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', async () => {
@@ -60,6 +65,20 @@
           } catch (error) {
             console.error('ServiceWorker registration failed:', error);
           }
+        });
+
+        // Handle beforeinstallprompt event
+        window.addEventListener('beforeinstallprompt', (e) => {
+          console.log('beforeinstallprompt event fired');
+          // Prevent Chrome 67 and earlier from automatically showing the prompt
+          e.preventDefault();
+          // Stash the event so it can be triggered later
+          window.deferredPrompt = e;
+        });
+
+        // Handle appinstalled event
+        window.addEventListener('appinstalled', (evt) => {
+          console.log('WayWonder has been installed');
         });
       }
     </script>

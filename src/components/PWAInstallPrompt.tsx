@@ -8,26 +8,35 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
+declare global {
+  interface Window {
+    deferredPrompt: BeforeInstallPromptEvent | null;
+  }
+}
+
 export function PWAInstallPrompt() {
   const [showPrompt, setShowPrompt] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
+    console.log('PWAInstallPrompt mounted');
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
     const isInstalled = localStorage.getItem('pwa-installed') === 'true';
     
     if (!isStandalone && !isInstalled) {
+      console.log('App not installed, showing prompt');
       setShowPrompt(true);
     }
 
     const handleBeforeInstallPrompt = (e: Event) => {
+      console.log('beforeinstallprompt event captured');
       e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
+      window.deferredPrompt = e as BeforeInstallPromptEvent;
       setShowPrompt(true);
     };
 
     const handleAppInstalled = () => {
+      console.log('App installed event fired');
       localStorage.setItem('pwa-installed', 'true');
       setShowPrompt(false);
       toast({
@@ -46,7 +55,9 @@ export function PWAInstallPrompt() {
   }, [toast]);
 
   const handleInstall = async () => {
-    if (!deferredPrompt) {
+    console.log('Install button clicked');
+    if (!window.deferredPrompt) {
+      console.log('No deferred prompt available');
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       if (isIOS) {
         toast({
@@ -63,21 +74,26 @@ export function PWAInstallPrompt() {
     }
 
     try {
-      const result = await deferredPrompt.prompt();
-      if (result.outcome === 'accepted') {
+      console.log('Prompting for installation');
+      const promptResult = await window.deferredPrompt.prompt();
+      console.log('Prompt result:', promptResult);
+      
+      if (promptResult.outcome === 'accepted') {
+        console.log('User accepted installation');
         localStorage.setItem('pwa-installed', 'true');
         toast({
           title: "Installazione in corso",
           description: "WayWonder sta per essere installata...",
         });
       } else {
+        console.log('User dismissed installation');
         toast({
           title: "Installazione annullata",
           description: "Puoi sempre installare WayWonder più tardi dal menu del browser",
         });
       }
     } catch (error) {
-      console.error('Errore durante l\'installazione:', error);
+      console.error('Error during installation:', error);
       toast({
         title: "Errore",
         description: "Si è verificato un errore durante l'installazione. Riprova più tardi.",
@@ -85,7 +101,7 @@ export function PWAInstallPrompt() {
       });
     }
 
-    setDeferredPrompt(null);
+    window.deferredPrompt = null;
   };
 
   return (

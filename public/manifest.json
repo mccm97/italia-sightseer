@@ -6,9 +6,14 @@
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
   "categories": ["travel", "navigation"],
   "prefer_related_applications": false,
+  "scope": "/",
+  "id": "/",
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  },
   "icons": [
     {
       "src": "/icons/icon-72x72.png",
@@ -64,6 +69,15 @@
       "name": "Cerca Città",
       "url": "/search",
       "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/1.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Homescreen di WayWonder"
     }
   ]
 }
