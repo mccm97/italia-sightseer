@@ -18,8 +18,6 @@ import Login from '@/pages/Login';
 import { Footer } from './components/layout/Footer';
 import './App.css';
 
-console.log('App component initializing');
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -37,8 +35,6 @@ const App: React.FC = () => {
       <BrowserRouter>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <div className="min-h-screen flex flex-col">
-            <PWAInstallPrompt />
-            <CookieBanner />
             <main className="flex-grow">
               <Routes>
                 <Route path="/" element={<Index />} />
@@ -54,6 +50,8 @@ const App: React.FC = () => {
             </main>
             <Footer />
             <Toaster />
+            <CookieBanner />
+            <PWAInstallPrompt />
           </div>
         </ThemeProvider>
       </BrowserRouter>
