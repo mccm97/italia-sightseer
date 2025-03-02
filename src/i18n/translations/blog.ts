@@ -2,6 +2,8 @@
 export const blogTranslations = {
   en: {
     title: 'Blog',
+    pageTitle: 'Travel Blog - Experiences and Itineraries | WayWonder',
+    pageDescription: 'Discover authentic travel stories, practical tips, and must-visit destinations through our blog. Read travelers\' experiences and find inspiration for your next journey.',
     newPost: 'New Post',
     delete: 'Delete',
     edit: 'Edit',
@@ -9,9 +11,11 @@ export const blogTranslations = {
     loading: 'Loading posts...',
     noPosts: 'No posts published yet',
     readMore: 'Read more',
+    errorLoadingPosts: 'Unable to load blog posts',
     writePost: {
       title: 'Title',
       content: 'Content',
+      contentPlaceholder: 'Write your content here...',
       publish: 'Publish',
       publishing: 'Publishing...',
       wordCount: 'words',
@@ -48,6 +52,8 @@ export const blogTranslations = {
   },
   it: {
     title: 'Blog',
+    pageTitle: 'Blog di Viaggio - Esperienze e Itinerari in Italia | WayWonder',
+    pageDescription: 'Scopri storie di viaggio autentiche, consigli pratici e destinazioni imperdibili attraverso il nostro blog. Leggi le esperienze dei viaggiatori e trova ispirazione per il tuo prossimo viaggio in Italia.',
     newPost: 'Nuovo Post',
     delete: 'Elimina',
     edit: 'Modifica',
@@ -55,9 +61,11 @@ export const blogTranslations = {
     loading: 'Caricamento post...',
     noPosts: 'Nessun post pubblicato',
     readMore: 'Leggi di più',
+    errorLoadingPosts: 'Impossibile caricare i post del blog',
     writePost: {
       title: 'Titolo',
       content: 'Contenuto',
+      contentPlaceholder: 'Scrivi il tuo contenuto qui...',
       publish: 'Pubblica',
       publishing: 'Pubblicazione in corso...',
       wordCount: 'parole',

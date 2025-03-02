@@ -1,9 +1,11 @@
+
 import { Button } from "@/components/ui/button";
 import { Heart, Share2, Trash, Edit } from "lucide-react";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useTranslation } from "react-i18next";
 
 interface BlogPostActionsProps {
   postId: string;
@@ -39,6 +41,7 @@ export function BlogPostActions({
   const [editTitle, setEditTitle] = useState(postTitle);
   const [editContent, setEditContent] = useState(postContent);
   const [isSaving, setIsSaving] = useState(false);
+  const { t } = useTranslation();
 
   const handleUpdate = async () => {
     if (!onUpdate) return;
@@ -71,7 +74,7 @@ export function BlogPostActions({
         onClick={() => onShare('facebook')}
       >
         <Share2 className="h-5 w-5 mr-1" />
-        Condividi
+        {t('blog.share')}
       </Button>
 
       {isAuthor && (
@@ -80,31 +83,31 @@ export function BlogPostActions({
             <DialogTrigger asChild>
               <Button variant="ghost" size="sm">
                 <Edit className="h-5 w-5 mr-1" />
-                Modifica
+                {t('blog.edit')}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Modifica post</DialogTitle>
+                <DialogTitle>{t('blog.edit')}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <Input
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
-                  placeholder="Titolo"
+                  placeholder={t('blog.writePost.title')}
                 />
                 <Textarea
                   value={editContent}
                   onChange={(e) => setEditContent(e.target.value)}
-                  placeholder="Contenuto"
+                  placeholder={t('blog.writePost.content')}
                   className="min-h-[200px]"
                 />
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" onClick={() => setIsEditing(false)}>
-                    Annulla
+                    {t('common.cancel')}
                   </Button>
                   <Button onClick={handleUpdate} disabled={isSaving}>
-                    {isSaving ? 'Salvataggio...' : 'Salva'}
+                    {isSaving ? t('common.saving') : t('common.save')}
                   </Button>
                 </div>
               </div>
@@ -118,7 +121,7 @@ export function BlogPostActions({
               onClick={onDelete}
             >
               <Trash className="h-5 w-5 mr-1" />
-              Elimina
+              {t('blog.delete')}
             </Button>
           )}
         </>

@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -10,6 +11,7 @@ import { Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { CitySelector } from '@/components/blog/CitySelector';
+import { useTranslation } from 'react-i18next';
 
 export default function Blog() {
   const [posts, setPosts] = useState<any[]>([]);
@@ -18,6 +20,7 @@ export default function Blog() {
   const [selectedCity, setSelectedCity] = useState<any>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     fetchPosts();
@@ -54,8 +57,8 @@ export default function Blog() {
     } catch (error) {
       console.error('Error fetching posts:', error);
       toast({
-        title: "Errore",
-        description: "Impossibile caricare i post del blog",
+        title: t('common.error'),
+        description: t('blog.errorLoadingPosts'),
         variant: "destructive",
       });
     } finally {
@@ -72,16 +75,16 @@ export default function Blog() {
   return (
     <>
       <Helmet>
-        <title>Blog di Viaggio - Esperienze e Itinerari in Italia | WayWonder</title>
+        <title>{t('blog.pageTitle')}</title>
         <meta 
           name="description" 
-          content="Scopri storie di viaggio autentiche, consigli pratici e destinazioni imperdibili attraverso il nostro blog. Leggi le esperienze dei viaggiatori e trova ispirazione per il tuo prossimo viaggio in Italia." 
+          content={t('blog.pageDescription')}
         />
       </Helmet>
       <div className="container mx-auto p-4">
         <MainMenu />
         <div className="max-w-2xl mx-auto mt-16">
-          <h1 className="text-3xl font-bold mb-8">Blog</h1>
+          <h1 className="text-3xl font-bold mb-8">{t('blog.title')}</h1>
           
           <CreatePostInput onPostCreated={fetchPosts} />
           
@@ -126,7 +129,7 @@ export default function Blog() {
                       variant="outline"
                       onClick={() => navigate(`/blog/${post.id}`)}
                     >
-                      Leggi di più
+                      {t('blog.readMore')}
                     </Button>
                   </CardContent>
                 </Card>
@@ -134,7 +137,7 @@ export default function Blog() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-gray-500">Nessun post pubblicato</p>
+              <p className="text-gray-500">{t('blog.noPosts')}</p>
             </div>
           )}
         </div>

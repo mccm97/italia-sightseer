@@ -36,7 +36,7 @@ export function PostContent({
       </div>
       <Textarea
         id="content"
-        placeholder={t('blog.writePost.content')}
+        placeholder={t('blog.writePost.contentPlaceholder')}
         value={content}
         onChange={(e) => setContent(e.target.value)}
         className="min-h-[100px]"
