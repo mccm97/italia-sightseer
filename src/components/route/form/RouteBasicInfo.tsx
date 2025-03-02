@@ -1,9 +1,11 @@
+
 import { FormField, FormItem, FormLabel, FormControl, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { UseFormReturn } from 'react-hook-form';
 import { CreateRouteFormData } from '@/types/route';
 import { ImageUpload } from '@/components/ImageUpload';
+import { AIRouteGenerator } from '../AIRouteGenerator';
 
 interface RouteBasicInfoProps {
   form: UseFormReturn<CreateRouteFormData>;
@@ -14,8 +16,15 @@ export function RouteBasicInfo({ form }: RouteBasicInfoProps) {
     form.setValue('image_url', url);
   };
 
+  const cityName = form.watch('city')?.name;
+
   return (
     <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-medium">Informazioni di Base</h3>
+        <AIRouteGenerator form={form} cityName={cityName} />
+      </div>
+      
       <FormField
         control={form.control}
         name="name"

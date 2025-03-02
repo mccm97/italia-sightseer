@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { AIAssistantAdmin } from './AIAssistantAdmin';
 
 interface City {
   id: string;
@@ -115,14 +117,143 @@ export function CityImageManager() {
     }
   };
 
+  const handleCityDataGenerated = async (cityData: any) => {
+    try {
+      // Check if city already exists
+      const { data: existingCity } = await supabase
+        .from('cities')
+        .select('id')
+        .eq('name', cityData.name)
+        .maybeSingle();
+
+      if (existingCity) {
+        toast({
+          title: "Città già esistente",
+          description: "Questa città è già presente nel database",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Add new city
+      const { data: newCity, error } = await supabase
+        .from('cities')
+        .insert({
+          name: cityData.name,
+          country: cityData.country,
+          lat: cityData.lat,
+          lng: cityData.lng
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Successo",
+        description: "Città aggiunta con successo",
+      });
+
+      // Refresh cities list
+      const { data: citiesData } = await supabase
+        .from('cities')
+        .select('*')
+        .order('name');
+      
+      if (citiesData) {
+        setCities(citiesData);
+      }
+    } catch (error) {
+      console.error('Error adding city:', error);
+      toast({
+        title: "Errore",
+        description: "Si è verificato un errore durante l'aggiunta della città",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleMonumentDataGenerated = async (monumentData: any) => {
+    try {
+      // First, find the city
+      const { data: cityData } = await supabase
+        .from('cities')
+        .select('id')
+        .eq('name', monumentData.city)
+        .maybeSingle();
+
+      if (!cityData) {
+        toast({
+          title: "Città non trovata",
+          description: "La città specificata non esiste nel database",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Check if attraction already exists
+      const { data: existingAttraction } = await supabase
+        .from('attractions')
+        .select('id')
+        .eq('name', monumentData.name)
+        .eq('city_id', cityData.id)
+        .maybeSingle();
+
+      if (existingAttraction) {
+        toast({
+          title: "Attrazione già esistente",
+          description: "Questa attrazione è già presente nel database per questa città",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Add new attraction
+      const { data: newAttraction, error } = await supabase
+        .from('attractions')
+        .insert({
+          name: monumentData.name,
+          city_id: cityData.id,
+          lat: monumentData.lat,
+          lng: monumentData.lng,
+          visit_duration: monumentData.visitDuration,
+          price: monumentData.price || 0
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Successo",
+        description: "Attrazione aggiunta con successo",
+      });
+    } catch (error) {
+      console.error('Error adding attraction:', error);
+      toast({
+        title: "Errore",
+        description: "Si è verificato un errore durante l'aggiunta dell'attrazione",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Gestione Immagini Città</CardTitle>
-          <CardDescription>
-            Carica e gestisci le immagini per ogni città
-          </CardDescription>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle>Gestione Immagini Città</CardTitle>
+              <CardDescription>
+                Carica e gestisci le immagini per ogni città
+              </CardDescription>
+            </div>
+            <AIAssistantAdmin 
+              onCityDataGenerated={handleCityDataGenerated}
+              onMonumentDataGenerated={handleMonumentDataGenerated}
+            />
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -1,7 +1,9 @@
+
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { useTranslation } from "react-i18next";
+import { AIAssistantButton } from "./AIAssistantButton";
 
 interface PostContentProps {
   content: string;
@@ -9,6 +11,7 @@ interface PostContentProps {
   wordCount: number;
   remainingWords: number;
   progress: number;
+  selectedCity?: { id: string; name: string; } | null;
 }
 
 export function PostContent({ 
@@ -16,13 +19,21 @@ export function PostContent({
   setContent, 
   wordCount, 
   remainingWords,
-  progress 
+  progress,
+  selectedCity
 }: PostContentProps) {
   const { t } = useTranslation();
 
   return (
     <div>
-      <Label htmlFor="content">{t('blog.writePost.content')}</Label>
+      <div className="flex justify-between items-center mb-2">
+        <Label htmlFor="content">{t('blog.writePost.content')}</Label>
+        <AIAssistantButton 
+          currentContent={content}
+          onContentUpdate={setContent}
+          selectedCity={selectedCity}
+        />
+      </div>
       <Textarea
         id="content"
         placeholder={t('blog.writePost.content')}

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -135,6 +136,7 @@ export function CreatePostInput({ onPostCreated }: CreatePostInputProps) {
           wordCount={wordCount}
           remainingWords={remainingWords}
           progress={progress}
+          selectedCity={isAboutCity ? selectedCity : null}
         />
         <div className="flex justify-end">
           <Button 
