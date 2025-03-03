@@ -1,3 +1,4 @@
+
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { MapPin } from "lucide-react";
@@ -29,13 +30,13 @@ export function CitySelector({
         />
         <Label htmlFor="city-mode" className="flex items-center space-x-2">
           <MapPin className="h-4 w-4" />
-          <span>{t('blog.writePost.citySearch')}</span>
+          <span>{t('blog.writePost.selectCity')}</span>
         </Label>
       </div>
 
       {isAboutCity && (
         <div className="mt-4">
-          <Label>Seleziona la città</Label>
+          <Label>{t('blog.writePost.chooseCity')}</Label>
           <CitySearch onCitySelect={setSelectedCity} />
         </div>
       )}

@@ -12,6 +12,7 @@ export const blogTranslations = {
     noPosts: 'No posts published yet',
     readMore: 'Read more',
     errorLoadingPosts: 'Unable to load blog posts',
+    backToBlog: 'Back to blog',
     writePost: {
       title: 'Title',
       content: 'Content',
@@ -62,6 +63,7 @@ export const blogTranslations = {
     noPosts: 'Nessun post pubblicato',
     readMore: 'Leggi di più',
     errorLoadingPosts: 'Impossibile caricare i post del blog',
+    backToBlog: 'Torna al blog',
     writePost: {
       title: 'Titolo',
       content: 'Contenuto',
