@@ -5,10 +5,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Sparkles, Check, X, Loader2 } from 'lucide-react';
+import { Sparkles, Check, X, Loader2, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { generateBlogPostContent, improveText } from '@/services/openai';
 import { useTranslation } from 'react-i18next';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface AIAssistantButtonProps {
   currentContent: string;
@@ -21,11 +22,14 @@ export function AIAssistantButton({ currentContent, onContentUpdate, selectedCit
   const [isLoading, setIsLoading] = useState(false);
   const [action, setAction] = useState<'write' | 'improve'>('write');
   const [generatedContent, setGeneratedContent] = useState('');
+  const [showDemoAlert, setShowDemoAlert] = useState(false);
   const { toast } = useToast();
   const { t, i18n } = useTranslation();
 
   const handleGenerate = async () => {
     setIsLoading(true);
+    setShowDemoAlert(true);
+    
     try {
       if (action === 'write') {
         if (!selectedCity) {
@@ -38,9 +42,11 @@ export function AIAssistantButton({ currentContent, onContentUpdate, selectedCit
           return;
         }
         
+        console.log(`Generating content for city: ${selectedCity.name} in language: ${i18n.language}`);
         const { content, error } = await generateBlogPostContent(selectedCity.name, i18n.language);
         
         if (error) {
+          console.error("Error from OpenAI service:", error);
           throw new Error(error);
         }
         
@@ -56,9 +62,11 @@ export function AIAssistantButton({ currentContent, onContentUpdate, selectedCit
           return;
         }
         
+        console.log(`Improving content in language: ${i18n.language}`);
         const { content, error } = await improveText(currentContent, i18n.language);
         
         if (error) {
+          console.error("Error from OpenAI service:", error);
           throw new Error(error);
         }
         
@@ -80,6 +88,7 @@ export function AIAssistantButton({ currentContent, onContentUpdate, selectedCit
     onContentUpdate(generatedContent);
     setIsOpen(false);
     setGeneratedContent('');
+    setShowDemoAlert(false);
     toast({
       title: t('blog.ai.contentApplied'),
       description: t('blog.ai.contentUpdated'),
@@ -108,6 +117,17 @@ export function AIAssistantButton({ currentContent, onContentUpdate, selectedCit
           </DialogHeader>
 
           <div className="space-y-4 my-4">
+            {showDemoAlert && (
+              <Alert variant="warning" className="mb-4">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  {i18n.language === 'it' 
+                    ? "Questa è una funzionalità dimostrativa che genera contenuti anche senza un API key valida."
+                    : "This is a demo feature that generates content even without a valid API key."}
+                </AlertDescription>
+              </Alert>
+            )}
+            
             <div className="space-y-2">
               <Label>{t('blog.ai.selectAction')}</Label>
               <Select

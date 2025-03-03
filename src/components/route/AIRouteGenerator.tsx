@@ -4,12 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Sparkles, Check, X, Loader2 } from 'lucide-react';
+import { Sparkles, Check, X, Loader2, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { generateRouteContent } from '@/services/openai';
 import { useTranslation } from 'react-i18next';
 import { UseFormReturn } from 'react-hook-form';
 import { CreateRouteFormData } from '@/types/route';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface AIRouteGeneratorProps {
   form: UseFormReturn<CreateRouteFormData>;
@@ -20,6 +21,7 @@ export function AIRouteGenerator({ form, cityName }: AIRouteGeneratorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [attractionsCount, setAttractionsCount] = useState(5);
+  const [showDemoAlert, setShowDemoAlert] = useState(false);
   const { toast } = useToast();
   const { t, i18n } = useTranslation();
 
@@ -34,8 +36,10 @@ export function AIRouteGenerator({ form, cityName }: AIRouteGeneratorProps) {
     }
 
     setIsLoading(true);
+    setShowDemoAlert(true);
 
     try {
+      console.log(`Generating route for city: ${cityName} with ${attractionsCount} attractions in ${i18n.language}`);
       const { content, error } = await generateRouteContent(
         cityName,
         attractionsCount,
@@ -43,6 +47,7 @@ export function AIRouteGenerator({ form, cityName }: AIRouteGeneratorProps) {
       );
 
       if (error) {
+        console.error("Error from OpenAI service:", error);
         throw new Error(error);
       }
 
@@ -119,6 +124,17 @@ export function AIRouteGenerator({ form, cityName }: AIRouteGeneratorProps) {
           </DialogHeader>
 
           <div className="space-y-4 my-4">
+            {showDemoAlert && (
+              <Alert variant="warning" className="mb-4">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  {i18n.language === 'it' 
+                    ? "Questa è una funzionalità dimostrativa che genera contenuti anche senza un API key valida."
+                    : "This is a demo feature that generates content even without a valid API key."}
+                </AlertDescription>
+              </Alert>
+            )}
+            
             <div className="space-y-2">
               <Label>{t('routes.ai.selectedCity')}</Label>
               <div className="p-2 border rounded-md">
