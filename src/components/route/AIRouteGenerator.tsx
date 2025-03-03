@@ -36,11 +36,11 @@ export function AIRouteGenerator({ form, cityName }: AIRouteGeneratorProps) {
     }
 
     setIsLoading(true);
-    setShowDemoAlert(true);
+    setShowDemoAlert(false);
 
     try {
       console.log(`Generating route for city: ${cityName} with ${attractionsCount} attractions in ${i18n.language}`);
-      const { content, error } = await generateRouteContent(
+      const { content, isDemo, error } = await generateRouteContent(
         cityName,
         attractionsCount,
         i18n.language
@@ -75,12 +75,16 @@ export function AIRouteGenerator({ form, cityName }: AIRouteGeneratorProps) {
           });
         }
 
-        toast({
-          title: t('routes.ai.success'),
-          description: t('routes.ai.routeGenerated'),
-        });
+        // Set the demo alert based on response
+        setShowDemoAlert(!!isDemo || routeData.isDemo);
 
-        setIsOpen(false);
+        if (!isDemo && !routeData.isDemo) {
+          toast({
+            title: t('routes.ai.success'),
+            description: t('routes.ai.routeGenerated'),
+          });
+          setIsOpen(false);
+        }
       } catch (parseError) {
         console.error('Error parsing AI response:', parseError);
         toast({
@@ -129,8 +133,8 @@ export function AIRouteGenerator({ form, cityName }: AIRouteGeneratorProps) {
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
                   {i18n.language === 'it' 
-                    ? "Questa è una funzionalità dimostrativa che genera contenuti anche senza un API key valida."
-                    : "This is a demo feature that generates content even without a valid API key."}
+                    ? "Questa è una versione dimostrativa. Per percorsi completi, è necessario configurare una chiave API OpenAI nelle impostazioni di Supabase."
+                    : "This is a demo version. For complete routes, you need to configure an OpenAI API key in your Supabase settings."}
                 </AlertDescription>
               </Alert>
             )}

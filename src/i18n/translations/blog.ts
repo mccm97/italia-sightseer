@@ -1,3 +1,4 @@
+
 export const blogTranslations = {
   en: {
     title: 'Blog',
@@ -48,7 +49,9 @@ export const blogTranslations = {
       contentApplied: 'Content applied',
       contentUpdated: 'Your content has been updated with the AI suggestion',
       parseError: 'Parse error',
-      invalidFormat: 'The AI generated an invalid response format'
+      invalidFormat: 'The AI generated an invalid response format',
+      demoVersion: 'This is a demo version',
+      apiKeyRequired: 'For complete content, you need to configure an OpenAI API key'
     }
   },
   it: {
@@ -100,7 +103,9 @@ export const blogTranslations = {
       contentApplied: 'Contenuto applicato',
       contentUpdated: 'Il tuo contenuto è stato aggiornato con il suggerimento dell\'IA',
       parseError: 'Errore di analisi',
-      invalidFormat: 'L\'IA ha generato un formato di risposta non valido'
+      invalidFormat: 'L\'IA ha generato un formato di risposta non valido',
+      demoVersion: 'Questa è una versione dimostrativa',
+      apiKeyRequired: 'Per contenuti completi, è necessario configurare una chiave API OpenAI'
     }
   }
 };

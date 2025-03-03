@@ -12,37 +12,71 @@ const generateFallbackContent = (prompt: string) => {
   if (prompt.includes('Write a detailed article') || prompt.includes('Scrivi un dettagliato articolo')) {
     const cityName = prompt.includes('city of') 
       ? prompt.split('city of ')[1].split('.')[0]
-      : prompt.split('città di ')[1].split('.')[0];
+      : prompt.includes('città di')
+        ? prompt.split('città di ')[1].split('.')[0] 
+        : 'this destination';
       
-    return `# ${cityName}: A Beautiful Destination
+    return {
+      content: `# Exploring ${cityName}
 
-${cityName} is a wonderful place to visit with rich history and culture. This city offers amazing sights, delicious local cuisine, and unforgettable experiences.
+This is a preview of AI-generated content. To generate a complete article about ${cityName}, you'll need to set up an OpenAI API key.
 
-## History and Culture
-${cityName} has a fascinating history dating back centuries. The local culture is vibrant and welcoming.
+## What You'll See With an API Key
+With a valid OpenAI API key, you would receive a complete article covering:
+- The rich history and cultural background of ${cityName}
+- Top attractions and must-visit sites
+- Local cuisine and dining recommendations
+- Practical travel tips and best times to visit
+- Insider recommendations for an authentic experience
 
-## Main Attractions
-When visiting ${cityName}, make sure to check out the historic center, museums, and local markets.
-
-## Local Cuisine
-The food in ${cityName} is exceptional. Try the local specialties and traditional dishes.
-
-## Travel Tips
-- Visit during spring or fall for the best weather
-- Public transportation is efficient for getting around
-- Local festivals offer a great way to experience the culture
-`;
+## Setting Up Your API Key
+To enable full AI article generation:
+1. Sign up for an OpenAI API key at openai.com
+2. Add the key to your Supabase project settings
+3. Enjoy comprehensive, detailed travel content`,
+      isDemo: true
+    };
   }
   
   // For text improvement requests
   if (prompt.includes('Correggi e migliora') || prompt.includes('Correct and improve')) {
-    return prompt.includes('text') 
-      ? "The improved text with better grammar and readability."
-      : "Il testo migliorato con grammatica e leggibilità ottimizzate.";
+    const originalText = prompt.includes('text')
+      ? prompt.split('text: "')[1].split('"')[0]
+      : prompt.split('testo: "')[1].split('"')[0];
+    
+    return {
+      content: originalText + "\n\n[This is a preview. Connect an OpenAI API key to access the full text improvement feature.]",
+      isDemo: true
+    };
+  }
+
+  // For route generation
+  if (prompt.includes('tourist route') || prompt.includes('percorso turistico')) {
+    const cityName = prompt.includes('city of') 
+      ? prompt.split('city of ')[1].split(' with')[0]
+      : prompt.includes('città di')
+        ? prompt.split('città di ')[1].split(' con')[0] 
+        : 'the selected city';
+    
+    return {
+      content: JSON.stringify({
+        routeName: `${cityName} Highlights Tour (Preview)`,
+        attractions: [
+          { name: "Main Attraction (Preview)", visitDuration: A60, price: 15 },
+          { name: "Historical Site (Preview)", visitDuration: 45, price: 10 },
+          { name: "Local Market (Preview)", visitDuration: 90, price: 0 }
+        ],
+        isDemo: true
+      }),
+      isDemo: true
+    };
   }
 
   // Default response
-  return "Content could not be generated due to API limitations. Please try again later.";
+  return {
+    content: "This is a preview. Connect an OpenAI API key to generate complete content.",
+    isDemo: true
+  };
 };
 
 serve(async (req) => {
@@ -57,10 +91,10 @@ serve(async (req) => {
     if (!openAIApiKey) {
       console.log('API key missing: Using fallback content generator');
       const { prompt } = await req.json();
-      const fallbackContent = generateFallbackContent(prompt);
+      const fallbackResponse = generateFallbackContent(prompt);
       
       return new Response(
-        JSON.stringify({ content: fallbackContent }),
+        JSON.stringify(fallbackResponse),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -96,23 +130,23 @@ serve(async (req) => {
       
       if (data.error) {
         console.error('OpenAI API error:', data.error);
-        const fallbackContent = generateFallbackContent(prompt);
+        const fallbackResponse = generateFallbackContent(prompt);
         return new Response(
-          JSON.stringify({ content: fallbackContent }),
+          JSON.stringify(fallbackResponse),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
       const content = data.choices[0].message.content;
       return new Response(
-        JSON.stringify({ content }),
+        JSON.stringify({ content, isDemo: false }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     } catch (fetchError) {
       console.error('Error calling OpenAI API:', fetchError);
-      const fallbackContent = generateFallbackContent(prompt);
+      const fallbackResponse = generateFallbackContent(prompt);
       return new Response(
-        JSON.stringify({ content: fallbackContent }),
+        JSON.stringify(fallbackResponse),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

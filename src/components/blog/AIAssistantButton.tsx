@@ -28,7 +28,7 @@ export function AIAssistantButton({ currentContent, onContentUpdate, selectedCit
 
   const handleGenerate = async () => {
     setIsLoading(true);
-    setShowDemoAlert(true);
+    setShowDemoAlert(false);
     
     try {
       if (action === 'write') {
@@ -43,7 +43,7 @@ export function AIAssistantButton({ currentContent, onContentUpdate, selectedCit
         }
         
         console.log(`Generating content for city: ${selectedCity.name} in language: ${i18n.language}`);
-        const { content, error } = await generateBlogPostContent(selectedCity.name, i18n.language);
+        const { content, isDemo, error } = await generateBlogPostContent(selectedCity.name, i18n.language);
         
         if (error) {
           console.error("Error from OpenAI service:", error);
@@ -51,6 +51,7 @@ export function AIAssistantButton({ currentContent, onContentUpdate, selectedCit
         }
         
         setGeneratedContent(content);
+        setShowDemoAlert(!!isDemo);
       } else if (action === 'improve') {
         if (!currentContent.trim()) {
           toast({
@@ -63,7 +64,7 @@ export function AIAssistantButton({ currentContent, onContentUpdate, selectedCit
         }
         
         console.log(`Improving content in language: ${i18n.language}`);
-        const { content, error } = await improveText(currentContent, i18n.language);
+        const { content, isDemo, error } = await improveText(currentContent, i18n.language);
         
         if (error) {
           console.error("Error from OpenAI service:", error);
@@ -71,6 +72,7 @@ export function AIAssistantButton({ currentContent, onContentUpdate, selectedCit
         }
         
         setGeneratedContent(content);
+        setShowDemoAlert(!!isDemo);
       }
     } catch (error) {
       console.error('Error generating content:', error);
@@ -122,8 +124,8 @@ export function AIAssistantButton({ currentContent, onContentUpdate, selectedCit
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
                   {i18n.language === 'it' 
-                    ? "Questa è una funzionalità dimostrativa che genera contenuti anche senza un API key valida."
-                    : "This is a demo feature that generates content even without a valid API key."}
+                    ? "Questa è una versione dimostrativa. Per contenuti completi, è necessario configurare una chiave API OpenAI nelle impostazioni di Supabase."
+                    : "This is a demo version. For complete content, you need to configure an OpenAI API key in your Supabase settings."}
                 </AlertDescription>
               </Alert>
             )}

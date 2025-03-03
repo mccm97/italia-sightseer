@@ -10,6 +10,7 @@ export interface OpenAIRequest {
 
 export interface OpenAIResponse {
   content: string;
+  isDemo?: boolean;
   error?: string;
 }
 
@@ -41,7 +42,10 @@ export const generateAIContent = async (
     }
 
     console.log('AI content generated successfully');
-    return { content: data.content };
+    return { 
+      content: data.content,
+      isDemo: data.isDemo || false
+    };
   } catch (error: any) {
     console.error('Error in generateAIContent:', error);
     return { content: '', error: error.message };
