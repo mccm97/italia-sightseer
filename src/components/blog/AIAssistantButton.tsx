@@ -118,7 +118,7 @@ export function AIAssistantButton({ currentContent, onContentUpdate, selectedCit
 
           <div className="space-y-4 my-4">
             {showDemoAlert && (
-              <Alert variant="warning" className="mb-4">
+              <Alert variant="destructive" className="mb-4">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
                   {i18n.language === 'it' 
