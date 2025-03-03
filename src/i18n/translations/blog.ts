@@ -1,4 +1,3 @@
-
 export const blogTranslations = {
   en: {
     title: 'Blog',
@@ -25,6 +24,7 @@ export const blogTranslations = {
       cityPost: 'Yes, select a city',
       notCityPost: 'No',
       chooseCity: 'Choose a city',
+      coverImage: 'Cover Image'
     },
     ai: {
       assistant: 'AI Assistant',
@@ -76,6 +76,7 @@ export const blogTranslations = {
       cityPost: 'Sì, seleziona una città',
       notCityPost: 'No',
       chooseCity: 'Scegli una città',
+      coverImage: 'Immagine di copertina'
     },
     ai: {
       assistant: 'Assistente IA',
