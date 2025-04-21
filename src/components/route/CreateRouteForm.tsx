@@ -107,6 +107,10 @@ export function CreateRouteForm({
         <div className="flex justify-end">
           <Button 
             type="submit"
+            onClick={(e) => {
+              console.log('Continue button clicked');
+              // The form will be submitted by the browser due to type="submit"
+            }}
           >
             {t('routes.form.continue')}
           </Button>
