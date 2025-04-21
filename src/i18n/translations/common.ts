@@ -1,14 +1,24 @@
 export const commonTranslations = {
   en: {
     loading: 'Loading...',
-    error: 'Error',
-    success: 'Success',
-    authRequired: 'You must be logged in to perform this action',
+    error: 'An error occurred',
+    save: 'Save',
+    cancel: 'Cancel',
+    edit: 'Edit',
+    delete: 'Delete',
+    close: 'Close',
+    search: 'Search',
+    noDescription: 'No description available',
   },
   it: {
     loading: 'Caricamento...',
-    error: 'Errore',
-    success: 'Operazione completata',
-    authRequired: 'Devi essere autenticato per eseguire questa azione',
+    error: 'Si è verificato un errore',
+    save: 'Salva',
+    cancel: 'Annulla',
+    edit: 'Modifica',
+    delete: 'Elimina',
+    close: 'Chiudi',
+    search: 'Cerca',
+    noDescription: 'Nessuna descrizione disponibile',
   }
 };

@@ -1,4 +1,6 @@
+
 import { CardContent } from '@/components/ui/card';
+import { useTranslation } from 'react-i18next';
 
 interface RouteCardContentProps {
   duration: number;
@@ -15,18 +17,20 @@ export function RouteCardContent({
   showSummary,
   summary
 }: RouteCardContentProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-4">
       <div>
-        <p>Durata totale: {duration} minuti</p>
-        <p>Attrazioni: {attractionsCount}</p>
-        <p>Costo totale: €{totalCost}</p>
+        <p>{t('routes.summary.totalDuration')}: {duration} {t('routes.attractions.minutes')}</p>
+        <p>{t('routes.summary.attractions')}: {attractionsCount}</p>
+        <p>{t('routes.summary.totalCost')}: €{totalCost}</p>
       </div>
       
       {showSummary && (
         <div className="mt-4 p-4 bg-muted rounded-lg">
-          <h3 className="text-sm font-medium mb-2">Descrizione del percorso:</h3>
-          <p className="text-sm text-muted-foreground">{summary || "Nessuna descrizione disponibile"}</p>
+          <h3 className="text-sm font-medium mb-2">{t('routes.basicInfo.routeDescription')}:</h3>
+          <p className="text-sm text-muted-foreground">{summary || t('common.noDescription')}</p>
         </div>
       )}
     </div>
