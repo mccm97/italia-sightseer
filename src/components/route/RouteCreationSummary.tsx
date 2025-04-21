@@ -21,6 +21,10 @@ export function RouteCreationSummary({
 }: RouteCreationSummaryProps) {
   const { t } = useTranslation();
   
+  // Ensure the total price is a valid number
+  const totalPrice = calculateTotalPrice();
+  const formattedPrice = typeof totalPrice === 'number' ? totalPrice.toFixed(2) : '0.00';
+  
   return (
     <div className="space-y-4">
       <Card>
@@ -29,7 +33,7 @@ export function RouteCreationSummary({
           <p><strong>{t('routes.summary.name')}:</strong> {formData?.name}</p>
           <p><strong>{t('routes.summary.city')}:</strong> {formData?.city?.name}</p>
           <p><strong>{t('routes.summary.totalDuration')}:</strong> {calculateTotalDuration()} {t('routes.attractions.minutes')}</p>
-          <p><strong>{t('routes.summary.totalCost')}:</strong> €{calculateTotalPrice().toFixed(2)}</p>
+          <p><strong>{t('routes.summary.totalCost')}:</strong> €{formattedPrice}</p>
           <div>
             <h4 className="font-medium">{t('routes.summary.attractions')}:</h4>
             <ul className="list-disc pl-5 mt-2">

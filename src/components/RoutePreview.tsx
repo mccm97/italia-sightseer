@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import CityMap from './CityMap';
 import { RouteHeader } from './route/RouteHeader';
@@ -18,12 +19,12 @@ export function RoutePreview({
 }: RoutePreviewProps) {
   const attractions = useAttractionCoordinates(formData);
 
-  const calculateTotalDuration = () => {
-    return formData?.attractions.reduce((total, attr) => total + (attr.visitDuration || 0), 0) || 0;
+  const calculateTotalDuration = (): number => {
+    return formData?.attractions.reduce((total, attr) => total + (Number(attr.visitDuration) || 0), 0) || 0;
   };
 
-  const calculateTotalPrice = () => {
-    return formData?.attractions.reduce((total, attr) => total + (attr.price || 0), 0) || 0;
+  const calculateTotalPrice = (): number => {
+    return formData?.attractions.reduce((total, attr) => total + (Number(attr.price) || 0), 0) || 0;
   };
 
   if (!formData) return null;
