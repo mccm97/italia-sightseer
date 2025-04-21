@@ -105,7 +105,9 @@ export function CreateRouteForm({
         <AttractionsSection form={form} />
 
         <div className="flex justify-end">
-          <Button type="submit">
+          <Button 
+            type="submit"
+          >
             {t('routes.form.continue')}
           </Button>
         </div>
