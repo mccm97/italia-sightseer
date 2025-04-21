@@ -1,4 +1,3 @@
-
 export const routesTranslations = {
   en: {
     saved: 'Route Saved',
@@ -76,6 +75,15 @@ export const routesTranslations = {
       pleaseSelectCity: 'Please select a city first',
       attractionsCount: 'Number of attractions',
       attractionsCountNote: 'Maximum 10 attractions'
+    },
+    actions: {
+      comments: 'Comments',
+      reviews: 'Reviews',
+      attractionDetails: 'Attraction Details',
+      showDescription: 'Show Description',
+      hideDescription: 'Hide Description',
+      showMap: 'Show on map',
+      hideMap: 'Hide map'
     }
   },
   it: {
@@ -102,7 +110,7 @@ export const routesTranslations = {
       routeNamePlaceholder: 'Inserisci il nome del percorso',
       routeDescription: 'Descrizione del Percorso',
       routeDescriptionPlaceholder: 'Descrivi il tuo percorso... Cosa rende speciale questa esperienza? Quali emozioni può suscitare?',
-      routeDescriptionHelp: 'Una buona descrizione può attirare più visitatori! Racconta cosa rende unico questo percorso e perché gli altri dovrebbero provarlo.',
+      routeDescriptionHelp: 'Una buona descrizione può attirare pi�� visitatori! Racconta cosa rende unico questo percorso e perché gli altri dovrebbero provarlo.',
       routeImage: 'Immagine del Percorso'
     },
     attractions: {
@@ -154,6 +162,15 @@ export const routesTranslations = {
       pleaseSelectCity: 'Seleziona prima una città',
       attractionsCount: 'Numero di attrazioni',
       attractionsCountNote: 'Massimo 10 attrazioni'
+    },
+    actions: {
+      comments: 'Commenti',
+      reviews: 'Recensioni',
+      attractionDetails: 'Dettagli Attrazioni',
+      showDescription: 'Mostra Descrizione',
+      hideDescription: 'Nascondi Descrizione',
+      showMap: 'Visualizza su mappa',
+      hideMap: 'Nascondi mappa'
     }
   }
 };

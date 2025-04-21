@@ -1,5 +1,7 @@
+
 import { Button } from '@/components/ui/button';
 import { Map, MessageSquare, ListTree, Star } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface RouteActionsProps {
   onCommentsClick: () => void;
@@ -20,6 +22,8 @@ export function RouteActions({
   showDescription,
   showMap
 }: RouteActionsProps) {
+  const { t } = useTranslation();
+  
   return (
     <div className="flex flex-wrap gap-2 mt-4">
       <Button
@@ -31,7 +35,7 @@ export function RouteActions({
         }}
       >
         <MessageSquare className="w-4 h-4 mr-2" />
-        Commenti
+        {t('routes.actions.comments')}
       </Button>
 
       <Button
@@ -43,7 +47,7 @@ export function RouteActions({
         }}
       >
         <Star className="w-4 h-4 mr-2" />
-        Recensioni
+        {t('routes.actions.reviews')}
       </Button>
 
       <Button
@@ -55,7 +59,7 @@ export function RouteActions({
         }}
       >
         <ListTree className="w-4 h-4 mr-2" />
-        Dettagli Attrazioni
+        {t('routes.actions.attractionDetails')}
       </Button>
 
       <Button
@@ -66,7 +70,7 @@ export function RouteActions({
           onDescriptionToggle();
         }}
       >
-        {showDescription ? 'Nascondi Descrizione' : 'Mostra Descrizione'}
+        {showDescription ? t('routes.actions.hideDescription') : t('routes.actions.showDescription')}
       </Button>
 
       <Button
@@ -78,7 +82,7 @@ export function RouteActions({
         }}
       >
         <Map className="w-4 h-4 mr-2" />
-        {showMap ? 'Nascondi mappa' : 'Visualizza su mappa'}
+        {showMap ? t('routes.actions.hideMap') : t('routes.actions.showMap')}
       </Button>
     </div>
   );
