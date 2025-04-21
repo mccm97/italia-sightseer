@@ -1,75 +1,162 @@
+
 import { FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { UseFormReturn } from 'react-hook-form';
+import { UseFormReturn, useFieldArray } from 'react-hook-form';
 import { CreateRouteFormData } from '@/types/route';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { AttractionInput } from '@/components/AttractionInput';
-import { useEffect } from 'react';
+import { Plus, Minus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface AttractionsSectionProps {
   form: UseFormReturn<CreateRouteFormData>;
 }
 
 export function AttractionsSection({ form }: AttractionsSectionProps) {
+  const { t } = useTranslation();
+  
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "attractions"
+  });
+  
   const attractionsCount = form.watch('attractionsCount');
-
-  useEffect(() => {
-    console.log('Attractions count changed:', attractionsCount);
+  
+  const handleAttractionsCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const count = parseInt(e.target.value);
+    if (isNaN(count) || count < 1) return;
     
-    // Ensure valid count
-    const count = Math.max(1, Math.floor(attractionsCount) || 1);
-    if (count !== attractionsCount) {
-      form.setValue('attractionsCount', count);
-      return;
+    form.setValue('attractionsCount', count);
+    
+    // Add or remove attractions based on the new count
+    const currentCount = fields.length;
+    
+    if (count > currentCount) {
+      for (let i = currentCount; i < count; i++) {
+        append({ name: '', address: '', inputType: 'name', visitDuration: 0, price: 0 });
+      }
+    } else if (count < currentCount) {
+      for (let i = currentCount - 1; i >= count; i--) {
+        remove(i);
+      }
     }
-
-    const currentAttractions = form.getValues('attractions') || [];
     
-    // Create new array with the correct length
-    const updatedAttractions = Array.from({ length: count }, (_, index) => {
-      return currentAttractions[index] || { 
-        name: '', 
-        address: '', 
-        inputType: 'name' as const, 
-        visitDuration: 0, 
-        price: 0 
-      };
-    });
-
-    console.log('Setting attractions array:', updatedAttractions);
-    form.setValue('attractions', updatedAttractions);
-  }, [attractionsCount, form]);
+    console.log('Attractions count changed:', count);
+    console.log('Setting attractions array:', form.getValues('attractions'));
+  };
 
   return (
     <div className="space-y-4">
+      <h3 className="text-lg font-medium">{t('routes.attractions.title')}</h3>
+      
       <FormField
         control={form.control}
         name="attractionsCount"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Numero di Attrazioni</FormLabel>
+            <FormLabel>{t('routes.attractions.count')}</FormLabel>
             <FormControl>
-              <Input 
-                type="number" 
-                min="1"
-                placeholder="Inserisci il numero di attrazioni"
-                {...field}
-                onChange={e => {
-                  const value = Math.max(1, parseInt(e.target.value) || 1);
-                  field.onChange(value);
-                }}
-              />
+              <div className="flex items-center">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="icon" 
+                  className="rounded-r-none"
+                  onClick={() => {
+                    const newValue = Math.max(1, Number(field.value) - 1);
+                    field.onChange(newValue);
+                    handleAttractionsCountChange({ target: { value: newValue.toString() } } as React.ChangeEvent<HTMLInputElement>);
+                  }}
+                  disabled={field.value <= 1}
+                >
+                  <Minus className="h-4 w-4" />
+                </Button>
+                <Input
+                  type="number"
+                  className="rounded-none text-center w-16"
+                  min={1}
+                  max={10}
+                  {...field}
+                  onChange={e => {
+                    field.onChange(e);
+                    handleAttractionsCountChange(e);
+                  }}
+                />
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="icon" 
+                  className="rounded-l-none"
+                  onClick={() => {
+                    const newValue = Math.min(10, Number(field.value) + 1);
+                    field.onChange(newValue);
+                    handleAttractionsCountChange({ target: { value: newValue.toString() } } as React.ChangeEvent<HTMLInputElement>);
+                  }}
+                  disabled={field.value >= 10}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
             </FormControl>
           </FormItem>
         )}
       />
-
-      {form.watch('attractions')?.map((_, index) => (
-        <AttractionInput
-          key={index}
-          index={index}
-          form={form}
-        />
-      ))}
+      
+      <div className="space-y-4">
+        {fields.map((field, index) => (
+          <div key={field.id} className="p-4 border rounded-md space-y-4">
+            <h4 className="font-medium">{t('routes.attractions.attraction')} {index + 1}</h4>
+            
+            <AttractionInput
+              form={form}
+              index={index}
+            />
+            
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name={`attractions.${index}.visitDuration`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('routes.attractions.visitDuration')}</FormLabel>
+                    <FormControl>
+                      <div className="flex items-center">
+                        <Input
+                          type="number"
+                          min={0}
+                          {...field}
+                        />
+                        <span className="ml-2">{t('routes.attractions.minutes')}</span>
+                      </div>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name={`attractions.${index}.price`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('routes.attractions.price')}</FormLabel>
+                    <FormControl>
+                      <div className="flex items-center">
+                        <Input
+                          type="number"
+                          min={0}
+                          step={0.5}
+                          {...field}
+                        />
+                        <span className="ml-2">€</span>
+                      </div>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -6,12 +6,15 @@ import { UseFormReturn } from 'react-hook-form';
 import { CreateRouteFormData } from '@/types/route';
 import { ImageUpload } from '@/components/ImageUpload';
 import { AIRouteGenerator } from '../AIRouteGenerator';
+import { useTranslation } from 'react-i18next';
 
 interface RouteBasicInfoProps {
   form: UseFormReturn<CreateRouteFormData>;
 }
 
 export function RouteBasicInfo({ form }: RouteBasicInfoProps) {
+  const { t } = useTranslation();
+  
   const handleImageUploaded = (url: string) => {
     form.setValue('image_url', url);
   };
@@ -21,7 +24,7 @@ export function RouteBasicInfo({ form }: RouteBasicInfoProps) {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium">Informazioni di Base</h3>
+        <h3 className="text-lg font-medium">{t('routes.basicInfo.title')}</h3>
         <AIRouteGenerator form={form} cityName={cityName} />
       </div>
       
@@ -30,9 +33,9 @@ export function RouteBasicInfo({ form }: RouteBasicInfoProps) {
         name="name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Nome del Percorso</FormLabel>
+            <FormLabel>{t('routes.basicInfo.routeName')}</FormLabel>
             <FormControl>
-              <Input placeholder="Inserisci il nome del percorso" {...field} />
+              <Input placeholder={t('routes.basicInfo.routeNamePlaceholder')} {...field} />
             </FormControl>
           </FormItem>
         )}
@@ -43,16 +46,16 @@ export function RouteBasicInfo({ form }: RouteBasicInfoProps) {
         name="description"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Descrizione del Percorso</FormLabel>
+            <FormLabel>{t('routes.basicInfo.routeDescription')}</FormLabel>
             <FormControl>
               <Textarea 
-                placeholder="Descrivi il tuo percorso... Cosa rende speciale questa esperienza? Quali emozioni può suscitare?" 
+                placeholder={t('routes.basicInfo.routeDescriptionPlaceholder')} 
                 className="min-h-[100px]"
                 {...field} 
               />
             </FormControl>
             <FormDescription>
-              Una buona descrizione può attirare più visitatori! Racconta cosa rende unico questo percorso e perché gli altri dovrebbero provarlo.
+              {t('routes.basicInfo.routeDescriptionHelp')}
             </FormDescription>
           </FormItem>
         )}
@@ -63,7 +66,7 @@ export function RouteBasicInfo({ form }: RouteBasicInfoProps) {
         name="image_url"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Immagine del Percorso</FormLabel>
+            <FormLabel>{t('routes.basicInfo.routeImage')}</FormLabel>
             <FormControl>
               <ImageUpload
                 bucketName="route-images"

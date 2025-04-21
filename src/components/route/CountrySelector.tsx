@@ -1,8 +1,10 @@
+
 import { FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { UseFormReturn } from 'react-hook-form';
 import { CreateRouteFormData } from '@/types/route';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useTranslation } from 'react-i18next';
 
 interface CountrySelectorProps {
   form: UseFormReturn<CreateRouteFormData>;
@@ -11,6 +13,8 @@ interface CountrySelectorProps {
 }
 
 export function CountrySelector({ form, countries, onCountrySelect }: CountrySelectorProps) {
+  const { t } = useTranslation();
+  
   // Remove duplicates and sort countries
   const uniqueCountries = Array.from(new Set(countries)).sort();
   
@@ -22,7 +26,7 @@ export function CountrySelector({ form, countries, onCountrySelect }: CountrySel
       name="country"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Paese</FormLabel>
+          <FormLabel>{t('routes.location.country')}</FormLabel>
           <FormControl>
             <Select
               value={field.value}
@@ -32,7 +36,7 @@ export function CountrySelector({ form, countries, onCountrySelect }: CountrySel
               }}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Seleziona un paese" />
+                <SelectValue placeholder={t('routes.location.selectCountry')} />
               </SelectTrigger>
               <SelectContent>
                 <ScrollArea className="h-[200px]">

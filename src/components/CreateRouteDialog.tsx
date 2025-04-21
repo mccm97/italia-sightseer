@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Plus, PenLine, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -11,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { CreateRouteForm } from '@/components/route/CreateRouteForm';
 import { RoutePreview } from '@/components/RoutePreview';
 import { useRouteCreation } from '@/hooks/useRouteCreation';
@@ -130,6 +131,9 @@ export function CreateRouteDialog() {
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogTitle>{t('routes.creation.title')}</DialogTitle>
+          <DialogDescription>{t('routes.creation.description')}</DialogDescription>
+          
           {step === 'form' ? (
             <CreateRouteForm 
               onSubmit={handleFormSubmission}

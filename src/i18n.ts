@@ -1,3 +1,4 @@
+
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
@@ -7,6 +8,7 @@ import { searchTranslations } from './i18n/translations/search';
 import { subscriptionsTranslations } from './i18n/translations/subscriptions';
 import { menuTranslations } from './i18n/translations/menu';
 import { profileTranslations } from './i18n/translations/profile';
+import { routesTranslations } from './i18n/translations/routes';
 
 i18n
   .use(LanguageDetector)
@@ -20,7 +22,8 @@ i18n
           blog: blogTranslations.en,
           search: searchTranslations.en,
           subscriptions: subscriptionsTranslations.en,
-          profile: profileTranslations.en
+          profile: profileTranslations.en,
+          routes: routesTranslations.en
         }
       },
       it: {
@@ -30,7 +33,8 @@ i18n
           blog: blogTranslations.it,
           search: searchTranslations.it,
           subscriptions: subscriptionsTranslations.it,
-          profile: profileTranslations.it
+          profile: profileTranslations.it,
+          routes: routesTranslations.it
         }
       }
     },

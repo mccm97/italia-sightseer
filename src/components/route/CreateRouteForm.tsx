@@ -1,3 +1,4 @@
+
 import { Form } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
 import { CreateRouteFormData } from '@/types/route';
@@ -6,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { LocationSection } from './form/LocationSection';
 import { RouteBasicInfo } from './form/RouteBasicInfo';
 import { AttractionsSection } from './form/AttractionsSection';
+import { useTranslation } from 'react-i18next';
 
 interface CreateRouteFormProps {
   onSubmit: (data: CreateRouteFormData) => void;
@@ -22,6 +24,8 @@ export function CreateRouteForm({
   onCountrySelect,
   onSuccess,
 }: CreateRouteFormProps) {
+  const { t } = useTranslation();
+  
   const form = useForm<CreateRouteFormData>({
     defaultValues: {
       name: '',
@@ -47,8 +51,8 @@ export function CreateRouteForm({
     
     if (!data.city) {
       toast({
-        title: "Errore",
-        description: "Seleziona una città",
+        title: t('routes.errors.noCity'),
+        description: t('routes.errors.selectCity'),
         variant: "destructive"
       });
       return;
@@ -56,8 +60,8 @@ export function CreateRouteForm({
 
     if (!data.name) {
       toast({
-        title: "Errore",
-        description: "Inserisci un nome per il percorso",
+        title: t('routes.errors.noName'),
+        description: t('routes.errors.enterName'),
         variant: "destructive"
       });
       return;
@@ -65,8 +69,8 @@ export function CreateRouteForm({
 
     if (!data.attractions.length || !data.attractions[0].name) {
       toast({
-        title: "Errore",
-        description: "Inserisci almeno un'attrazione",
+        title: t('routes.errors.noAttractions'),
+        description: t('routes.errors.enterAttractions'),
         variant: "destructive"
       });
       return;
@@ -79,8 +83,8 @@ export function CreateRouteForm({
     } catch (error) {
       console.error('Error submitting form:', error);
       toast({
-        title: "Errore",
-        description: "Si è verificato un errore durante la creazione del percorso",
+        title: t('routes.errors.submissionError'),
+        description: t('routes.errors.creationError'),
         variant: "destructive"
       });
     }
@@ -102,7 +106,7 @@ export function CreateRouteForm({
 
         <div className="flex justify-end">
           <Button type="submit">
-            Continua
+            {t('routes.form.continue')}
           </Button>
         </div>
       </form>
