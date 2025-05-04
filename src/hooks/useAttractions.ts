@@ -1,15 +1,19 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { fetchAttractionsFromOverpass, OverpassAttraction } from '@/services/overpassService';
 
-interface Attraction {
+export interface Attraction {
   name: string;
-  source: 'local';
+  source: 'local' | 'overpass';
   lat?: number;
   lng?: number;
   visitDuration?: number;
   price?: number;
   attractionId?: string;
+  type?: string;
+  id?: number;
 }
 
 export function useAttractions(cityId?: string) {
@@ -21,50 +25,73 @@ export function useAttractions(cityId?: string) {
 
   useEffect(() => {
     const fetchAttractions = async () => {
-      if (!cityId) {
-        setAttractions([]);
-        return;
-      }
-      
       setIsLoading(true);
       try {
-        console.log('Fetching attractions for city:', cityId);
-        const { data: localAttractions, error: localError } = await supabase
-          .from('attractions')
-          .select('id, name, lat, lng, visit_duration, price')
-          .eq('city_id', cityId)
-          .order('name');
+        let localResults: Attraction[] = [];
+        let cityName = '';
+        let countryName = '';
+        
+        // If we have a cityId, try to get attractions from the database
+        if (cityId) {
+          console.log('Fetching attractions for city:', cityId);
+          // First get the city and country name for Overpass API
+          const { data: cityData, error: cityError } = await supabase
+            .from('cities')
+            .select('name, country')
+            .eq('id', cityId)
+            .single();
+          
+          if (cityError) {
+            console.error('Error fetching city data:', cityError);
+          } else if (cityData) {
+            cityName = cityData.name;
+            countryName = cityData.country;
+          }
+          
+          // Get local attractions from database
+          const { data: localAttractions, error: localError } = await supabase
+            .from('attractions')
+            .select('id, name, lat, lng, visit_duration, price')
+            .eq('city_id', cityId)
+            .order('name');
 
-        if (localError) {
-          console.error('Error fetching local attractions:', localError);
-          throw localError;
+          if (localError) {
+            console.error('Error fetching local attractions:', localError);
+          } else {
+            console.log('Raw attractions data from database:', localAttractions);
+
+            localResults = (localAttractions || []).map(attr => ({
+              name: attr.name,
+              source: 'local' as const,
+              lat: attr.lat,
+              lng: attr.lng,
+              visitDuration: attr.visit_duration,
+              price: attr.price,
+              attractionId: attr.id
+            }));
+          }
         }
 
-        console.log('Raw attractions data from database:', localAttractions);
+        // Even if we don't have a cityId or if the database search failed, 
+        // we can still try to fetch from Overpass if we have city and country names
+        let overpassResults: OverpassAttraction[] = [];
+        if (cityName && countryName) {
+          overpassResults = await fetchAttractionsFromOverpass(cityName, countryName);
+          console.log('Fetched Overpass attractions:', overpassResults);
+        }
 
-        const results = (localAttractions || []).map(attr => {
-          console.log(`Processing attraction "${attr.name}":`, {
-            lat: attr.lat,
-            lng: attr.lng,
-            visitDuration: attr.visit_duration,
-            price: attr.price,
-            id: attr.id
-          });
+        // Deduplicate attractions by name
+        const nameSet = new Set(localResults.map(attr => attr.name.toLowerCase()));
+        const uniqueOverpassResults = overpassResults.filter(
+          attr => !nameSet.has(attr.name.toLowerCase())
+        );
 
-          return {
-            name: attr.name,
-            source: 'local' as const,
-            lat: attr.lat,
-            lng: attr.lng,
-            visitDuration: attr.visit_duration,
-            price: attr.price,
-            attractionId: attr.id
-          };
-        });
+        const allResults = [...localResults, ...uniqueOverpassResults];
+        console.log('Combined attractions:', allResults);
 
-        console.log('Processed attractions with coordinates:', results);
-        setAttractions(results);
-        setFilteredAttractions(results);
+        setAttractions(allResults);
+        setFilteredAttractions(allResults);
+        
       } catch (error) {
         console.error('Error fetching attractions:', error);
         toast({

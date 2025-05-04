@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2 } from 'lucide-react';
+import { Loader2, MapPin, Database, Globe } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -9,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAttractions } from '@/hooks/useAttractions';
+import { useAttractions, Attraction } from '@/hooks/useAttractions';
 
 interface AttractionSelectProps {
   value: string;
@@ -70,12 +71,19 @@ export function AttractionSelect({ value, onChange, inputType, cityId }: Attract
               Caricamento...
             </div>
           ) : filteredAttractions.length > 0 ? (
-            filteredAttractions.map((attraction) => (
+            filteredAttractions.map((attraction: Attraction) => (
               <SelectItem 
-                key={attraction.name} 
+                key={`${attraction.source}-${attraction.name}`} 
                 value={attraction.name}
               >
-                {attraction.name}
+                <div className="flex items-center">
+                  {attraction.source === 'local' ? (
+                    <Database className="h-3 w-3 mr-2 text-blue-500" />
+                  ) : (
+                    <Globe className="h-3 w-3 mr-2 text-green-500" />
+                  )}
+                  {attraction.name}
+                </div>
               </SelectItem>
             ))
           ) : (
