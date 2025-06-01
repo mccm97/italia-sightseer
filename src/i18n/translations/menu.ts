@@ -1,3 +1,4 @@
+
 export const menuTranslations = {
   it: {
     home: 'Home',
@@ -8,7 +9,8 @@ export const menuTranslations = {
     blog: 'Blog',
     search: 'Cerca città',
     statistics: 'Statistiche',
-    newRoute: 'Nuovo Percorso'
+    newRoute: 'Nuovo Percorso',
+    installPWA: 'Installa App'
   },
   en: {
     home: 'Home',
@@ -19,6 +21,7 @@ export const menuTranslations = {
     blog: 'Blog',
     search: 'Search cities',
     statistics: 'Statistics',
-    newRoute: 'New Route'
+    newRoute: 'New Route',
+    installPWA: 'Install App'
   }
 };

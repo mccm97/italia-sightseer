@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search } from 'lucide-react';
@@ -9,6 +10,7 @@ import { MenuLink } from './layout/MenuLink';
 import { AdminLinks } from './layout/AdminLinks';
 import { LanguageToggle } from './layout/LanguageToggle';
 import { LogoutButton } from './layout/LogoutButton';
+import { PWAInstallItem } from './layout/PWAInstallItem';
 
 export function MainMenu() {
   const { t, i18n } = useTranslation();
@@ -76,6 +78,8 @@ export function MainMenu() {
           <MenuLink to="/blog">{t('menu.blog')}</MenuLink>
           <MenuLink to="/profile">{t('menu.profile')}</MenuLink>
           <MenuLink to="/upgrade">{t('menu.subscriptions')}</MenuLink>
+          
+          <PWAInstallItem />
           
           {isAdmin && <AdminLinks />}
           
