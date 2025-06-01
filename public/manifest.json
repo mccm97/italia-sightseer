@@ -3,11 +3,12 @@
   "name": "WayWonder - Scopri e Pianifica i Tuoi Percorsi in Italia",
   "short_name": "WayWonder",
   "description": "Crea e condividi percorsi personalizzati nelle più belle città italiane",
-  "start_url": "/",
+  "start_url": "/?utm_source=pwa",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#3b82f6",
   "orientation": "portrait-primary",
+  "scope": "/",
   "icons": [
     {
       "src": "/favicon.png",
@@ -24,5 +25,6 @@
   ],
   "categories": ["travel", "navigation", "lifestyle"],
   "lang": "it",
-  "dir": "ltr"
+  "dir": "ltr",
+  "prefer_related_applications": false
 }

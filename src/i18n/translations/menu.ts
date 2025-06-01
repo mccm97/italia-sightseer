@@ -10,7 +10,8 @@ export const menuTranslations = {
     search: 'Cerca città',
     statistics: 'Statistiche',
     newRoute: 'Nuovo Percorso',
-    installPWA: 'Installa App'
+    installPWA: 'Installa App',
+    appInstalled: 'App Installata'
   },
   en: {
     home: 'Home',
@@ -22,6 +23,7 @@ export const menuTranslations = {
     search: 'Search cities',
     statistics: 'Statistics',
     newRoute: 'New Route',
-    installPWA: 'Install App'
+    installPWA: 'Install App',
+    appInstalled: 'App Installed'
   }
 };
